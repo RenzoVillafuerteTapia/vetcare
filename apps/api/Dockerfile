@@ -15,7 +15,7 @@ COPY src ./src
 # Desarrollo: incluye herramientas de prueba y calidad; el código se monta como volumen.
 FROM base AS dev
 COPY tests ./tests
-RUN pip install -e ".[dev]"
+RUN pip install -e ".[dev]" && chown -R vetcare:vetcare /app
 USER vetcare
 CMD ["uvicorn", "vetcare.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--app-dir", "src"]
 

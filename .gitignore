@@ -1,0 +1,44 @@
+# Secretos y entorno
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Node
+node_modules/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+playwright-report/
+test-results/
+
+# Expo / React Native
+.expo/
+android/
+ios/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Archivos subidos en desarrollo
+apps/api/var/
+
+# IDE y sistema
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db

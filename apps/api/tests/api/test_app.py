@@ -24,7 +24,9 @@ async def test_documentacion_disponible_fuera_de_produccion() -> None:
 
 
 async def test_documentacion_oculta_en_produccion() -> None:
-    async with client_for(Settings(environment=Environment.PRODUCTION)) as client:
+    async with client_for(
+        Settings(environment=Environment.PRODUCTION, database_url=None)
+    ) as client:
         assert (await client.get("/api/docs")).status_code == 404
         assert (await client.get("/api/openapi.json")).status_code == 404
 

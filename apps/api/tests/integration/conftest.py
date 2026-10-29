@@ -11,10 +11,11 @@ from pathlib import Path
 import pytest
 from alembic import command
 from alembic.config import Config
-from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
-from vetcare.platform.db import create_engine, create_session_factory
+from vetcare.contexts.identity.infrastructure import tables as _identity_tables  # noqa: F401
+from vetcare.platform import outbox as _outbox  # noqa: F401
+from vetcare.platform.db import create_engine, create_session_factory, metadata
 
 API_DIR = Path(__file__).resolve().parents[2]
 DATABASE_URL = os.environ.get("VETCARE_TEST_DATABASE_URL")
@@ -54,7 +55,9 @@ async def engine(migrated_database: str) -> AsyncIterator[AsyncEngine]:
     engine = create_engine(migrated_database)
     yield engine
     async with engine.begin() as connection:
-        await connection.execute(text("DELETE FROM outbox_events"))
+        # Orden inverso de dependencias para respetar las claves foráneas.
+        for table in reversed(metadata.sorted_tables):
+            await connection.execute(table.delete())
     await engine.dispose()
 
 

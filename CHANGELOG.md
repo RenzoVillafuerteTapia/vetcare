@@ -24,3 +24,5 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 - Pruebas de arquitectura que verifican las reglas de dependencia entre capas, y pruebas de integración contra MySQL en local y en CI.
 - Identity & Access: invitaciones por correo, activación, login con access token JWT y refresh token rotativo (cookie HttpOnly para la web, cuerpo para la app móvil), detección de reutilización, cierre de sesión, recuperación de contraseña, bloqueo tras intentos fallidos, roles y permisos explícitos, límite de solicitudes y auditoría de accesos.
 - Comando `python -m vetcare.cli create-admin` para crear el primer administrador.
+- Contrato OpenAPI exportable sin servidor (`python -m vetcare.cli export-openapi`) con los errores documentados como `application/problem+json`.
+- Paquete `@vetcare/shared` (npm workspaces): contrato versionado, tipos generados con openapi-typescript, cliente tipado con openapi-fetch y utilidades para errores; workflow `Contratos` que detecta contratos desactualizados.

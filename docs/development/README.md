@@ -7,7 +7,7 @@
 ## Requisitos
 
 - Docker y Docker Compose. La API corre en un contenedor con Python 3.12.
-- Node.js 22 LTS y npm (para la web, la app móvil y `packages/shared`, cuando existan).
+- Node.js 22.12 o superior y npm (workspaces). `npm install` en la raíz instala `packages/shared`.
 - Opcional: Python 3.12 local para el editor y para ejecutar pruebas fuera de Docker.
 
 ## Primeros pasos
@@ -46,9 +46,19 @@ envía a `POST /api/v1/auth/invitations/accept` junto con la contraseña elegida
 apps/api        API FastAPI (ver apps/api/README.md)
 apps/web        web de administración (pendiente)
 apps/mobile     app de clientes (pendiente)
-packages/shared tipos generados desde OpenAPI (pendiente)
+packages/shared contrato OpenAPI, tipos generados y cliente HTTP tipado
 docs/           documentación técnica
 ```
+
+## Contratos compartidos
+
+Después de cambiar un endpoint, un esquema o un error de la API:
+
+```bash
+bash scripts/update-contracts.sh
+```
+
+y commitea `packages/shared/openapi.json` y `packages/shared/src/schema.d.ts` en el mismo PR.
 
 ## Variables de entorno
 

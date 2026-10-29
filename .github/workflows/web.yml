@@ -1,0 +1,75 @@
+name: Web
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+concurrency:
+  group: web-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    name: Detectar cambios en la web
+    runs-on: ubuntu-latest
+    outputs:
+      web: ${{ steps.filter.outputs.web }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: filter
+        name: Comparar archivos modificados
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [ "$EVENT" = "pull_request" ]; then
+            base="origin/$BASE_REF"
+          elif [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "web=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          else
+            base="$BEFORE"
+          fi
+          pattern='^(apps/web/|packages/shared/|package(-lock)?\.json$|\.github/workflows/web\.yml$)'
+          if git diff --name-only "$base...HEAD" | grep -qE "$pattern"; then
+            echo "web=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "web=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  # Check requerido. Si no cambió nada relevante queda "skipped", y GitHub lo cuenta como aprobado.
+  web:
+    name: web
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Instalar dependencias
+        working-directory: .
+        run: npm ci
+      - name: Lint (ESLint)
+        run: npm run lint
+      - name: Formato (Prettier)
+        run: npm run format:check
+      - name: Tipos (tsc)
+        run: npm run typecheck
+      - name: Pruebas (Vitest + Testing Library)
+        run: npm test
+      - name: Build
+        run: npm run build

@@ -3,13 +3,18 @@
   "private": true,
   "description": "Monorepo de la plataforma de gestión veterinaria",
   "workspaces": [
-    "packages/shared"
+    "packages/shared",
+    "apps/web"
   ],
   "engines": {
     "node": ">=22.12"
   },
   "scripts": {
     "contracts:generate": "npm run generate --workspace @vetcare/shared",
-    "contracts:check": "npm run typecheck --workspace @vetcare/shared && npm test --workspace @vetcare/shared"
+    "contracts:check": "npm run typecheck --workspace @vetcare/shared && npm test --workspace @vetcare/shared",
+    "web:dev": "npm run dev --workspace @vetcare/web"
+  },
+  "overrides": {
+    "vite": "7.3.7"
   }
 }

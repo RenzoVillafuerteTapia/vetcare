@@ -45,7 +45,7 @@ no cambiaron, omite el job sin fallar, para que pueda ser un check obligatorio e
 |---|---|---|---|
 | `commitlint.yml` | `commitlint` | Activo, obligatorio | Conventional Commits en cada PR |
 | `api.yml` | `api` | Activo, obligatorio | Ruff (lint y formato), mypy estricto, pytest con cobertura mínima de 80 % (incluye integración con MySQL 8.4 como *service container*), `alembic check` |
-| Web | — | Pendiente (`feature/web-shell`) | ESLint, Prettier, `tsc`, Vitest, build |
+| `web.yml` | `web` | Activo | ESLint, Prettier, `tsc`, Vitest + Testing Library, build de producción |
 | Móvil | — | Pendiente (`feature/mobile-shell`) | ESLint, `tsc`, Jest |
 | `contracts.yml` | `contracts` | Activo | Exporta el OpenAPI desde el código, regenera los tipos y falla si difieren de los versionados en `packages/shared`; `tsc` y Vitest del paquete |
 

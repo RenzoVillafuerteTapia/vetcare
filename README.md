@@ -5,14 +5,15 @@ Plataforma para una veterinaria de una sede: una **web de administración** para
 responsables autorizados de las mascotas, conectadas a una **API común**.
 
 > **Estado actual: fase 1 (fundamentos), en curso.** La API tiene su base técnica y la
-> autenticación con roles y permisos. La web y la app móvil todavía no existen.
+> autenticación con roles y permisos; la web de administración tiene su base (sesión,
+> navegación por permisos e invitación de usuarios). La app móvil todavía no existe.
 > La tabla de abajo se actualiza en cada entrega.
 
 ## Funcionalidades
 
 | Módulo | Estado | Fase |
 |---|---|---|
-| Autenticación, roles y permisos | API implementada; pantallas web y móvil pendientes | 1 |
+| Autenticación, roles y permisos | API y web implementadas; app móvil pendiente | 1 |
 | Clientes, mascotas y responsables autorizados | Planificado | 2 |
 | Agenda y citas sin conflictos | Planificado | 2 |
 | Seguimiento de baños y peluquería | Planificado | 3 |
@@ -68,6 +69,7 @@ Luego aplica las migraciones y crea el primer administrador como se explica en
 ## Documentación
 
 - [Arquitectura](docs/architecture/overview.md)
+- [Sistema de diseño](docs/design/README.md)
 - [Dominio y bounded contexts](docs/domain/bounded-contexts.md)
 - [Decisiones de arquitectura (ADR)](docs/adr/README.md)
 - [API](docs/api/README.md)

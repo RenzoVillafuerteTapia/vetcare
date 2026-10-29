@@ -19,6 +19,14 @@ docker compose up --build
 docker compose run --rm api alembic upgrade head
 ```
 
+### Web de administración
+
+```bash
+npm install
+cp apps/web/.env.example apps/web/.env.local
+npm run web:dev                   # http://localhost:5173
+```
+
 ### Primer administrador
 
 Las cuentas se crean solo por invitación. En una base vacía, crea la invitación del primer
@@ -31,7 +39,8 @@ docker compose exec api python -m vetcare.cli create-admin --email admin@ejemplo
 En desarrollo los correos no se envían: aparecen en el registro de la API
 (`docker compose logs api`) con el enlace de activación. El token del enlace (`#token=…`) se
 envía a `POST /api/v1/auth/invitations/accept` junto con la contraseña elegida, desde
-`/api/docs` mientras no exista la web. El comando se niega a funcionar si ya hay usuarios.
+`/api/docs`, o abriendo el enlace en la web (`/activar-cuenta#token=…`). El comando se niega a
+funcionar si ya hay usuarios.
 
 - API: <http://localhost:8000/api/v1/health> (proceso vivo) y
   <http://localhost:8000/api/v1/health/ready> (base de datos disponible)
@@ -44,7 +53,7 @@ envía a `POST /api/v1/auth/invitations/accept` junto con la contraseña elegida
 
 ```
 apps/api        API FastAPI (ver apps/api/README.md)
-apps/web        web de administración (pendiente)
+apps/web        web de administración (ver apps/web/README.md)
 apps/mobile     app de clientes (pendiente)
 packages/shared contrato OpenAPI, tipos generados y cliente HTTP tipado
 docs/           documentación técnica

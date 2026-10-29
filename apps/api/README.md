@@ -2,19 +2,23 @@
 
 API FastAPI de la plataforma. Arquitectura en [docs/architecture/overview.md](../../docs/architecture/overview.md).
 
-> Estado: **base técnica.** Expone `GET /api/v1/health` y `GET /api/v1/health/ready`. Incluye
-> el shared kernel, la unidad de trabajo con outbox transaccional, Alembic y el formato de
-> errores problem+json. Todavía no hay bounded contexts implementados.
+> Estado: **base técnica e Identity & Access.** Además de la salud (`/health`, `/health/ready`),
+> expone autenticación, invitaciones, recuperación de acceso y gestión de usuarios
+> (ver [docs/api](../../docs/api/README.md)).
 
 ## Estructura
 
 ```
 src/vetcare/
 ├── shared_kernel/   AggregateRoot, DomainEvent, errores de dominio, Clock, UnitOfWork, UUID v7
-├── platform/        settings, db, outbox, unidad de trabajo, errores HTTP, salud
+├── platform/        settings, db, outbox, unidad de trabajo, errores HTTP, salud, límite de solicitudes
+├── contexts/
+│   └── identity/    cuentas, sesiones, roles, permisos y auditoría (domain, application,
+│                    infrastructure, api, public)
+├── cli.py           comandos de administración (create-admin)
 └── main.py          composición de la aplicación
 migrations/          Alembic (una migración por cambio de esquema)
-tests/               unit, api, architecture, integration
+tests/               unit, application, api, architecture, integration
 ```
 
 ## Comandos (dentro del contenedor)

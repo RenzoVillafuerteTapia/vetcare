@@ -18,3 +18,5 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 - Errores HTTP en formato problem+json (RFC 9457) con mensajes de validación en español.
 - `GET /api/v1/health/ready`, que verifica la conexión a MySQL.
 - Pruebas de arquitectura que verifican las reglas de dependencia entre capas, y pruebas de integración contra MySQL en local y en CI.
+- Identity & Access: invitaciones por correo, activación, login con access token JWT y refresh token rotativo (cookie HttpOnly para la web, cuerpo para la app móvil), detección de reutilización, cierre de sesión, recuperación de contraseña, bloqueo tras intentos fallidos, roles y permisos explícitos, límite de solicitudes y auditoría de accesos.
+- Comando `python -m vetcare.cli create-admin` para crear el primer administrador.

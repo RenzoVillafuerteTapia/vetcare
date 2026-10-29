@@ -3,6 +3,7 @@ import asyncio
 from alembic import context
 from sqlalchemy.engine import Connection
 
+from vetcare.contexts.identity.infrastructure import tables as identity_tables  # noqa: F401
 from vetcare.platform import outbox  # noqa: F401  registra las tablas del outbox en metadata
 from vetcare.platform.db import create_engine, metadata
 from vetcare.platform.settings import Settings

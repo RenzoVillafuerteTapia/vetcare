@@ -4,9 +4,12 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from vetcare.contexts.identity.api import router as identity
+from vetcare.contexts.identity.infrastructure.composition import build_identity_service
 from vetcare.platform import health
 from vetcare.platform.db import create_engine, create_session_factory
 from vetcare.platform.errors import register_error_handlers
+from vetcare.platform.rate_limit import FixedWindowRateLimiter
 from vetcare.platform.settings import Settings, get_settings
 
 API_PREFIX = "/api/v1"
@@ -36,6 +39,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.session_factory = (
         create_session_factory(app.state.engine) if app.state.engine is not None else None
     )
+    app.state.settings = settings
+    app.state.rate_limiter = FixedWindowRateLimiter()
+    app.state.identity = (
+        build_identity_service(settings, app.state.session_factory)
+        if app.state.session_factory is not None and settings.jwt_secret is not None
+        else None
+    )
 
     if settings.cors_origins:
         app.add_middleware(
@@ -47,6 +57,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         )
     register_error_handlers(app)
     app.include_router(health.router, prefix=API_PREFIX)
+    app.include_router(identity.auth, prefix=API_PREFIX)
+    app.include_router(identity.users, prefix=API_PREFIX)
     return app
 
 

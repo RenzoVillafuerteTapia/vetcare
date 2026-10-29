@@ -23,6 +23,17 @@ class Settings(BaseSettings):
     # que la contraseña aparezca en registros o en el repr de la configuración.
     database_url: SecretStr | None = None
 
+    # Firma de los access tokens (HS256). Mínimo 32 caracteres aleatorios.
+    jwt_secret: SecretStr | None = None
+    access_token_minutes: int = Field(default=15, ge=1, le=60)
+    # Base de los enlaces de los correos (activar cuenta, restablecer contraseña).
+    public_web_url: str = "http://localhost:5173"
+    rate_limits_enabled: bool = True
+
+    @property
+    def secure_cookies(self) -> bool:
+        return self.environment in {Environment.STAGING, Environment.PRODUCTION}
+
     @property
     def docs_enabled(self) -> bool:
         return self.environment is not Environment.PRODUCTION

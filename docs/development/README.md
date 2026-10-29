@@ -14,10 +14,24 @@
 
 ```bash
 bash scripts/setup-hooks.sh       # valida Conventional Commits en cada commit
-cp .env.example .env              # luego cambia las claves de MySQL
+cp .env.example .env              # luego cambia las claves de MySQL y VETCARE_JWT_SECRET
 docker compose up --build
 docker compose run --rm api alembic upgrade head
 ```
+
+### Primer administrador
+
+Las cuentas se crean solo por invitación. En una base vacía, crea la invitación del primer
+administrador:
+
+```bash
+docker compose exec api python -m vetcare.cli create-admin --email admin@ejemplo.test --name "Nombre Apellido"
+```
+
+En desarrollo los correos no se envían: aparecen en el registro de la API
+(`docker compose logs api`) con el enlace de activación. El token del enlace (`#token=…`) se
+envía a `POST /api/v1/auth/invitations/accept` junto con la contraseña elegida, desde
+`/api/docs` mientras no exista la web. El comando se niega a funcionar si ya hay usuarios.
 
 - API: <http://localhost:8000/api/v1/health> (proceso vivo) y
   <http://localhost:8000/api/v1/health/ready> (base de datos disponible)
@@ -48,6 +62,8 @@ prefijo `VETCARE_`.
 | `VETCARE_ENVIRONMENT` | `local`, `test`, `staging` o `production` |
 | `VETCARE_CORS_ORIGINS` | Lista JSON de orígenes permitidos |
 | `VETCARE_DATABASE_URL` | URL de SQLAlchemy (`mysql+asyncmy://…`). En Docker Compose se arma con las variables de MySQL |
+| `VETCARE_JWT_SECRET` | Clave de firma de los access tokens, mínimo 32 caracteres. Sin ella los endpoints de autenticación no están disponibles |
+| `VETCARE_PUBLIC_WEB_URL` | Base de los enlaces de activación y recuperación de los correos |
 | `VETCARE_TEST_DATABASE_URL` | Base para las pruebas de integración. En Docker Compose apunta a `<MYSQL_DATABASE>_test` |
 
 ## Solución de problemas

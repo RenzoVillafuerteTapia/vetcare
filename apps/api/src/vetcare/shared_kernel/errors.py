@@ -28,6 +28,12 @@ class ConflictError(DomainError):
     code = "conflict"
 
 
+class AuthenticationError(DomainError):
+    """Falta autenticación o las credenciales no son válidas."""
+
+    code = "not_authenticated"
+
+
 class PermissionDeniedError(DomainError):
     code = "permission_denied"
 

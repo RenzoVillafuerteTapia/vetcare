@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from vetcare.shared_kernel.errors import (
+    AuthenticationError,
     ConflictError,
     DomainError,
     NotFoundError,
@@ -22,6 +23,7 @@ PROBLEM_JSON = "application/problem+json"
 
 _STATUS_BY_ERROR: list[tuple[type[DomainError], int, str]] = [
     (NotFoundError, 404, "Recurso no encontrado"),
+    (AuthenticationError, 401, "Debes iniciar sesión"),
     (PermissionDeniedError, 403, "No tienes permiso para realizar esta operación"),
     (ConflictError, 409, "La operación no es compatible con el estado actual"),
     (ValidationFailedError, 422, "Los datos enviados no son válidos"),
@@ -96,7 +98,10 @@ async def _domain_error(_: Request, exc: Exception) -> JSONResponse:
             fields = None
             if isinstance(error, ValidationFailedError):
                 fields = [{"field": e.field, "message": e.message} for e in error.errors]
-            return problem(status, title, error.code, error.message, fields)
+            response = problem(status, title, error.code, error.message, fields)
+            if isinstance(error, AuthenticationError):
+                response.headers["WWW-Authenticate"] = "Bearer"
+            return response
     return problem(400, "No se pudo completar la operación", error.code, error.message)
 
 

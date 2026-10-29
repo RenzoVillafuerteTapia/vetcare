@@ -69,6 +69,7 @@ Luego aplica las migraciones y crea el primer administrador como se explica en
 ## Documentación
 
 - [Arquitectura](docs/architecture/overview.md)
+- [Sistema de diseño](docs/design/README.md)
 - [Dominio y bounded contexts](docs/domain/bounded-contexts.md)
 - [Decisiones de arquitectura (ADR)](docs/adr/README.md)
 - [API](docs/api/README.md)

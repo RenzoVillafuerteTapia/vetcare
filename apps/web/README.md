@@ -24,7 +24,7 @@ La API debe permitir el origen de la web con `VETCARE_CORS_ORIGINS=["http://loca
 src/
 ├── app/              composición: router, cliente de TanStack Query, raíz de la app
 ├── components/       componentes compartidos (layout, campos de formulario)
-│   └── ui/           componentes de shadcn/ui (convención "new-york", ver components.json)
+│   └── ui/           componentes de shadcn/ui adaptados al sistema de diseño (docs/design)
 ├── features/
 │   ├── auth/         sesión, guardias de rutas, login, recuperación y activación
 │   ├── home/         inicio, acceso denegado y página no encontrada

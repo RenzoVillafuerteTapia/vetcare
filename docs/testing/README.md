@@ -14,6 +14,7 @@
 | Arquitectura | Reglas de dependencia entre capas y contextos | prueba de imports propia | No |
 | Web | Componentes y flujos críticos | Vitest + React Testing Library | No (API simulada) |
 | Móvil | Pantallas y flujos críticos | Jest + React Native Testing Library | No (API simulada) |
+| Contratos | Cliente tipado de `packages/shared` y contrato OpenAPI de los errores | Vitest; pytest (`tests/api/test_openapi.py`) | No |
 | Extremo a extremo | Recorridos principales con la API real | Playwright | Sí |
 
 ## Prioridades
@@ -46,7 +47,7 @@ no cambiaron, omite el job sin fallar, para que pueda ser un check obligatorio e
 | `api.yml` | `api` | Activo, obligatorio | Ruff (lint y formato), mypy estricto, pytest con cobertura mínima de 80 % (incluye integración con MySQL 8.4 como *service container*), `alembic check` |
 | Web | — | Pendiente (`feature/web-shell`) | ESLint, Prettier, `tsc`, Vitest, build |
 | Móvil | — | Pendiente (`feature/mobile-shell`) | ESLint, `tsc`, Jest |
-| Contratos | — | Pendiente (`feature/shared-contracts`) | Los tipos de `packages/shared` coinciden con el OpenAPI |
+| `contracts.yml` | `contracts` | Activo | Exporta el OpenAPI desde el código, regenera los tipos y falla si difieren de los versionados en `packages/shared`; `tsc` y Vitest del paquete |
 
 Cada workflow nuevo se agrega en el PR que crea su aplicación, para no tener pipelines que
 validen código inexistente.

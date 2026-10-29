@@ -49,6 +49,11 @@ flowchart LR
 | `packages/shared` | Tipos TypeScript generados desde OpenAPI |
 | Infraestructura | Docker Compose (local), AWS EC2 + RDS + S3, GitHub Actions |
 
+## Contratos compartidos
+
+La web y la app móvil consumen la API con los tipos de [`packages/shared`](packages/shared/README.md),
+generados desde el contrato OpenAPI. El CI impide fusionar un cambio de la API sin actualizarlos.
+
 ## Inicio rápido
 
 ```bash

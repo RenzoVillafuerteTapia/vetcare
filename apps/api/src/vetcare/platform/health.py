@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from vetcare.platform.errors import problem
+from vetcare.platform.errors import problem, problem_responses
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ async def health() -> HealthResponse:
     "/health/ready",
     response_model=HealthResponse,
     summary="Verificar que la API puede atender solicitudes (base de datos disponible)",
-    responses={503: {"description": "La base de datos no está disponible"}},
+    responses=problem_responses({503: "La base de datos no está disponible"}),
 )
 async def ready(request: Request) -> HealthResponse | JSONResponse:
     engine: AsyncEngine | None = request.app.state.engine

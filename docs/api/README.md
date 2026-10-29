@@ -72,5 +72,12 @@ con un cuerpo distinto devuelve 409.
 
 ## Contratos para web y móvil
 
-`packages/shared` genera los tipos TypeScript desde el OpenAPI exportado por la API. Ningún
-cliente define a mano los tipos de las respuestas.
+`packages/shared` versiona el contrato (`openapi.json`) y los tipos TypeScript generados desde
+él (`src/schema.d.ts`), además de un cliente HTTP tipado. Ningún cliente define a mano los tipos
+de las respuestas. Ver [packages/shared/README.md](../../packages/shared/README.md).
+
+- El contrato se exporta sin servidor ni base de datos: `python -m vetcare.cli export-openapi`.
+- Todas las respuestas de error se documentan como `application/problem+json` con el esquema
+  `ProblemDetails`, incluidas las 422 de validación (FastAPI documenta otro formato por defecto
+  y la API lo reemplaza para que el contrato coincida con las respuestas reales).
+- El CI falla si un PR cambia la API sin actualizar `packages/shared`.

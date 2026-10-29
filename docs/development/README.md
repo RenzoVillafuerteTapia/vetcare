@@ -1,7 +1,8 @@
 # Desarrollo local
 
-> Estado: **bootstrap.** Hoy se levantan MySQL y una API mínima con `GET /api/v1/health`.
-> La web, la app móvil y los contratos compartidos se agregan en la fase 1.
+> Estado: **base técnica de la API.** Se levantan MySQL y la API con verificación de salud,
+> migraciones y pruebas de integración. La web, la app móvil y los contratos compartidos se
+> agregan en la fase 1.
 
 ## Requisitos
 
@@ -15,11 +16,15 @@
 bash scripts/setup-hooks.sh       # valida Conventional Commits en cada commit
 cp .env.example .env              # luego cambia las claves de MySQL
 docker compose up --build
+docker compose run --rm api alembic upgrade head
 ```
 
-- API: <http://localhost:8000/api/v1/health>
+- API: <http://localhost:8000/api/v1/health> (proceso vivo) y
+  <http://localhost:8000/api/v1/health/ready> (base de datos disponible)
 - Documentación OpenAPI: <http://localhost:8000/api/docs> (desactivada en producción)
-- MySQL: `localhost:3306` con el usuario de `.env`
+- MySQL: `localhost:3306` (o el `MYSQL_PORT` de `.env`) con el usuario de `.env`. La primera vez
+  que se crea el volumen también se crea la base `<MYSQL_DATABASE>_test` para las pruebas de
+  integración (script en `docker/mysql/init/`).
 
 ## Estructura
 
@@ -42,6 +47,8 @@ prefijo `VETCARE_`.
 | `MYSQL_PORT`, `API_PORT` | Puertos publicados en el equipo |
 | `VETCARE_ENVIRONMENT` | `local`, `test`, `staging` o `production` |
 | `VETCARE_CORS_ORIGINS` | Lista JSON de orígenes permitidos |
+| `VETCARE_DATABASE_URL` | URL de SQLAlchemy (`mysql+asyncmy://…`). En Docker Compose se arma con las variables de MySQL |
+| `VETCARE_TEST_DATABASE_URL` | Base para las pruebas de integración. En Docker Compose apunta a `<MYSQL_DATABASE>_test` |
 
 ## Solución de problemas
 
@@ -51,3 +58,5 @@ prefijo `VETCARE_`.
 | El puerto 3306 u 8000 está ocupado | Cambia `MYSQL_PORT` o `API_PORT` en `.env` |
 | `open //./pipe/dockerDesktopLinuxEngine` en Windows | Docker Desktop no está iniciado |
 | La API no ve un cambio de dependencias | Reconstruye la imagen: `docker compose build api` |
+| Las pruebas de integración fallan por `Unknown database '..._test'` | El volumen se creó antes de existir el script de inicialización. Recréalo (borra los datos locales): `docker compose down -v` |
+| `/health/ready` responde 503 | MySQL no está disponible o `VETCARE_DATABASE_URL` no está definida |

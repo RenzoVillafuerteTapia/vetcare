@@ -1,7 +1,7 @@
 from enum import StrEnum
 from functools import lru_cache
 
-from pydantic import Field
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -19,6 +19,9 @@ class Settings(BaseSettings):
 
     environment: Environment = Environment.LOCAL
     cors_origins: list[str] = Field(default_factory=list)
+    # URL de SQLAlchemy, p. ej. mysql+asyncmy://usuario:clave@host:3306/base. SecretStr evita
+    # que la contraseña aparezca en registros o en el repr de la configuración.
+    database_url: SecretStr | None = None
 
     @property
     def docs_enabled(self) -> bool:

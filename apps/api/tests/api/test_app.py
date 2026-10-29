@@ -1,4 +1,5 @@
 from httpx import ASGITransport, AsyncClient
+from pydantic import SecretStr
 
 from vetcare.main import create_app
 from vetcare.platform.settings import Environment, Settings
@@ -45,3 +46,29 @@ async def test_cors_solo_permite_origenes_configurados() -> None:
 
     assert permitido.headers["access-control-allow-origin"] == "http://localhost:5173"
     assert "access-control-allow-origin" not in ajeno.headers
+
+
+async def test_ready_sin_base_configurada_responde_503() -> None:
+    # database_url explícito: el entorno del contenedor define VETCARE_DATABASE_URL.
+    settings = Settings(environment=Environment.TEST, database_url=None)
+    async with client_for(settings) as client:
+        response = await client.get("/api/v1/health/ready")
+
+    assert response.status_code == 503
+    assert response.json()["code"] == "database_not_configured"
+
+
+async def test_ready_con_base_inaccesible_responde_503_sin_exponer_la_url() -> None:
+    url = "mysql+asyncmy://usuario:clave-secreta@127.0.0.1:1/vetcare"
+    settings = Settings(environment=Environment.TEST, database_url=SecretStr(url))
+    async with client_for(settings) as client:
+        response = await client.get("/api/v1/health/ready")
+
+    assert response.status_code == 503
+    assert response.json()["code"] == "database_unavailable"
+    assert "clave-secreta" not in response.text
+
+
+def test_la_url_de_la_base_no_aparece_en_la_configuracion() -> None:
+    url = "mysql+asyncmy://usuario:clave-secreta@db:3306/vetcare"
+    assert "clave-secreta" not in repr(Settings(database_url=SecretStr(url)))

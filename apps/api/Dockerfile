@@ -9,8 +9,9 @@ WORKDIR /app
 
 RUN useradd --create-home --uid 10001 vetcare
 
-COPY pyproject.toml ./
+COPY pyproject.toml alembic.ini ./
 COPY src ./src
+COPY migrations ./migrations
 
 # Desarrollo: incluye herramientas de prueba y calidad; el código se monta como volumen.
 FROM base AS dev

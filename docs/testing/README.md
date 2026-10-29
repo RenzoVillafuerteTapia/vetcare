@@ -1,6 +1,7 @@
 # Estrategia de pruebas
 
-> Estado: **estrategia definida.** Los comandos se agregarán con cada aplicación.
+> Estado: **estrategia definida; CI activo para commits y la API.** Los comandos de cada
+> aplicación están en su README (por ahora, [apps/api](../../apps/api/README.md)).
 
 ## Capas
 
@@ -36,13 +37,19 @@ Escenarios que siempre deben tener pruebas, positivas y negativas:
 
 ## CI
 
-Un workflow por aplicación, ejecutado solo cuando cambian sus archivos:
+Un workflow por aplicación. Cada uno detecta si cambiaron los archivos de su aplicación y, si
+no cambiaron, omite el job sin fallar, para que pueda ser un check obligatorio en `main` y `develop`.
 
-- **API**: Ruff (lint y formato), mypy, pytest con MySQL como *service container*, cobertura,
-  verificación de migraciones pendientes.
-- **Web**: ESLint, Prettier, `tsc`, Vitest, build.
-- **Móvil**: ESLint, `tsc`, Jest.
-- **Contratos**: los tipos de `packages/shared` coinciden con el OpenAPI de la API.
-- **Commits**: validación de Conventional Commits en cada PR.
+| Workflow | Check | Estado | Qué ejecuta |
+|---|---|---|---|
+| `commitlint.yml` | `commitlint` | Activo, obligatorio | Conventional Commits en cada PR |
+| `api.yml` | `api` | Activo | Ruff (lint y formato), mypy estricto, pytest con cobertura mínima de 80 % |
+| API: integración | — | Pendiente (`feature/api-foundation`) | MySQL 8 como *service container*, migraciones pendientes |
+| Web | — | Pendiente (`feature/web-shell`) | ESLint, Prettier, `tsc`, Vitest, build |
+| Móvil | — | Pendiente (`feature/mobile-shell`) | ESLint, `tsc`, Jest |
+| Contratos | — | Pendiente (`feature/shared-contracts`) | Los tipos de `packages/shared` coinciden con el OpenAPI |
+
+Cada workflow nuevo se agrega en el PR que crea su aplicación, para no tener pipelines que
+validen código inexistente.
 
 Los resultados se reportan tal como salen: una prueba omitida o fallida se indica en el PR.

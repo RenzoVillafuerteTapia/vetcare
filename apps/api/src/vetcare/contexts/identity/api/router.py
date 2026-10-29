@@ -1,4 +1,4 @@
-from typing import Annotated, Any
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, Response, status
@@ -25,6 +25,7 @@ from vetcare.contexts.identity.application.services import SessionTokens
 from vetcare.contexts.identity.domain.model import UserAccount
 from vetcare.contexts.identity.domain.permissions import Permission
 from vetcare.contexts.identity.domain.tokens import REFRESH_LIFETIME
+from vetcare.platform.errors import problem_responses
 from vetcare.platform.rate_limit import rate_limit
 from vetcare.shared_kernel.errors import AuthenticationError
 
@@ -34,11 +35,11 @@ REFRESH_COOKIE_PATH = "/api/v1/auth"
 auth = APIRouter(prefix="/auth", tags=["Autenticación"])
 users = APIRouter(prefix="/users", tags=["Usuarios"])
 
-_ERRORS: dict[int | str, dict[str, Any]] = {
-    401: {"description": "No autenticado o credenciales inválidas"},
-    422: {"description": "Datos inválidos"},
-    429: {"description": "Demasiadas solicitudes; reintenta después de Retry-After"},
-}
+_UNAUTHENTICATED = "No autenticado o credenciales inválidas"
+_INVALID = "Datos inválidos"
+_TOO_MANY = "Demasiadas solicitudes; reintenta después de Retry-After"
+_BAD_LINK = "Enlace inválido, vencido o ya usado"
+_ERRORS = problem_responses({401: _UNAUTHENTICATED, 422: _INVALID, 429: _TOO_MANY})
 
 
 def _respond_tokens(
@@ -108,7 +109,11 @@ async def logout(
     response.delete_cookie(REFRESH_COOKIE, path=REFRESH_COOKIE_PATH)
 
 
-@auth.get("/me", summary="Usuario autenticado y sus permisos", responses=_ERRORS)
+@auth.get(
+    "/me",
+    summary="Usuario autenticado y sus permisos",
+    responses=problem_responses({401: _UNAUTHENTICATED}),
+)
 async def me(user: CurrentUser) -> CurrentUserResponse:
     return CurrentUserResponse.from_domain(user)
 
@@ -117,7 +122,7 @@ async def me(user: CurrentUser) -> CurrentUserResponse:
     "/invitations/accept",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Activar una cuenta invitada eligiendo la contraseña",
-    responses=_ERRORS | {409: {"description": "Enlace inválido, vencido o ya usado"}},
+    responses=problem_responses({409: _BAD_LINK, 422: _INVALID, 429: _TOO_MANY}),
     dependencies=[Depends(rate_limit("accept_invitation", limit=10, window_seconds=60))],
 )
 async def accept_invitation(body: AcceptInvitationRequest, service: Identity, ctx: Context) -> None:
@@ -127,9 +132,10 @@ async def accept_invitation(body: AcceptInvitationRequest, service: Identity, ct
 @auth.post(
     "/password-reset",
     status_code=status.HTTP_202_ACCEPTED,
+    response_class=Response,
     summary="Solicitar un enlace para restablecer la contraseña",
     description="La respuesta es la misma exista o no la cuenta.",
-    responses={429: _ERRORS[429]},
+    responses=problem_responses({422: _INVALID, 429: _TOO_MANY}),
     dependencies=[Depends(rate_limit("password_reset", limit=5, window_seconds=300))],
 )
 async def request_password_reset(
@@ -142,7 +148,7 @@ async def request_password_reset(
     "/password-reset/confirm",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Elegir una nueva contraseña con el enlace recibido",
-    responses=_ERRORS | {409: {"description": "Enlace inválido, vencido o ya usado"}},
+    responses=problem_responses({409: _BAD_LINK, 422: _INVALID, 429: _TOO_MANY}),
     dependencies=[Depends(rate_limit("password_reset_confirm", limit=10, window_seconds=60))],
 )
 async def confirm_password_reset(
@@ -158,8 +164,14 @@ ManageUsers = Annotated[UserAccount, Depends(require_permission(Permission.USERS
     "",
     status_code=status.HTTP_201_CREATED,
     summary="Invitar a un empleado o cliente por correo",
-    responses=_ERRORS
-    | {403: {"description": "Requiere users:manage"}, 409: {"description": "Correo en uso"}},
+    responses=problem_responses(
+        {
+            401: _UNAUTHENTICATED,
+            403: "Requiere users:manage",
+            409: "Ya existe una cuenta con ese correo",
+            422: _INVALID,
+        }
+    ),
 )
 async def invite_user(
     body: InviteUserRequest, actor: ManageUsers, service: Identity, ctx: Context
@@ -171,8 +183,11 @@ async def invite_user(
 @users.post(
     "/{user_id}/invitation",
     status_code=status.HTTP_202_ACCEPTED,
+    response_class=Response,
     summary="Reenviar la invitación (invalida el enlace anterior)",
-    responses=_ERRORS | {403: {"description": "Requiere users:manage"}},
+    responses=problem_responses(
+        {401: _UNAUTHENTICATED, 403: "Requiere users:manage", 404: "La cuenta no existe"}
+    ),
 )
 async def resend_invitation(
     user_id: UUID, actor: ManageUsers, service: Identity, ctx: Context

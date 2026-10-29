@@ -6,6 +6,7 @@ from typing import Any, cast
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from vetcare.shared_kernel.errors import (
@@ -63,6 +64,34 @@ _VALIDATION_MESSAGES = {
     "json_invalid": "El cuerpo de la solicitud no es un JSON válido.",
     "extra_forbidden": "Este campo no está permitido.",
 }
+
+
+class FieldProblem(BaseModel):
+    field: str = Field(description="Ruta del campo, p. ej. `roles` o `contacto.telefono`.")
+    message: str
+
+
+class ProblemDetails(BaseModel):
+    """Cuerpo de todas las respuestas de error (RFC 9457, ``application/problem+json``)."""
+
+    type: str = Field(
+        description="Referencia relativa al tipo de error, p. ej. `/errors/conflict`."
+    )
+    title: str
+    status: int
+    code: str = Field(description="Código estable para que los clientes decidan qué hacer.")
+    detail: str | None = None
+    errors: list[FieldProblem] | None = Field(
+        default=None, description="Errores por campo, solo en respuestas 422."
+    )
+
+
+def problem_responses(descriptions: dict[int, str]) -> dict[int | str, dict[str, Any]]:
+    """Documenta respuestas de error con el esquema ``ProblemDetails`` en OpenAPI."""
+    return {
+        status: {"model": ProblemDetails, "description": description}
+        for status, description in descriptions.items()
+    }
 
 
 def problem(

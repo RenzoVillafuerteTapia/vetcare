@@ -6,14 +6,15 @@ responsables autorizados de las mascotas, conectadas a una **API común**.
 
 > **Estado actual: fase 1 (fundamentos), en curso.** La API tiene su base técnica y la
 > autenticación con roles y permisos; la web de administración tiene su base (sesión,
-> navegación por permisos e invitación de usuarios). La app móvil todavía no existe.
+> navegación por permisos e invitación de usuarios) y la app móvil de clientes la suya (sesión
+> segura y pantallas de acceso).
 > La tabla de abajo se actualiza en cada entrega.
 
 ## Funcionalidades
 
 | Módulo | Estado | Fase |
 |---|---|---|
-| Autenticación, roles y permisos | API y web implementadas; app móvil pendiente | 1 |
+| Autenticación, roles y permisos | API, web y app móvil implementadas | 1 |
 | Clientes, mascotas y responsables autorizados | Planificado | 2 |
 | Agenda y citas sin conflictos | Planificado | 2 |
 | Seguimiento de baños y peluquería | Planificado | 3 |

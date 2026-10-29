@@ -1,7 +1,7 @@
 # Sistema de diseño
 
-> Estado: **aplicado en la web de administración** (`apps/web`). La app móvil (`apps/mobile`)
-> usará los mismos tokens y la misma forma cuando se construya (issue #8).
+> Estado: **aplicado en la web de administración** (`apps/web`) y en la app móvil
+> (`apps/mobile`, tokens en `src/theme/tokens.ts`).
 
 ## Principios
 

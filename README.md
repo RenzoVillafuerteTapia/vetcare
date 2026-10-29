@@ -51,8 +51,14 @@ flowchart LR
 
 ## Inicio rápido
 
-Las instrucciones de ejecución local se agregan con el bootstrap del monorepo
-(ver [docs/development/README.md](docs/development/README.md)).
+```bash
+bash scripts/setup-hooks.sh
+cp .env.example .env
+docker compose up --build
+```
+
+Por ahora solo responde `GET http://localhost:8000/api/v1/health`. Detalles en
+[docs/development/README.md](docs/development/README.md).
 
 ## Documentación
 

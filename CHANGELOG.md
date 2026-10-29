@@ -26,3 +26,4 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 - Comando `python -m vetcare.cli create-admin` para crear el primer administrador.
 - Contrato OpenAPI exportable sin servidor (`python -m vetcare.cli export-openapi`) con los errores documentados como `application/problem+json`.
 - Paquete `@vetcare/shared` (npm workspaces): contrato versionado, tipos generados con openapi-typescript, cliente tipado con openapi-fetch y utilidades para errores; workflow `Contratos` que detecta contratos desactualizados.
+- Web de administración (`apps/web`): Vite, React Router, TanStack Query, React Hook Form + Zod, Tailwind + shadcn/ui; inicio de sesión, recuperación de contraseña, activación de cuentas invitadas, renovación de sesión serializada entre pestañas, rutas protegidas por permiso, layout adaptable e invitación de usuarios; workflow `Web` con lint, formato, tipos, pruebas y build.

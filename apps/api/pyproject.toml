@@ -8,6 +8,11 @@ dependencies = [
     "uvicorn[standard]>=0.32,<1.0",
     "pydantic>=2.9,<3.0",
     "pydantic-settings>=2.6,<3.0",
+    "sqlalchemy[asyncio]>=2.0.36,<2.2",
+    "asyncmy>=0.2.10,<0.3",
+    # Requerido por asyncmy para la autenticación caching_sha2_password de MySQL 8.
+    "cryptography>=44",
+    "alembic>=1.14,<2.0",
 ]
 
 [project.optional-dependencies]

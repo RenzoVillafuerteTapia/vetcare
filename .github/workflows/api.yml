@@ -50,6 +50,27 @@ jobs:
     needs: changes
     if: needs.changes.outputs.api == 'true'
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        # Credenciales desechables, solo existen dentro de este job.
+        env:
+          MYSQL_DATABASE: vetcare_test
+          MYSQL_USER: vetcare
+          MYSQL_PASSWORD: vetcare-ci
+          MYSQL_ROOT_PASSWORD: root-ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot-ci --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      VETCARE_ENVIRONMENT: test
+      VETCARE_TEST_DATABASE_URL: mysql+asyncmy://vetcare:vetcare-ci@127.0.0.1:3306/vetcare_test
+      # Las pruebas de integración fallan en vez de omitirse si falta la base de datos.
+      VETCARE_REQUIRE_INTEGRATION: "1"
     defaults:
       run:
         working-directory: apps/api
@@ -68,7 +89,13 @@ jobs:
         run: ruff format --check .
       - name: Tipos (mypy)
         run: mypy
-      - name: Pruebas con cobertura
+      - name: Pruebas con cobertura (unitarias, API, arquitectura e integración con MySQL)
         run: |
-          coverage run -m pytest
+          coverage run -m pytest -rs
           coverage report
+      - name: Migraciones al día con los modelos
+        env:
+          VETCARE_DATABASE_URL: ${{ env.VETCARE_TEST_DATABASE_URL }}
+        run: |
+          alembic upgrade head
+          alembic check

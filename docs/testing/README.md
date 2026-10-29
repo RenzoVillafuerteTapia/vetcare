@@ -43,13 +43,25 @@ no cambiaron, omite el job sin fallar, para que pueda ser un check obligatorio e
 | Workflow | Check | Estado | Qué ejecuta |
 |---|---|---|---|
 | `commitlint.yml` | `commitlint` | Activo, obligatorio | Conventional Commits en cada PR |
-| `api.yml` | `api` | Activo | Ruff (lint y formato), mypy estricto, pytest con cobertura mínima de 80 % |
-| API: integración | — | Pendiente (`feature/api-foundation`) | MySQL 8 como *service container*, migraciones pendientes |
+| `api.yml` | `api` | Activo, obligatorio | Ruff (lint y formato), mypy estricto, pytest con cobertura mínima de 80 % (incluye integración con MySQL 8.4 como *service container*), `alembic check` |
 | Web | — | Pendiente (`feature/web-shell`) | ESLint, Prettier, `tsc`, Vitest, build |
 | Móvil | — | Pendiente (`feature/mobile-shell`) | ESLint, `tsc`, Jest |
 | Contratos | — | Pendiente (`feature/shared-contracts`) | Los tipos de `packages/shared` coinciden con el OpenAPI |
 
 Cada workflow nuevo se agrega en el PR que crea su aplicación, para no tener pipelines que
 validen código inexistente.
+
+## Pruebas de la API
+
+| Carpeta | Tipo | Base de datos |
+|---|---|---|
+| `tests/unit` | Dominio, shared kernel, configuración | No |
+| `tests/api` | Endpoints y formato de errores con `httpx` | No |
+| `tests/architecture` | Reglas de dependencia entre capas y contextos (análisis de imports) | No |
+| `tests/integration` | Unidad de trabajo, outbox, migraciones y salud contra MySQL real | Sí |
+
+Las pruebas de integración usan `VETCARE_TEST_DATABASE_URL`. Sin esa variable se omiten, salvo
+que `VETCARE_REQUIRE_INTEGRATION=1` (así corre el CI), donde su ausencia es un error. Al iniciar,
+la base de pruebas se lleva a cero y se migra con Alembic hasta la última versión.
 
 Los resultados se reportan tal como salen: una prueba omitida o fallida se indica en el PR.

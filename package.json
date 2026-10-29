@@ -1,0 +1,15 @@
+{
+  "name": "vetcare",
+  "private": true,
+  "description": "Monorepo de la plataforma de gestión veterinaria",
+  "workspaces": [
+    "packages/shared"
+  ],
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "contracts:generate": "npm run generate --workspace @vetcare/shared",
+    "contracts:check": "npm run typecheck --workspace @vetcare/shared && npm test --workspace @vetcare/shared"
+  }
+}

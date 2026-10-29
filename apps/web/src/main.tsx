@@ -3,6 +3,9 @@ import { createRoot } from "react-dom/client";
 
 import { App } from "@/app/app";
 
+import "@fontsource-variable/fredoka";
+import "@fontsource-variable/nunito";
+
 import "./index.css";
 
 const root = document.getElementById("root");

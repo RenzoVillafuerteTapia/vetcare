@@ -1,9 +1,10 @@
 import type { Permission } from "@vetcare/shared";
-import { House, LogOut, Menu, PawPrint, UserPlus, X, type LucideIcon } from "lucide-react";
+import { House, LogOut, Menu, UserPlus, X, type LucideIcon } from "lucide-react";
 import { Dialog } from "radix-ui";
 import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router";
 
+import { Brand } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { useSession, useSessionManager } from "@/features/auth/session-context";
 import { cn } from "@/lib/utils";
@@ -29,15 +30,11 @@ const ROLE_LABELS: Record<string, string> = {
   client: "Cliente",
 };
 
-function Brand() {
+function initials(fullName: string): string {
+  const parts = fullName.trim().split(/\s+/);
   return (
-    <div className="flex items-center gap-2 px-2">
-      <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-        <PawPrint className="size-4" aria-hidden />
-      </span>
-      <span className="font-semibold tracking-tight">VetCare</span>
-    </div>
-  );
+    (parts[0]?.[0] ?? "") + (parts.length > 1 ? (parts.at(-1)?.[0] ?? "") : "")
+  ).toUpperCase();
 }
 
 function Navigation({ onNavigate }: { onNavigate?: () => void }) {
@@ -48,7 +45,7 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
   );
 
   return (
-    <nav aria-label="Principal" className="grid gap-1">
+    <nav aria-label="Principal" className="grid gap-1.5">
       {items.map(({ to, label, icon: Icon }) => (
         <NavLink
           key={to}
@@ -57,12 +54,13 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
           onClick={onNavigate}
           className={({ isActive }) =>
             cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
-              isActive && "bg-secondary text-secondary-foreground",
+              "flex items-center gap-3 rounded-full px-4 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:bg-card hover:text-foreground",
+              isActive &&
+                "bg-surface-strong text-surface-strong-foreground hover:bg-surface-strong hover:text-surface-strong-foreground",
             )
           }
         >
-          <Icon className="size-4" aria-hidden />
+          <Icon className="size-[1.125rem]" aria-hidden />
           {label}
         </NavLink>
       ))}
@@ -91,11 +89,19 @@ function UserMenu() {
 
   return (
     <div className="flex items-center gap-3">
-      <div className="hidden text-right sm:block">
-        <p className="text-sm leading-tight font-medium">{user.full_name}</p>
-        <p className="text-xs text-muted-foreground">
-          {user.roles.map((role) => ROLE_LABELS[role] ?? role).join(", ")}
-        </p>
+      <div className="hidden items-center gap-3 rounded-full bg-card py-1.5 pr-4 pl-1.5 sm:flex">
+        <span
+          className="flex size-9 items-center justify-center rounded-full bg-primary font-display text-sm font-medium text-primary-foreground"
+          aria-hidden
+        >
+          {initials(user.full_name)}
+        </span>
+        <div className="grid">
+          <span className="text-sm leading-tight font-semibold">{user.full_name}</span>
+          <span className="text-xs text-muted-foreground">
+            {user.roles.map((role) => ROLE_LABELS[role] ?? role).join(", ")}
+          </span>
+        </div>
       </div>
       <Button variant="outline" size="sm" onClick={logout} disabled={leaving}>
         <LogOut aria-hidden />
@@ -105,18 +111,19 @@ function UserMenu() {
   );
 }
 
+/** Fondo neutro con la navegación; el contenido va en un panel claro de esquinas amplias. */
 export function AppShell() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-svh md:grid md:grid-cols-[15rem_1fr]">
-      <aside className="hidden border-r bg-sidebar p-4 md:flex md:flex-col md:gap-6">
-        <Brand />
+    <div className="min-h-svh bg-sidebar md:grid md:grid-cols-[16rem_1fr]">
+      <aside className="hidden p-5 md:flex md:flex-col md:gap-8">
+        <Brand className="px-2 pt-1" />
         <Navigation />
       </aside>
 
-      <div className="flex min-w-0 flex-col">
-        <header className="flex h-14 items-center justify-between gap-4 border-b bg-background px-4 md:px-6">
+      <div className="flex min-w-0 flex-col md:py-3 md:pr-3">
+        <header className="flex h-16 items-center justify-between gap-4 px-4 md:h-14 md:px-2">
           <div className="flex items-center gap-2 md:hidden">
             <Dialog.Root open={menuOpen} onOpenChange={setMenuOpen}>
               <Dialog.Trigger asChild>
@@ -126,7 +133,7 @@ export function AppShell() {
               </Dialog.Trigger>
               <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
-                <Dialog.Content className="fixed inset-y-0 left-0 z-50 flex w-72 flex-col gap-6 bg-sidebar p-4 shadow-lg data-[state=open]:animate-in data-[state=open]:slide-in-from-left">
+                <Dialog.Content className="fixed inset-y-2 left-2 z-50 flex w-72 flex-col gap-8 rounded-[2rem] bg-sidebar p-5 shadow-lg data-[state=open]:animate-in data-[state=open]:slide-in-from-left">
                   <div className="flex items-center justify-between">
                     <Dialog.Title asChild>
                       <div>
@@ -149,7 +156,7 @@ export function AppShell() {
           <div className="hidden md:block" />
           <UserMenu />
         </header>
-        <main className="flex-1 px-4 py-6 md:px-8">
+        <main className="flex-1 bg-background px-4 py-8 md:rounded-[2rem] md:px-10 md:py-10">
           <Outlet />
         </main>
       </div>

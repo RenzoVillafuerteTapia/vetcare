@@ -160,7 +160,7 @@ export function InviteUserPage() {
                         <label
                           key={option.value}
                           className={cn(
-                            "flex cursor-pointer items-start gap-3 rounded-md border p-3 text-sm transition-colors hover:bg-accent/50",
+                            "flex cursor-pointer items-start gap-3 rounded-2xl border p-4 text-sm transition-colors hover:bg-accent/50",
                             checked && "border-primary bg-secondary/60",
                           )}
                         >

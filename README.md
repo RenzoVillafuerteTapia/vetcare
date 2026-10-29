@@ -4,15 +4,15 @@ Plataforma para una veterinaria de una sede: una **web de administración** para
 (recepción, veterinarios, asistentes, administración) y una **app móvil** para los dueños y
 responsables autorizados de las mascotas, conectadas a una **API común**.
 
-> **Estado actual: fase 0 (diseño).** Este repositorio contiene por ahora la arquitectura,
-> el modelo de dominio y las decisiones técnicas. Ninguna funcionalidad está implementada todavía.
+> **Estado actual: fase 1 (fundamentos), en curso.** La API tiene su base técnica y la
+> autenticación con roles y permisos. La web y la app móvil todavía no existen.
 > La tabla de abajo se actualiza en cada entrega.
 
 ## Funcionalidades
 
 | Módulo | Estado | Fase |
 |---|---|---|
-| Autenticación, roles y permisos | Planificado | 1 |
+| Autenticación, roles y permisos | API implementada; pantallas web y móvil pendientes | 1 |
 | Clientes, mascotas y responsables autorizados | Planificado | 2 |
 | Agenda y citas sin conflictos | Planificado | 2 |
 | Seguimiento de baños y peluquería | Planificado | 3 |
@@ -57,7 +57,7 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Por ahora solo responde `GET http://localhost:8000/api/v1/health`. Detalles en
+Luego aplica las migraciones y crea el primer administrador como se explica en
 [docs/development/README.md](docs/development/README.md).
 
 ## Documentación

@@ -166,7 +166,7 @@ export function InviteUserPage() {
                         >
                           <input
                             type="checkbox"
-                            className="mt-0.5 size-4 accent-[var(--primary)]"
+                            className="mt-0.5 size-4 accent-primary"
                             checked={checked}
                             onChange={(event) =>
                               field.onChange(

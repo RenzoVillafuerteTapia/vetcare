@@ -10,6 +10,8 @@
  * etiquetas tipo píldora, y una superficie oscura para destacar.
  */
 :root {
+  /* Los controles nativos (casillas, barras de desplazamiento) siguen el tema activo. */
+  color-scheme: light;
   --radius: 1.25rem;
   --background: oklch(0.985 0.004 95);
   --foreground: oklch(0.22 0.02 200);
@@ -37,6 +39,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: oklch(0.18 0.015 200);
   --foreground: oklch(0.95 0.008 95);
   --card: oklch(0.22 0.018 200);

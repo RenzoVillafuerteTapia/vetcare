@@ -5,6 +5,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Sin publicar]
 
+### Cambiado
+
+- Los Pull Requests se fusionan con merge commit en lugar de squash, para conservar cada commit en el historial de `develop`. Los PRs #9 a #13 se fusionaron con squash; sus commits individuales siguen visibles en cada PR.
+
 ### Agregado
 
 - Documentación de arquitectura, bounded contexts, modelo de dominio y flujos principales.

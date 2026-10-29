@@ -64,7 +64,12 @@ bash scripts/setup-hooks.sh
 
 ## Merges y versiones
 
-- **rama de trabajo → develop**: *Squash and merge*.
+- **rama de trabajo → develop**: *Create a merge commit*. Cada commit atómico del PR queda en
+  el historial de `develop`, y el merge commit agrupa el PR con su título y descripción. El
+  repositorio tiene desactivados *squash* y *rebase* para que el historial no se compacte.
+- Como los commits quedan para siempre en `develop`, cada uno debe compilar, pasar las pruebas y
+  tener un mensaje que explique el cambio. Antes de abrir el PR se limpian los commits de
+  trabajo (`wip`, `fixup!`) reordenándolos o combinándolos en la rama propia.
 - **develop → main**: merge `--no-ff` al cerrar una fase, con etiqueta semántica:
 
 ```bash

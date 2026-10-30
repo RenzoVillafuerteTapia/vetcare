@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from vetcare.contexts.customers.application.ports import CustomersUnitOfWork
-from vetcare.contexts.customers.domain.pet import PetAction, PetStatus, Species
+from vetcare.contexts.customers.domain.pet import GuardianKind, PetAction, PetStatus, Species
 
 
 @dataclass(frozen=True)
@@ -19,6 +19,7 @@ class PetSummary:
     species: Species
     status: PetStatus
     guardian_ids: frozenset[UUID]
+    owner_ids: frozenset[UUID]
 
 
 class PetAccess:
@@ -47,7 +48,15 @@ class PetAccess:
             species=pet.species,
             status=pet.status,
             guardian_ids=frozenset(g.client_id for g in pet.active_guardianships),
+            owner_ids=frozenset(
+                g.client_id for g in pet.active_guardianships if g.kind is GuardianKind.OWNER
+            ),
         )
+
+    async def pet_ids_of(self, client_id: UUID) -> list[UUID]:
+        """Mascotas donde el cliente tiene una tutela activa."""
+        async with self._uow_factory() as uow:
+            return [p.id for p in await uow.pets.of_client(client_id)]
 
     async def client_exists(self, client_id: UUID) -> bool:
         async with self._uow_factory() as uow:

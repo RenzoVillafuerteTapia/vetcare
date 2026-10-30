@@ -6,8 +6,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from vetcare.contexts.clinic.api import router as clinic
 from vetcare.contexts.clinic.infrastructure.composition import build_clinic_setup
+from vetcare.contexts.customers.api import router as customers
+from vetcare.contexts.customers.infrastructure.composition import build_customers
 from vetcare.contexts.identity.api import router as identity
 from vetcare.contexts.identity.infrastructure.composition import build_identity_service
+from vetcare.integrations import IdentityAccountInviter
 from vetcare.platform import health, openapi
 from vetcare.platform.db import create_engine, create_session_factory
 from vetcare.platform.errors import register_error_handlers
@@ -53,6 +56,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if app.state.session_factory is not None and settings.jwt_secret is not None
         else None
     )
+    # El servicio de identidad se consulta al usarse: las pruebas pueden reemplazarlo.
+    inviter = IdentityAccountInviter(lambda: app.state.identity)
+    app.state.customers, app.state.pet_access = (
+        build_customers(app.state.session_factory, inviter)
+        if app.state.session_factory is not None
+        else (None, None)
+    )
 
     if settings.cors_origins:
         app.add_middleware(
@@ -67,6 +77,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(identity.auth, prefix=API_PREFIX)
     app.include_router(identity.users, prefix=API_PREFIX)
     app.include_router(clinic.router, prefix=API_PREFIX)
+    app.include_router(customers.clients_router, prefix=API_PREFIX)
+    app.include_router(customers.pets_router, prefix=API_PREFIX)
+    app.include_router(customers.me_router, prefix=API_PREFIX)
     openapi.install(app)
     return app
 

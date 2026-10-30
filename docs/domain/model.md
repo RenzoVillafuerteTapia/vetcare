@@ -36,18 +36,35 @@ Reglas de disponibilidad que usa la agenda (contrato público `ClinicCatalog`):
 
 ## Customers & Pets
 
+> Implementado (#22). Las fotos llegan con #23.
+
 | Elemento | Tipo | Notas |
 |---|---|---|
-| `Client` | Agregado | nombres, documento (VO DNI/CE), teléfono, email, dirección, cuenta vinculada opcional |
-| `Pet` | Agregado | nombre, especie, raza, sexo, fecha de nacimiento (exacta o aproximada), foto, alergias, observaciones, estado (`active`, `deceased`, `transferred`) |
-| `WeightRecord` | Entidad de `Pet` | peso en kg (VO), fecha, quién lo registró |
-| `Guardianship` | Entidad de `Pet` | cliente, tipo (`OWNER`, `AUTHORIZED`), permisos `can_pickup`, `can_book`, `can_view_clinical`, vigencia |
+| `Client` | Agregado | nombre, `IdentityDocument` (DNI de 8 dígitos, CE o pasaporte; único), `PhoneNumber` (celular peruano o internacional, normalizado a +51…), `ContactEmail` opcional (único), dirección, notas, cuenta vinculada opcional |
+| `Pet` | Agregado | nombre, especie, sexo, raza, `BirthDate` exacta o aproximada (no futura), color, alergias, notas internas, estado (`active`, `deceased`, `transferred`), historial de pesos |
+| `WeightRecord` | Entidad de `Pet` | kg (0.01 a 200, dos decimales), momento, quién lo registró |
+| `Guardianship` | Entidad de `Pet` | cliente, tipo (`OWNER`, `AUTHORIZED`), permisos `can_pickup`, `can_book`, `can_view_clinical`, desde, revocada en (se conserva el historial) |
 
 Invariantes de `Pet`:
 
-- Siempre tiene al menos un tutor `OWNER` activo.
+- Siempre tiene al menos un dueño activo: no se puede revocar ni degradar al último.
 - Un cliente no tiene dos tutelas activas sobre la misma mascota.
-- Solo un `OWNER` o el personal puede agregar o revocar responsables autorizados.
+- Un dueño tiene siempre todos los permisos.
+- No se reserva para una mascota que no está activa.
+
+Acceso (fuente única: contrato público `PetAccess`):
+
+| Acción | Permite |
+|---|---|
+| `view` | cualquier tutela activa |
+| `book` | `can_book` y mascota activa |
+| `pickup` | `can_pickup` |
+| `view_clinical` | `can_view_clinical` |
+
+Lo que ve un cliente de su mascota: nunca las notas internas, y las alergias solo con
+`view_clinical`. Una mascota ajena responde 404, igual que una inexistente.
+
+Con cuenta vinculada, el correo del cliente se cambia desde la cuenta, no desde la ficha.
 
 ## Scheduling
 

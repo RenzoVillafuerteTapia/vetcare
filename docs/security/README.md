@@ -46,6 +46,9 @@ que tiene una tutela activa (lo verifica el contexto dueño del dato):
 - Una cuenta no puede combinar el rol cliente con roles del personal.
 - Una cuenta invitada o deshabilitada no tiene permisos efectivos.
 - Las pruebas verifican la matriz en el dominio y, por HTTP, contra cada rol.
+- **Aislamiento entre clientes** (implementado en Customers & Pets): un cliente solo accede a
+  mascotas con tutela activa; lo ajeno responde 404. No ve notas internas, y ve alergias solo
+  con permiso clínico. Las pruebas de integración lo verifican con dos clientes reales.
 
 ## Sesiones y contraseñas
 

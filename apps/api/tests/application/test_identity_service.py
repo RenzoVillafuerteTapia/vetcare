@@ -320,3 +320,16 @@ async def test_la_auditoria_no_guarda_secretos(e: Entorno) -> None:
     assert CLAVE not in volcado
     assert tokens.refresh_token not in volcado
     assert e.buzon.enviados[-1].token not in volcado
+
+
+async def test_la_recepcion_invita_clientes_pero_no_personal(e: Entorno) -> None:
+    recepcion = await usuario_activo(e, "rec@example.test", frozenset({Role.RECEPTIONIST}))
+
+    cliente = await e.servicio.invite_client(recepcion, "nuevo@example.test", "Nuevo Cliente", CTX)
+
+    assert cliente.roles == frozenset({Role.CLIENT})
+    with pytest.raises(PermissionDeniedError):
+        await e.servicio.invite(recepcion, "x@example.test", "Otro", frozenset({Role.CLIENT}), CTX)
+    asistente = await usuario_activo(e, "asis@example.test", frozenset({Role.ASSISTANT}))
+    with pytest.raises(PermissionDeniedError):
+        await e.servicio.invite_client(asistente, "y@example.test", "Y Cliente", CTX)

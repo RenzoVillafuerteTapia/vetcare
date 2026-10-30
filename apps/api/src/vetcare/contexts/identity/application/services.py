@@ -207,6 +207,24 @@ class IdentityService:
         ctx: RequestContext,
     ) -> UserAccount:
         self._require(actor, Permission.USERS_MANAGE)
+        return await self._invite(actor, email, full_name, roles, ctx)
+
+    async def invite_client(
+        self, actor: UserAccount, email: str, full_name: str, ctx: RequestContext
+    ) -> UserAccount:
+        """Cuenta de cliente para la app. Basta con poder gestionar clientes (recepción incluida):
+        no requiere ``users:manage`` porque solo puede crear el rol cliente."""
+        self._require(actor, Permission.CLIENTS_MANAGE)
+        return await self._invite(actor, email, full_name, frozenset({Role.CLIENT}), ctx)
+
+    async def _invite(
+        self,
+        actor: UserAccount,
+        email: str,
+        full_name: str,
+        roles: frozenset[Role],
+        ctx: RequestContext,
+    ) -> UserAccount:
         now = self._clock.now()
         address = Email(email)
         async with self._uow_factory() as uow:

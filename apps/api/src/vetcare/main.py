@@ -4,6 +4,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from vetcare.contexts.clinic.api import router as clinic
+from vetcare.contexts.clinic.infrastructure.composition import build_clinic_setup
 from vetcare.contexts.identity.api import router as identity
 from vetcare.contexts.identity.infrastructure.composition import build_identity_service
 from vetcare.platform import health, openapi
@@ -41,6 +43,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.state.settings = settings
     app.state.rate_limiter = FixedWindowRateLimiter()
+    app.state.clinic_setup, app.state.clinic_catalog = (
+        build_clinic_setup(app.state.session_factory)
+        if app.state.session_factory is not None
+        else (None, None)
+    )
     app.state.identity = (
         build_identity_service(settings, app.state.session_factory)
         if app.state.session_factory is not None and settings.jwt_secret is not None
@@ -59,6 +66,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(health.router, prefix=API_PREFIX)
     app.include_router(identity.auth, prefix=API_PREFIX)
     app.include_router(identity.users, prefix=API_PREFIX)
+    app.include_router(clinic.router, prefix=API_PREFIX)
     openapi.install(app)
     return app
 

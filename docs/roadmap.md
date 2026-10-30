@@ -7,7 +7,7 @@ nueva indicación. Cada fase cierra con un merge de `develop` a `main` y una eti
 |---|---|---|---|
 | 0 | Descubrimiento, arquitectura y documentación | — | Completada |
 | 1 | Fundamentos: monorepo, CI, autenticación, permisos, bases web y móvil | v0.1.0 | Completada |
-| 2 | Clinic Setup, clientes, mascotas, tutela y agenda | v0.2.0 | Planificado |
+| 2 | Clinic Setup, clientes, mascotas, tutela y agenda | v0.2.0 | En curso |
 | 3 | Seguimiento de baños y cirugías, SSE y notificaciones push | v0.3.0 | Planificado |
 | 4 | Historial clínico y tratamientos | v0.4.0 | Pendiente |
 | 5 | Notificaciones completas, presupuestos, pagos y comprobantes internos | v0.5.0 | Pendiente |
@@ -46,14 +46,24 @@ nueva indicación. Cada fase cierra con un merge de `develop` a `main` y una eti
 
 ### Fase 2
 
-| Rama | Contenido |
-|---|---|
-| `feature/clinic-setup` | Catálogo de servicios, recursos, horario y plantillas de etapas |
-| `feature/pet-management` | Clientes, mascotas, tutela, fotos con URLs firmadas, pantallas web |
-| `feature/appointment-scheduling` | Disponibilidad, reservas con bloqueo e idempotencia, estados, recordatorios |
-| `feature/web-agenda` | Calendario con FullCalendar por día, semana y mes |
-| `feature/mobile-appointments` | Inicio, mascotas, citas: consultar, solicitar, reprogramar, cancelar |
-| `test/appointment-use-cases` | Reservas concurrentes contra MySQL y matriz de permisos |
+| Issue | Rama | Contenido |
+|---|---|---|
+| #20 | `feature/clinic-setup` | Catálogo de servicios, recursos con horario y bloqueos, horario de la sede y feriados |
+| #21 | `feature/web-clinic-setup` | Configuración de la clínica en la web |
+| #22 | `feature/pet-management` | Clientes, mascotas y tutela en la API |
+| #23 | `feature/pet-photos` | Fotos con almacenamiento privado y URLs firmadas |
+| #24 | `feature/web-pets` | Clientes y mascotas en la web |
+| #25 | `feature/appointment-scheduling` | Disponibilidad, reservas con bloqueo e idempotencia, estados, pruebas de concurrencia |
+| #26 | `feature/web-agenda` | Agenda con FullCalendar y primer E2E con Playwright |
+| #27 | `feature/mobile-appointments` | Mascotas y citas en la app móvil |
+
+Ajustes respecto del plan inicial:
+
+- **Las plantillas de etapas pasan a la fase 3**, con Service Operations, que es quien las usa.
+- **Los recordatorios de citas pasan a la fase 3**: se envían con el worker de notificaciones.
+- **Las pruebas de concurrencia de reservas van dentro de #25**, no en un PR aparte: una reserva
+  sin esas pruebas no se considera terminada.
+- La web y la API de cada módulo van en PRs separados para mantener cada cambio acotado.
 
 ### Fase 3
 

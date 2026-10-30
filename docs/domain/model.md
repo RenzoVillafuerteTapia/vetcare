@@ -17,12 +17,22 @@
 
 ## Clinic Setup
 
+> Implementado (#20), salvo `StageTemplate`, que llega con Service Operations en la fase 3.
+
 | Elemento | Tipo | Notas |
 |---|---|---|
-| `ServiceType` | Agregado | código, nombre, categoría (`consultation`, `vaccination`, `grooming`, `surgery`, `hospitalization`…), duración estimada, recursos requeridos, plantilla de seguimiento opcional, visible para reserva desde la app |
-| `StageTemplate` | Agregado | etapas ordenadas, transiciones permitidas, etapas opcionales, etapas que requieren un permiso específico, etapa de entrega |
-| `Resource` | Agregado | profesional (vinculado a un `UserAccount`), mesa, quirófano; horario laboral y bloqueos |
-| `ClinicCalendar` | Agregado | horario de atención y feriados de la sede |
+| `ServiceType` | Agregado | `ServiceCode` (único, estable), nombre, categoría (`consultation`, `vaccination`, `grooming`, `surgery`, `hospitalization`, `other`), `Duration` (5 a 600 min, múltiplos de 5), recursos requeridos (al menos uno), reservable por el cliente, activo |
+| `Resource` | Agregado | tipo (`veterinarian`, `groomer`, `consultation_room`, `grooming_station`, `operating_room`), nombre, cuenta vinculada (solo profesionales), horario semanal, bloqueos (`TimeOff`, en UTC, sin superponerse), activo |
+| `ClinicCalendar` | Agregado | horario de atención semanal y feriados de la sede (una sola fila) |
+| `WeeklySchedule`, `TimeRange` | VO | franjas por día en hora local de America/Lima, en múltiplos de 5 min, sin superponerse ni cruzar la medianoche |
+| `StageTemplate` | Agregado (fase 3) | etapas ordenadas, transiciones permitidas, etapas opcionales, etapas que requieren un permiso específico, etapa de entrega |
+
+Reglas de disponibilidad que usa la agenda (contrato público `ClinicCatalog`):
+
+- La sede atiende en `[inicio, fin)` si el día local no es feriado y el intervalo cabe completo en
+  una franja del horario de atención.
+- Un recurso está disponible si está activo, el intervalo cabe en su horario semanal y no se
+  cruza con ningún bloqueo. Que no tenga otra cita lo verifica Scheduling.
 
 ## Customers & Pets
 

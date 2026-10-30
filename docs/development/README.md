@@ -34,6 +34,15 @@ cp apps/mobile/.env.example apps/mobile/.env.local   # ajusta EXPO_PUBLIC_API_UR
 npm run mobile:start
 ```
 
+### Configuración ficticia de la sede
+
+```bash
+docker compose exec api python -m vetcare.cli seed-clinic
+```
+
+Carga un catálogo típico (consulta, vacunación, baño, cirugías), recursos genéricos y el horario
+de atención. Solo agrega lo que falta y no contiene datos personales.
+
 ### Primer administrador
 
 Las cuentas se crean solo por invitación. En una base vacía, crea la invitación del primer

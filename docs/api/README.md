@@ -72,6 +72,22 @@
 | `POST /api/v1/pets/{id}/guardians` · `PUT`/`DELETE …/guardians/{client_id}` | `guardianships:manage` | Dueños y responsables autorizados |
 | `GET /api/v1/me/pets` | Cliente | Mascotas donde el cliente autenticado tiene tutela |
 
+## Agenda
+
+| Endpoint | Acceso | Uso |
+|---|---|---|
+| `GET /api/v1/scheduling/availability?service_type_id=&date=` | Personal o cliente | Horarios libres de un servicio en un día (el cliente, solo servicios reservables) |
+| `POST /api/v1/appointments` | `appointments:manage` o cliente con tutela `book` | Personal: cita confirmada. Cliente: solicitud. Acepta `Idempotency-Key` |
+| `GET /api/v1/appointments?from=&to=&resource_id=&status=` | Personal | Agenda de un periodo (hasta 62 días) |
+| `GET /api/v1/appointments/{id}` | Personal o tutela activa | Detalle; para el cliente sin notas internas ni historial |
+| `POST /api/v1/appointments/{id}/reschedule` · `/cancel` | Personal o cliente con tutela `book` | El cliente, con 2 h de antelación si ya está confirmada |
+| `POST /api/v1/appointments/{id}/confirm` · `/check-in` · `/complete` · `/no-show` | `appointments:manage` | Ciclo de vida |
+| `GET /api/v1/me/appointments` | Cliente | Citas de sus mascotas: próximas y de los últimos 90 días |
+
+Errores propios: `slot_unavailable` (409, el horario se ocupó o no cabe),
+`invalid_appointment_transition` (409), `client_change_too_late` (409),
+`idempotency_key_reused` (409, misma clave con otro cuerpo).
+
 Los horarios semanales usan hora local de Lima (`{"weekday": 0, "start": "09:00", "end": "13:00"}`,
 con 0 = lunes). Los instantes (bloqueos y, más adelante, citas) viajan en ISO 8601 con zona y se
 devuelven en UTC.

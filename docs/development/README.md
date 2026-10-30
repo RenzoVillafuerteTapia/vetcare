@@ -27,6 +27,13 @@ cp apps/web/.env.example apps/web/.env.local
 npm run web:dev                   # http://localhost:5173
 ```
 
+### App móvil
+
+```bash
+cp apps/mobile/.env.example apps/mobile/.env.local   # ajusta EXPO_PUBLIC_API_URL a tu dispositivo
+npm run mobile:start
+```
+
 ### Primer administrador
 
 Las cuentas se crean solo por invitación. En una base vacía, crea la invitación del primer
@@ -54,7 +61,7 @@ funcionar si ya hay usuarios.
 ```
 apps/api        API FastAPI (ver apps/api/README.md)
 apps/web        web de administración (ver apps/web/README.md)
-apps/mobile     app de clientes (pendiente)
+apps/mobile     app de clientes (ver apps/mobile/README.md)
 packages/shared contrato OpenAPI, tipos generados y cliente HTTP tipado
 docs/           documentación técnica
 ```

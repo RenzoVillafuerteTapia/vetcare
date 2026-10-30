@@ -21,6 +21,11 @@ metadata = MetaData(
 def create_engine(database_url: str) -> AsyncEngine:
     return create_async_engine(
         database_url,
+        # READ COMMITTED: cada lectura ve lo último confirmado. Con REPEATABLE READ (el defecto de
+        # MySQL) la primera lectura fija una foto para toda la transacción, y una transacción que
+        # esperó un bloqueo seguiría sin ver lo que confirmó la otra. Las reglas de concurrencia
+        # se garantizan con bloqueos explícitos (SELECT … FOR UPDATE) y versiones optimistas.
+        isolation_level="READ COMMITTED",
         pool_pre_ping=True,
         pool_recycle=3600,
         connect_args={"init_command": "SET time_zone = '+00:00'"},

@@ -243,9 +243,9 @@ const styles = StyleSheet.create({
   input: {
     minHeight: 48,
     borderRadius: radius.field,
-    backgroundColor: colors.muted,
+    backgroundColor: colors.field,
     borderWidth: 1,
-    borderColor: "transparent",
+    borderColor: colors.input,
     paddingHorizontal: spacing(4),
     fontFamily: fonts.body,
     fontSize: 16,

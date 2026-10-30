@@ -4,6 +4,7 @@ from alembic import context
 from sqlalchemy.engine import Connection
 
 from vetcare.contexts.clinic.infrastructure import tables as clinic_tables  # noqa: F401
+from vetcare.contexts.customers.infrastructure import tables as customers_tables  # noqa: F401
 from vetcare.contexts.identity.infrastructure import tables as identity_tables  # noqa: F401
 from vetcare.platform import outbox  # noqa: F401  registra las tablas del outbox en metadata
 from vetcare.platform.db import create_engine, metadata

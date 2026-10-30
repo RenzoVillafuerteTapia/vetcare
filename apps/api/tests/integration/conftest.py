@@ -15,6 +15,7 @@ from integration_support import Api, _api
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from vetcare.contexts.clinic.infrastructure import tables as _clinic_tables  # noqa: F401
+from vetcare.contexts.customers.infrastructure import tables as _customers_tables  # noqa: F401
 from vetcare.contexts.identity.infrastructure import tables as _identity_tables  # noqa: F401
 from vetcare.platform import outbox as _outbox  # noqa: F401
 from vetcare.platform.db import create_engine, create_session_factory, metadata

@@ -10,6 +10,8 @@ from vetcare.contexts.customers.api import router as customers
 from vetcare.contexts.customers.infrastructure.composition import build_customers
 from vetcare.contexts.identity.api import router as identity
 from vetcare.contexts.identity.infrastructure.composition import build_identity_service
+from vetcare.contexts.scheduling.api import router as scheduling
+from vetcare.contexts.scheduling.infrastructure.composition import build_scheduling
 from vetcare.integrations import IdentityAccountInviter
 from vetcare.platform import health, openapi
 from vetcare.platform.db import create_engine, create_session_factory
@@ -63,6 +65,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if app.state.session_factory is not None
         else (None, None)
     )
+    app.state.scheduling = (
+        build_scheduling(app.state.session_factory, app.state.clinic_catalog, app.state.pet_access)
+        if app.state.session_factory is not None
+        else None
+    )
 
     if settings.cors_origins:
         app.add_middleware(
@@ -80,6 +87,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(customers.clients_router, prefix=API_PREFIX)
     app.include_router(customers.pets_router, prefix=API_PREFIX)
     app.include_router(customers.me_router, prefix=API_PREFIX)
+    app.include_router(scheduling.router, prefix=API_PREFIX)
+    app.include_router(scheduling.me_router, prefix=API_PREFIX)
     openapi.install(app)
     return app
 

@@ -7,6 +7,7 @@ from uuid import UUID
 
 from vetcare.contexts.clinic.application.ports import ClinicUnitOfWork
 from vetcare.contexts.clinic.domain.model import (
+    ClinicCalendar,
     Resource,
     ResourceKind,
     ServiceCategory,
@@ -63,6 +64,17 @@ class ResourceView:
         return self._resource.is_available(start, end)
 
 
+@dataclass(frozen=True)
+class OpeningRules:
+    """Horario de atención y feriados leídos una vez, para evaluar muchos horarios sin consultar
+    la base en cada uno."""
+
+    _calendar: ClinicCalendar
+
+    def is_open(self, start: datetime, end: datetime) -> bool:
+        return self._calendar.is_open(start, end)
+
+
 class ClinicCatalog:
     def __init__(self, uow_factory: Callable[[], ClinicUnitOfWork]) -> None:
         self._uow_factory = uow_factory
@@ -76,6 +88,10 @@ class ClinicCatalog:
         async with self._uow_factory() as uow:
             resources = await uow.resources.find(kinds)
         return [ResourceView.of(r) for r in resources if r.active]
+
+    async def opening_rules(self) -> OpeningRules:
+        async with self._uow_factory() as uow:
+            return OpeningRules(await uow.calendar.get())
 
     async def is_open(self, start: datetime, end: datetime) -> bool:
         async with self._uow_factory() as uow:

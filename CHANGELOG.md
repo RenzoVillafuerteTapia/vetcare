@@ -5,6 +5,12 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Sin publicar]
 
+### Corregido
+
+- La web de administración rechaza las cuentas de cliente (que usan la app móvil) y revoca la sesión que abrieron.
+- La barra lateral y el encabezado de la web quedan fijos; solo se desplaza el contenido.
+- Los campos de texto de la web y la app tienen un relleno y un borde que se distinguen del fondo.
+
 ### Agregado
 
 - Clinic Setup: catálogo de servicios, recursos agendables con horario semanal y bloqueos, horario de atención y feriados de la sede (America/Lima), con permisos por rol y contrato público `ClinicCatalog` para la agenda.

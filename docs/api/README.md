@@ -39,6 +39,28 @@
 - Las cuentas se crean solo por invitación. El primer administrador se crea con
   `python -m vetcare.cli create-admin` (ver `docs/development`).
 
+## Configuración de la clínica
+
+| Endpoint | Acceso | Uso |
+|---|---|---|
+| `GET /api/v1/clinic/service-types` | Autenticado | Personal: catálogo completo. Cliente: solo servicios activos y reservables |
+| `POST /api/v1/clinic/service-types` | `clinic_setup:manage` | Crear un servicio (`code` único) |
+| `PUT /api/v1/clinic/service-types/{id}` | `clinic_setup:manage` | Actualizar (el código no cambia) |
+| `PATCH /api/v1/clinic/service-types/{id}/active` | `clinic_setup:manage` | Activar o desactivar |
+| `GET /api/v1/clinic/resources` | Personal | Recursos con horario semanal y bloqueos |
+| `POST /api/v1/clinic/resources` | `clinic_setup:manage` | Crear un recurso |
+| `PUT /api/v1/clinic/resources/{id}` | `clinic_setup:manage` | Nombre, horario, cuenta vinculada y estado |
+| `POST /api/v1/clinic/resources/{id}/time-off` | `clinic_setup:manage` | Bloquear (fechas con zona horaria obligatoria) |
+| `DELETE /api/v1/clinic/resources/{id}/time-off/{time_off_id}` | `clinic_setup:manage` | Quitar un bloqueo |
+| `GET /api/v1/clinic/calendar` | Autenticado | Horario de atención y feriados |
+| `PUT /api/v1/clinic/calendar/opening-hours` | `clinic_setup:manage` | Fijar el horario de atención |
+| `POST /api/v1/clinic/calendar/holidays` | `clinic_setup:manage` | Registrar un feriado |
+| `DELETE /api/v1/clinic/calendar/holidays/{día}` | `clinic_setup:manage` | Quitar un feriado |
+
+Los horarios semanales usan hora local de Lima (`{"weekday": 0, "start": "09:00", "end": "13:00"}`,
+con 0 = lunes). Los instantes (bloqueos y, más adelante, citas) viajan en ISO 8601 con zona y se
+devuelven en UTC.
+
 ## Errores
 
 Formato [RFC 9457 (problem+json)](https://www.rfc-editor.org/rfc/rfc9457):

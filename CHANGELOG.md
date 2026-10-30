@@ -5,6 +5,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Sin publicar]
 
+### Agregado
+
+- Clinic Setup: catálogo de servicios, recursos agendables con horario semanal y bloqueos, horario de atención y feriados de la sede (America/Lima), con permisos por rol y contrato público `ClinicCatalog` para la agenda.
+- Comando `python -m vetcare.cli seed-clinic` con una configuración ficticia de la sede.
+
+### Cambiado
+
+- `identity.public` expone solo tipos del dominio; las dependencias HTTP pasan a `identity.public.http`.
+
 ## [0.1.0] - 2026-10-29
 
 Fase 1: fundamentos. Primera versión con la API, la web de administración y la app móvil de

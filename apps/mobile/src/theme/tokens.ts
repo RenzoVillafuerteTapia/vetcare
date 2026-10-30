@@ -11,6 +11,8 @@ export const colors = {
   secondary: "#e4f2f0",
   secondaryForeground: "#033633",
   muted: "#f1f0ec",
+  field: "#e8e6e0",
+  input: "#d9d7d0",
   mutedForeground: "#516162",
   destructive: "#cc2827",
   success: "#187c49",

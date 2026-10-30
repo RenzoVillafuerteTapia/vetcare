@@ -25,7 +25,8 @@ valores directos.
 | `background` | Panel de contenido |
 | `sidebar` | Fondo de la aplicación y de las tarjetas suaves sobre el panel |
 | `card` | Formularios, píldora de usuario, iconos sobre superficies suaves |
-| `muted` / `muted-foreground` | Fondo de los campos y texto secundario |
+| `field` | Relleno de los campos de texto (más oscuro que `sidebar` y que `card`) |
+| `muted` / `muted-foreground` | Fondos suaves y texto secundario |
 | `secondary` | Selección suave (roles marcados, botón sobre superficie oscura) |
 | `destructive`, `success` | Errores y confirmaciones |
 
@@ -57,7 +58,7 @@ Se sirven desde el propio proyecto con `@fontsource-variable/fredoka` y
 | Elemento | Forma |
 |---|---|
 | Botones, etiquetas, ítems de navegación, píldora de usuario | `rounded-full` |
-| Campos de texto | `rounded-2xl`, relleno `muted`, sin borde hasta el foco |
+| Campos de texto | `rounded-2xl`, relleno `field` y borde `input`; al enfocar, fondo `card` y anillo `ring` |
 | Tarjetas | `rounded-3xl` |
 | Paneles grandes (contenido, marca, tarjeta destacada) | `rounded-[2rem]` |
 | Iconos dentro de tarjetas | Cuadro `rounded-2xl` de 44 px |
@@ -76,7 +77,8 @@ Componentes de la app: `Brand`, `FormField` (etiqueta, ayuda y error accesibles)
 
 ## Patrones
 
-- **Navegación:** fondo neutro con el ítem activo en píldora `surface-strong`. En móvil, un
+- **Navegación:** fondo neutro con el ítem activo en píldora `surface-strong`. La barra lateral y
+  el encabezado quedan fijos; solo se desplaza el panel de contenido. En móvil, un
   panel lateral accesible (Radix Dialog) con las mismas píldoras.
 - **Contenido:** panel `background` de esquinas amplias sobre el fondo `sidebar`.
 - **Tarjeta destacada:** una por pantalla, `surface-strong`, con una etiqueta `glass`, un título,

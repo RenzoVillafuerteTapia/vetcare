@@ -111,19 +111,22 @@ function UserMenu() {
   );
 }
 
-/** Fondo neutro con la navegación; el contenido va en un panel claro de esquinas amplias. */
+/**
+ * Fondo neutro con la navegación; el contenido va en un panel claro de esquinas amplias.
+ * La barra lateral y el encabezado quedan fijos: solo se desplaza el contenido.
+ */
 export function AppShell() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-svh bg-sidebar md:grid md:grid-cols-[16rem_1fr]">
-      <aside className="hidden p-5 md:flex md:flex-col md:gap-8">
+    <div className="flex h-dvh flex-col overflow-hidden bg-sidebar md:grid md:grid-cols-[16rem_1fr]">
+      <aside className="hidden overflow-y-auto p-5 md:flex md:flex-col md:gap-8">
         <Brand className="px-2 pt-1" />
         <Navigation />
       </aside>
 
-      <div className="flex min-w-0 flex-col md:py-3 md:pr-3">
-        <header className="flex h-16 items-center justify-between gap-4 px-4 md:h-14 md:px-2">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col md:py-3 md:pr-3">
+        <header className="flex h-16 shrink-0 items-center justify-between gap-4 px-4 md:h-14 md:px-2">
           <div className="flex items-center gap-2 md:hidden">
             <Dialog.Root open={menuOpen} onOpenChange={setMenuOpen}>
               <Dialog.Trigger asChild>
@@ -156,7 +159,7 @@ export function AppShell() {
           <div className="hidden md:block" />
           <UserMenu />
         </header>
-        <main className="flex-1 bg-background px-4 py-8 md:rounded-[2rem] md:px-10 md:py-10">
+        <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-background px-4 py-8 md:rounded-[2rem] md:px-10 md:py-10">
           <Outlet />
         </main>
       </div>

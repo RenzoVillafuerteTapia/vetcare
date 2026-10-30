@@ -57,6 +57,21 @@
 | `POST /api/v1/clinic/calendar/holidays` | `clinic_setup:manage` | Registrar un feriado |
 | `DELETE /api/v1/clinic/calendar/holidays/{día}` | `clinic_setup:manage` | Quitar un feriado |
 
+## Clientes y mascotas
+
+| Endpoint | Acceso | Uso |
+|---|---|---|
+| `GET /api/v1/clients?q=&page=&page_size=` | Personal | Buscar por nombre, documento, correo o teléfono, paginado |
+| `POST /api/v1/clients` | `clients:manage` | Registrar (documento y correo únicos) |
+| `GET /api/v1/clients/{id}` · `PUT` | Personal · `clients:manage` | Ficha y actualización |
+| `POST /api/v1/clients/{id}/invitation` | `clients:manage` | Crear la cuenta del cliente y enviarle la invitación a la app |
+| `GET /api/v1/clients/{id}/pets` | Personal | Mascotas del cliente |
+| `POST /api/v1/clients/{id}/pets` | `pets:manage` | Registrar una mascota con el cliente como dueño |
+| `GET /api/v1/pets/{id}` | Personal o tutela activa | Perfil; para el cliente sin notas internas y alergias según permiso |
+| `PUT /api/v1/pets/{id}` · `PATCH …/status` · `POST …/weights` | `pets:manage` | Perfil, estado y peso |
+| `POST /api/v1/pets/{id}/guardians` · `PUT`/`DELETE …/guardians/{client_id}` | `guardianships:manage` | Dueños y responsables autorizados |
+| `GET /api/v1/me/pets` | Cliente | Mascotas donde el cliente autenticado tiene tutela |
+
 Los horarios semanales usan hora local de Lima (`{"weekday": 0, "start": "09:00", "end": "13:00"}`,
 con 0 = lunes). Los instantes (bloqueos y, más adelante, citas) viajan en ISO 8601 con zona y se
 devuelven en UTC.

@@ -9,6 +9,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 - Clinic Setup: catálogo de servicios, recursos agendables con horario semanal y bloqueos, horario de atención y feriados de la sede (America/Lima), con permisos por rol y contrato público `ClinicCatalog` para la agenda.
 - Comando `python -m vetcare.cli seed-clinic` con una configuración ficticia de la sede.
+- Customers & Pets: clientes con documento y teléfono validados, mascotas con historial de peso, tutela con dueños y responsables autorizados (al menos un dueño siempre), acceso por tutela con aislamiento entre clientes, búsqueda paginada, invitación del cliente a la app y contrato público `PetAccess`.
+- Identity: `invite_client`, para que la recepción invite clientes sin `users:manage`.
 
 ### Cambiado
 

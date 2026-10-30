@@ -16,7 +16,7 @@ responsables autorizados de las mascotas, conectadas a una **API común**.
 |---|---|---|
 | Autenticación, roles y permisos | API, web y app móvil implementadas | 1 |
 | Configuración de la clínica (servicios, recursos, horarios) | API implementada; web pendiente | 2 |
-| Clientes, mascotas y responsables autorizados | Planificado | 2 |
+| Clientes, mascotas y responsables autorizados | API implementada; web y móvil pendientes | 2 |
 | Agenda y citas sin conflictos | Planificado | 2 |
 | Seguimiento de baños y peluquería | Planificado | 3 |
 | Seguimiento de cirugías | Planificado | 3 |

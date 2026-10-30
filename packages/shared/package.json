@@ -1,6 +1,6 @@
 {
   "name": "@vetcare/shared",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Tipos y cliente HTTP generados desde el contrato OpenAPI de la API",
   "type": "module",

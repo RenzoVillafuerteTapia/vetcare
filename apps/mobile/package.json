@@ -1,6 +1,6 @@
 {
   "name": "@vetcare/mobile",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "App móvil para dueños y responsables de mascotas",
   "main": "expo-router/entry",

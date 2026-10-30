@@ -6,7 +6,7 @@ nueva indicación. Cada fase cierra con un merge de `develop` a `main` y una eti
 | Fase | Contenido | Versión | Estado |
 |---|---|---|---|
 | 0 | Descubrimiento, arquitectura y documentación | — | Completada |
-| 1 | Fundamentos: monorepo, CI, autenticación, permisos, bases web y móvil | v0.1.0 | En curso |
+| 1 | Fundamentos: monorepo, CI, autenticación, permisos, bases web y móvil | v0.1.0 | Completada |
 | 2 | Clinic Setup, clientes, mascotas, tutela y agenda | v0.2.0 | Planificado |
 | 3 | Seguimiento de baños y cirugías, SSE y notificaciones push | v0.3.0 | Planificado |
 | 4 | Historial clínico y tratamientos | v0.4.0 | Pendiente |

@@ -1,0 +1,101 @@
+name: API
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+concurrency:
+  group: api-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    name: Detectar cambios en la API
+    runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.filter.outputs.api }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: filter
+        name: Comparar archivos modificados
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [ "$EVENT" = "pull_request" ]; then
+            base="origin/$BASE_REF"
+          elif [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "api=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          else
+            base="$BEFORE"
+          fi
+          if git diff --name-only "$base...HEAD" | grep -qE '^(apps/api/|docker-compose\.yml$|\.github/workflows/api\.yml$)'; then
+            echo "api=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "api=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  # Este job es el check requerido. Si la API no cambió, queda "skipped", y GitHub lo cuenta como aprobado.
+  api:
+    name: api
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        # Credenciales desechables, solo existen dentro de este job.
+        env:
+          MYSQL_DATABASE: vetcare_test
+          MYSQL_USER: vetcare
+          MYSQL_PASSWORD: vetcare-ci
+          MYSQL_ROOT_PASSWORD: root-ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot-ci --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      VETCARE_ENVIRONMENT: test
+      VETCARE_TEST_DATABASE_URL: mysql+asyncmy://vetcare:vetcare-ci@127.0.0.1:3306/vetcare_test
+      # Las pruebas de integración fallan en vez de omitirse si falta la base de datos.
+      VETCARE_REQUIRE_INTEGRATION: "1"
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: apps/api/pyproject.toml
+      - name: Instalar dependencias
+        run: pip install -e ".[dev]"
+      - name: Lint (ruff)
+        run: ruff check --output-format=github .
+      - name: Formato (ruff)
+        run: ruff format --check .
+      - name: Tipos (mypy)
+        run: mypy
+      - name: Pruebas con cobertura (unitarias, API, arquitectura e integración con MySQL)
+        run: |
+          coverage run -m pytest -rs
+          coverage report
+      - name: Migraciones al día con los modelos
+        env:
+          VETCARE_DATABASE_URL: ${{ env.VETCARE_TEST_DATABASE_URL }}
+        run: |
+          alembic upgrade head
+          alembic check

@@ -84,6 +84,10 @@ flowchart LR
 - Las reservas usan **bloqueo pesimista** sobre los recursos implicados (`SELECT … FOR UPDATE`)
   y una `Idempotency-Key` para reintentos del cliente. Ver [scheduling](../domain/flows.md#citas).
 - Las fechas se guardan en UTC y se presentan en `America/Lima`.
+- Aislamiento **READ COMMITTED** en todas las conexiones: cada lectura ve lo último confirmado.
+  Con el REPEATABLE READ por defecto de MySQL, una transacción que esperó un bloqueo seguiría
+  viendo la foto tomada antes de esperar (por ejemplo, no vería la cita que la otra acaba de
+  confirmar). Las invariantes de concurrencia se protegen con bloqueos explícitos y versiones.
 
 ## Contratos entre backend y clientes
 

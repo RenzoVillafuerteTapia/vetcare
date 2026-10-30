@@ -25,13 +25,16 @@ sequenceDiagram
     end
 ```
 
+- Implementado (#25). La reserva bloquea con `SELECT … FOR UPDATE` una fila por recurso
+  candidato (`sch_resource_locks`), siempre en el mismo orden, y recalcula la disponibilidad
+  con lecturas de lo último confirmado.
 - La disponibilidad se calcula y se valida **en el backend**. La web y la app solo muestran los
   huecos que devuelve la API.
 - La `Idempotency-Key` evita reservas duplicadas por doble toque o reintentos de red: la misma
   clave con el mismo cuerpo devuelve la cita ya creada.
 - El bloqueo por recurso serializa reservas concurrentes sobre el mismo profesional o mesa.
-- Recordatorios: el worker programa avisos (por defecto 24 h antes) y no envía dos veces el
-  mismo recordatorio para la misma cita.
+- Recordatorios (fase 3): el worker programará avisos (por defecto 24 h antes) sin enviar dos
+  veces el mismo recordatorio para la misma cita.
 
 ## Baño y peluquería
 

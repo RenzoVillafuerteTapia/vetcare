@@ -4,7 +4,7 @@ Plataforma para una veterinaria de una sede: una **web de administración** para
 (recepción, veterinarios, asistentes, administración) y una **app móvil** para los dueños y
 responsables autorizados de las mascotas, conectadas a una **API común**.
 
-> **Estado actual: fase 1 (fundamentos), en curso.** La API tiene su base técnica y la
+> **Estado actual: v0.1.0, fase 1 (fundamentos) completada.** La API tiene su base técnica y la
 > autenticación con roles y permisos; la web de administración tiene su base (sesión,
 > navegación por permisos e invitación de usuarios) y la app móvil de clientes la suya (sesión
 > segura y pantallas de acceso).

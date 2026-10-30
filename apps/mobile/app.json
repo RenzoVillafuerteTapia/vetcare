@@ -3,7 +3,7 @@
     "name": "VetCare",
     "slug": "vetcare",
     "scheme": "vetcare",
-    "version": "0.0.0",
+    "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "backgroundColor": "#f5f3ef",

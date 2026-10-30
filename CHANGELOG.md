@@ -5,6 +5,12 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Sin publicar]
 
+## [0.1.0] - 2026-10-29
+
+Fase 1: fundamentos. Primera versión con la API, la web de administración y la app móvil de
+clientes conectadas por contratos tipados. Todavía no incluye funcionalidades operativas (agenda,
+mascotas, seguimiento): llegan en las fases 2 y 3.
+
 ### Cambiado
 
 - Los Pull Requests se fusionan con merge commit en lugar de squash, para conservar cada commit en el historial de `develop`. Los PRs #9 a #13 se fusionaron con squash; sus commits individuales siguen visibles en cada PR.
@@ -29,3 +35,6 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 - Web de administración (`apps/web`): Vite, React Router, TanStack Query, React Hook Form + Zod, Tailwind + shadcn/ui; inicio de sesión, recuperación de contraseña, activación de cuentas invitadas, renovación de sesión serializada entre pestañas, rutas protegidas por permiso, layout adaptable e invitación de usuarios; workflow `Web` con lint, formato, tipos, pruebas y build.
 - App móvil de clientes (`apps/mobile`): Expo SDK 58, Expo Router, TanStack Query, React Hook Form + Zod; refresh token en SecureStore, recuperación de sesión al abrir la app, renovación serializada, solo para el rol cliente, inicio de sesión, recuperación de contraseña e inicio con el sistema de diseño; workflow `Móvil` con lint, formato, tipos, pruebas y bundle de Android.
 - Sistema de diseño (`docs/design`): tipografía Fredoka y Nunito servida desde el proyecto, esquinas amplias, botones y etiquetas tipo píldora, tarjeta destacada oscura y paleta verde azulada.
+
+[Sin publicar]: https://github.com/RenzoVillafuerteTapia/vetcare/compare/v0.1.0...develop
+[0.1.0]: https://github.com/RenzoVillafuerteTapia/vetcare/releases/tag/v0.1.0

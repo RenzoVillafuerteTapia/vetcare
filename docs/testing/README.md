@@ -21,8 +21,9 @@
 
 Escenarios que siempre deben tener pruebas, positivas y negativas:
 
-1. **Citas sin conflictos**: superposición, límites exactos (fin = inicio), reservas
-   concurrentes reales contra MySQL, idempotencia.
+1. **Citas sin conflictos** (implementado en `test_scheduling_api.py`): superposición, límites
+   exactos (fin = inicio), 5 reservas simultáneas del mismo horario (gana una), horarios que se
+   cruzan, idempotencia secuencial y simultánea.
 2. **Aislamiento entre clientes**: un cliente no ve, reserva ni hace stream de mascotas ajenas;
    la respuesta es 404, no 403.
 3. **Transiciones de servicios**: transiciones no permitidas, etapas clínicas sin permiso,

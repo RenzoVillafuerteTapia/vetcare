@@ -68,33 +68,40 @@ Con cuenta vinculada, el correo del cliente se cambia desde la cuenta, no desde 
 
 ## Scheduling
 
+> Implementado (#25). Los recordatorios llegan con el worker de notificaciones (fase 3).
+
 | Elemento | Tipo | Notas |
 |---|---|---|
-| `Appointment` | Agregado | mascota, cliente que reserva, tipo de servicio, `TimeSlot`, recursos asignados, motivo, observaciones, estado, historial de cambios |
-| `TimeSlot` | VO | inicio y fin en UTC; se presenta en `America/Lima`; fin > inicio |
-| `AvailabilityPolicy` | Servicio de dominio | calcula huecos libres según horario de la sede, horario y bloqueos de los recursos y citas existentes |
+| `Appointment` | Agregado | mascota, responsable que reserva, servicio (nombre copiado al reservar), `TimeSlot`, recursos asignados, canal (`staff` o `client`), motivo, notas internas, estado, historial |
+| `TimeSlot` | VO | `[inicio, fin)` en UTC; dos franjas que solo se tocan no se superponen |
+| `HistoryEntry` | Entidad (solo agregado) | acción, quién, cuándo y la franja vigente en ese momento |
+| `SchedulingPolicy` | VO | paso de la agenda (15 min), antelación mínima del cliente para reservar (30 min) y para cambiar o cancelar una cita confirmada (2 h) |
+| `Availability` | Servicio de dominio | por cada tipo de recurso requerido busca uno libre (horario propio, sin bloqueos, sin citas activas) con la sede abierta |
 
 Estados de la cita:
 
 ```mermaid
 stateDiagram-v2
-    [*] --> REQUESTED: solicitada (app)
-    [*] --> CONFIRMED: creada por recepción
+    [*] --> REQUESTED: solicitada por el cliente
+    [*] --> CONFIRMED: agendada por el personal
     REQUESTED --> CONFIRMED: confirmar
-    REQUESTED --> CANCELLED: rechazar o cancelar
-    CONFIRMED --> CONFIRMED: reprogramar (guarda historial)
-    CONFIRMED --> CHECKED_IN: registrar llegada
+    REQUESTED --> REQUESTED: el cliente reprograma
+    CONFIRMED --> REQUESTED: el cliente reprograma (vuelve a confirmación)
+    CONFIRMED --> CONFIRMED: el personal reprograma
+    REQUESTED --> CANCELLED: cancelar
     CONFIRMED --> CANCELLED: cancelar
-    CONFIRMED --> NO_SHOW: marcar inasistencia
+    CONFIRMED --> CHECKED_IN: registrar llegada (desde 2 h antes)
+    CONFIRMED --> NO_SHOW: inasistencia (después de la hora)
     CHECKED_IN --> COMPLETED: completar
-    COMPLETED --> [*]
-    CANCELLED --> [*]
-    NO_SHOW --> [*]
 ```
 
-Invariantes: no hay dos citas activas que se superpongan sobre el mismo recurso; un cliente solo
-reserva para mascotas donde tiene `can_book`; reprogramar y cancelar desde la app respetan la
-antelación mínima configurada.
+Invariantes:
+
+- Ningún recurso tiene dos citas activas (`requested`, `confirmed`, `checked_in`) superpuestas.
+- La cita cabe en el horario de la sede (sin feriado) y en el horario de cada recurso asignado.
+- El cliente solo reserva para mascotas donde su tutela permite `book`, servicios reservables y
+  con la antelación mínima; reprograma o cancela una cita confirmada con al menos 2 h.
+- Una cita cancelada, completada o con inasistencia ya no cambia.
 
 ## Service Operations
 

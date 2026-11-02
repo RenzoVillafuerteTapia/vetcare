@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 import { Brand } from "@/components/brand";
 import { Badge } from "@/components/ui/badge";
 
+import { LoginCarousel } from "./login-carousel";
+
 /** Acceso: panel de marca a la izquierda en escritorio y formulario a la derecha. */
 export function AuthLayout({
   title,
@@ -18,6 +20,7 @@ export function AuthLayout({
     <div className="grid min-h-svh bg-sidebar p-3 lg:grid-cols-[1.05fr_1fr] lg:gap-3">
       <aside className="relative hidden overflow-hidden rounded-[2rem] bg-primary p-10 text-primary-foreground lg:flex lg:flex-col lg:justify-between">
         <Brand inverted />
+        <LoginCarousel />
         <div className="relative z-10 grid max-w-md gap-5">
           <p className="font-display text-5xl leading-[1.05] font-medium tracking-tight">
             El cuidado diario, hecho simple.

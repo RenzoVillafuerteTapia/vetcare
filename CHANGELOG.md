@@ -18,6 +18,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 - Customers & Pets: clientes con documento y teléfono validados, mascotas con historial de peso, tutela con dueños y responsables autorizados (al menos un dueño siempre), acceso por tutela con aislamiento entre clientes, búsqueda paginada, invitación del cliente a la app y contrato público `PetAccess`.
 - Identity: `invite_client`, para que la recepción invite clientes sin `users:manage`.
 - Agenda: disponibilidad por servicio y día, reservas sin superposición con bloqueo por recurso, asignación automática o elegida de recursos, `Idempotency-Key`, solicitudes del cliente con confirmación de la clínica, reprogramación y cancelación con antelación mínima, llegada, atención completada e inasistencia, con historial y eventos en el outbox.
+- Web: carrusel de fotos en el panel de acceso, que se pausa al pasar el mouse o al enfocarlo y respeta la preferencia de movimiento reducido.
 
 ### Cambiado
 

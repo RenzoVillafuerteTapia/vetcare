@@ -17,6 +17,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 - Comando `python -m vetcare.cli seed-clinic` con una configuración ficticia de la sede.
 - Customers & Pets: clientes con documento y teléfono validados, mascotas con historial de peso, tutela con dueños y responsables autorizados (al menos un dueño siempre), acceso por tutela con aislamiento entre clientes, búsqueda paginada, invitación del cliente a la app y contrato público `PetAccess`.
 - Identity: `invite_client`, para que la recepción invite clientes sin `users:manage`.
+- Web: carrusel de fotos en el panel de acceso, que se pausa al pasar el mouse o al enfocarlo y respeta la preferencia de movimiento reducido.
 
 ### Cambiado
 

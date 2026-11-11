@@ -5,8 +5,8 @@ Web de administración de la veterinaria (React + TypeScript + Vite).
 > Estado: **base de la aplicación y configuración de la clínica.** Tiene inicio de sesión,
 > recuperación de contraseña, activación de cuentas invitadas, layout adaptable con navegación
 > por permisos, invitación de usuarios, la sección Configuración (servicios, recursos, horario
-> y feriados) y la sección Clientes (clientes, mascotas, peso y responsables autorizados). La
-> agenda y las fotos de mascotas llegan en la fase 2; el seguimiento, en la fase 3.
+> y feriados) y la sección Clientes (clientes, mascotas con foto, peso y responsables autorizados). La
+> agenda llega en la fase 2; el seguimiento, en la fase 3.
 
 ## Ejecutar
 

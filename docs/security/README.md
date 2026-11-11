@@ -75,13 +75,22 @@ contraseña, con actor, objetivo, IP y momento. Nunca guarda contraseñas, token
 
 ## Archivos y documentos
 
-> Pendiente (fase 2).
+> Implementado para las fotos de mascotas (#23). Los documentos clínicos llegan en la fase 4.
 
-- Bucket S3 privado, sin acceso público. La API entrega **URLs firmadas de corta duración**
-  (5 min) solo después de verificar el acceso.
-- Las claves de objeto no contienen nombres ni datos personales.
-- Se validan tipo y tamaño de archivo; las imágenes se sirven con `Content-Disposition`
-  controlado.
+- Bucket S3 privado, sin acceso público, con cifrado en reposo (SSE-S3). La API entrega **URLs
+  firmadas de corta duración** (5 min) solo después de verificar el acceso: van dentro de la
+  respuesta de la mascota, que ya exige permiso del personal o una tutela activa.
+- En desarrollo y pruebas los archivos se guardan en disco y la propia API sirve las URLs
+  firmadas (`/api/v1/files/…`, HMAC-SHA256 con vencimiento). Firma inválida, vencida o archivo
+  inexistente responden lo mismo (403). En `production` la API no arranca con este adaptador.
+- Las claves de objeto no contienen nombres ni datos personales: `pets/<id>/<id>.<ext>`. El
+  nombre del archivo que sube el usuario se descarta.
+- Se validan tipo y tamaño de archivo: el formato se reconoce por el contenido (JPG, PNG o
+  WebP), no por el nombre ni por el tipo que declara el cliente, y el límite es 5 MB. Las
+  imágenes se sirven con `Content-Disposition: inline` y `X-Content-Type-Options: nosniff`.
+- Al reemplazar o quitar una foto se borra el archivo anterior.
+- Pendiente: las imágenes se guardan tal como llegan, con sus metadatos EXIF (que pueden incluir
+  la ubicación donde se tomó la foto). Quitarlos requiere procesar la imagen en el servidor.
 
 ## Notificaciones
 

@@ -50,6 +50,7 @@ const luna: Pet = {
   status: "active",
   allergies: "Pollo",
   notes: "Nerviosa con el secador.",
+  photo_url: null,
   weights: [
     { kilograms: "7.20", measured_at: "2026-05-02T16:00:00Z" },
     { kilograms: "7.85", measured_at: "2026-10-20T16:00:00Z" },
@@ -490,6 +491,138 @@ describe("perfil de la mascota", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "La mascota debe tener al menos un dueño.",
     );
+  });
+});
+
+describe("foto de la mascota", () => {
+  const photoUrl = (file: string) =>
+    `http://localhost:8000/api/v1/files/pets/${luna.id}/${file}?expires=1&signature=abc`;
+  const withPhoto: Pet = { ...luna, photo_url: photoUrl("foto-1.jpg") };
+  const jpg = (name = "luna.jpg", bytes = 1024) =>
+    new File([new Uint8Array(bytes)], name, { type: "image/jpeg" });
+
+  it("sube la foto como formulario y la muestra", async () => {
+    let current: Pet = luna;
+    let received: FormData | undefined;
+    const api = createFakeApi({
+      ...signedIn(),
+      [`GET /api/v1/pets/${luna.id}`]: () => json(current),
+      [`PUT /api/v1/pets/${luna.id}/photo`]: async (request) => {
+        received = await request.formData();
+        return json((current = withPhoto));
+      },
+    });
+    renderApp(`/mascotas/${luna.id}`, api.fetch);
+
+    expect(await screen.findByRole("button", { name: "Subir foto" })).toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: "Foto de Luna" })).not.toBeInTheDocument();
+
+    await userEvent.upload(screen.getByLabelText("Archivo de la foto"), jpg());
+
+    expect(await screen.findByRole("img", { name: "Foto de Luna" })).toHaveAttribute(
+      "src",
+      withPhoto.photo_url,
+    );
+    expect(received?.get("file")).toMatchObject({ size: 1024, type: "image/jpeg" });
+    expect(screen.getByRole("button", { name: "Cambiar foto" })).toBeInTheDocument();
+  });
+
+  it("rechaza en el navegador lo que no es imagen o pesa más de 5 MB", async () => {
+    const api = createFakeApi({
+      ...signedIn(),
+      [`GET /api/v1/pets/${luna.id}`]: () => json(luna),
+    });
+    renderApp(`/mascotas/${luna.id}`, api.fetch);
+    const input = await screen.findByLabelText("Archivo de la foto");
+
+    fireEvent.change(input, {
+      target: { files: [new File(["%PDF"], "receta.pdf", { type: "application/pdf" })] },
+    });
+    expect(await screen.findByRole("alert")).toHaveTextContent("Usa una imagen JPG, PNG o WebP.");
+
+    fireEvent.change(input, { target: { files: [jpg("grande.jpg", 5 * 1024 * 1024 + 1)] } });
+    expect(await screen.findByRole("alert")).toHaveTextContent("La imagen pesa más de 5 MB.");
+
+    expect(api.calls(`PUT /api/v1/pets/${luna.id}/photo`)).toHaveLength(0);
+  });
+
+  it("muestra el motivo si la API rechaza el archivo", async () => {
+    const api = createFakeApi({
+      ...signedIn(),
+      [`GET /api/v1/pets/${luna.id}`]: () => json(luna),
+      [`PUT /api/v1/pets/${luna.id}/photo`]: () =>
+        problem(422, "validation_failed", "Usa una imagen JPG, PNG o WebP.", [
+          { field: "file", message: "Usa una imagen JPG, PNG o WebP." },
+        ]),
+    });
+    renderApp(`/mascotas/${luna.id}`, api.fetch);
+
+    // Un PDF renombrado pasa la revisión del navegador; la API mira el contenido.
+    await userEvent.upload(await screen.findByLabelText("Archivo de la foto"), jpg("receta.jpg"));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Usa una imagen JPG, PNG o WebP.");
+    expect(screen.getByRole("button", { name: "Subir foto" })).toBeEnabled();
+  });
+
+  it("quita la foto", async () => {
+    let current: Pet = withPhoto;
+    const api = createFakeApi({
+      ...signedIn(),
+      [`GET /api/v1/pets/${luna.id}`]: () => json(current),
+      [`DELETE /api/v1/pets/${luna.id}/photo`]: () => json((current = luna)),
+    });
+    renderApp(`/mascotas/${luna.id}`, api.fetch);
+
+    expect(await screen.findByRole("img", { name: "Foto de Luna" })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Quitar foto" }));
+
+    await waitFor(() =>
+      expect(screen.queryByRole("img", { name: "Foto de Luna" })).not.toBeInTheDocument(),
+    );
+    expect(screen.getByRole("button", { name: "Subir foto" })).toBeInTheDocument();
+  });
+
+  it("si la URL firmada venció, pide una nueva una sola vez", async () => {
+    let served = 0;
+    const api = createFakeApi({
+      ...signedIn(),
+      [`GET /api/v1/pets/${luna.id}`]: () =>
+        json({ ...luna, photo_url: `${photoUrl("foto-1.jpg")}&n=${++served}` }),
+    });
+    renderApp(`/mascotas/${luna.id}`, api.fetch);
+
+    const expired = await screen.findByRole("img", { name: "Foto de Luna" });
+    expect(expired.getAttribute("src")).toContain("n=1");
+    fireEvent.error(expired);
+
+    const renewed = await screen.findByRole("img", { name: "Foto de Luna" });
+    await waitFor(() => expect(renewed.getAttribute("src")).toContain("n=2"));
+
+    // Si la nueva tampoco carga (el archivo ya no existe), queda la huella y no insiste.
+    fireEvent.error(screen.getByRole("img", { name: "Foto de Luna" }));
+    await waitFor(() =>
+      expect(screen.queryByRole("img", { name: "Foto de Luna" })).not.toBeInTheDocument(),
+    );
+    expect(api.calls(`GET /api/v1/pets/${luna.id}`)).toHaveLength(2);
+  });
+
+  it("quien solo consulta ve la foto sin acciones, también en la ficha del cliente", async () => {
+    const api = createFakeApi({
+      ...signedIn(user({ roles: ["assistant"], permissions: ["pets:read"] })),
+      [`GET /api/v1/pets/${luna.id}`]: () => json(withPhoto),
+      [`GET /api/v1/clients/${rosa.id}`]: () => json(rosa),
+      [`GET /api/v1/clients/${rosa.id}/pets`]: () => json([withPhoto]),
+    });
+    const { router } = renderApp(`/mascotas/${luna.id}`, api.fetch);
+
+    expect(await screen.findByRole("img", { name: "Foto de Luna" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Cambiar foto" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Quitar foto" })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Archivo de la foto")).not.toBeInTheDocument();
+
+    await router.navigate(`/clientes/${rosa.id}`);
+    const pets = within(await screen.findByRole("list", { name: "Mascotas del cliente" }));
+    expect(pets.getByRole("img", { name: "Foto de Luna" })).toBeInTheDocument();
   });
 });
 

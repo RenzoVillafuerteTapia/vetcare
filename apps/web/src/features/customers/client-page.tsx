@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, ChevronRight, MailCheck, PawPrint, Pencil, Plus, Send } from "lucide-react";
+import { ArrowLeft, ChevronRight, MailCheck, Pencil, Plus, Send } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 
@@ -22,6 +22,7 @@ import {
   type Client,
 } from "./labels";
 import { PetFormDialog } from "./pet-form-dialog";
+import { PetPhoto } from "./pet-photo";
 import { clientKey, clientPetsKey, CLIENTS } from "./queries";
 
 function Fact({ label, value }: { label: string; value: string | null }) {
@@ -146,9 +147,7 @@ function ClientPets({ client }: { client: Client }) {
                   to={`/mascotas/${pet.id}`}
                   className="flex items-center gap-4 rounded-3xl border border-border/70 bg-card p-5 transition-colors outline-none hover:bg-accent/40 focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 >
-                  <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-sidebar text-primary">
-                    <PawPrint className="size-5" aria-hidden />
-                  </span>
+                  <PetPhoto pet={pet} className="size-11 rounded-2xl" />
                   <span className="grid flex-1 gap-1">
                     <span className="flex flex-wrap items-center gap-2">
                       <span className="font-display text-lg font-medium">{pet.name}</span>

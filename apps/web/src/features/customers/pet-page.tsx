@@ -35,6 +35,7 @@ import {
   type PetStatus,
 } from "./labels";
 import { PetFormDialog } from "./pet-form-dialog";
+import { PetPhotoEditor } from "./pet-photo";
 import { petKey, PETS } from "./queries";
 
 function Fact({ label, value }: { label: string; value: string | null }) {
@@ -326,15 +327,18 @@ export function PetPage() {
   return (
     <div className="grid max-w-5xl gap-8">
       <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="grid gap-1.5">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-medium md:text-4xl">{data.name}</h1>
-            {data.status === "active" ? null : <Badge>{STATUS_LABELS[data.status]}</Badge>}
+        <div className="grid gap-4">
+          <div className="grid gap-1.5">
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-3xl font-medium md:text-4xl">{data.name}</h1>
+              {data.status === "active" ? null : <Badge>{STATUS_LABELS[data.status]}</Badge>}
+            </div>
+            <p className="text-muted-foreground">
+              {SPECIES_LABELS[data.species]}
+              {data.breed ? ` · ${data.breed}` : ""} · {SEX_LABELS[data.sex]}
+            </p>
           </div>
-          <p className="text-muted-foreground">
-            {SPECIES_LABELS[data.species]}
-            {data.breed ? ` · ${data.breed}` : ""} · {SEX_LABELS[data.sex]}
-          </p>
+          <PetPhotoEditor pet={data} />
         </div>
         {canManage ? (
           <div className="flex flex-wrap items-end gap-3">

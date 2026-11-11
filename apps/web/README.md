@@ -4,8 +4,9 @@ Web de administración de la veterinaria (React + TypeScript + Vite).
 
 > Estado: **base de la aplicación y configuración de la clínica.** Tiene inicio de sesión,
 > recuperación de contraseña, activación de cuentas invitadas, layout adaptable con navegación
-> por permisos, invitación de usuarios y la sección Configuración (servicios, recursos, horario
-> y feriados). Clientes, mascotas y agenda llegan en la fase 2; el seguimiento, en la fase 3.
+> por permisos, invitación de usuarios, la sección Configuración (servicios, recursos, horario
+> y feriados) y la sección Clientes (clientes, mascotas, peso y responsables autorizados). La
+> agenda y las fotos de mascotas llegan en la fase 2; el seguimiento, en la fase 3.
 
 ## Ejecutar
 
@@ -24,11 +25,12 @@ La API debe permitir el origen de la web con `VETCARE_CORS_ORIGINS=["http://loca
 ```
 src/
 ├── app/              composición: router, cliente de TanStack Query, raíz de la app
-├── components/       componentes compartidos (layout, campos de formulario)
+├── components/       componentes compartidos (layout, campos de formulario, estados de consulta)
 │   └── ui/           componentes de shadcn/ui adaptados al sistema de diseño (docs/design)
 ├── features/
 │   ├── auth/         sesión, guardias de rutas, login, recuperación y activación
 │   ├── clinic-setup/ servicios, recursos con horario y bloqueos, horario y feriados de la sede
+│   ├── customers/    clientes, sus mascotas, peso y responsables autorizados
 │   ├── home/         inicio, acceso denegado y página no encontrada
 │   └── users/        invitación de usuarios
 ├── lib/              utilidades (errores de la API y de formularios, entorno, clases CSS)

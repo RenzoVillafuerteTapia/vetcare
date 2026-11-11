@@ -1,5 +1,6 @@
 from enum import StrEnum
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -10,6 +11,11 @@ class Environment(StrEnum):
     TEST = "test"
     STAGING = "staging"
     PRODUCTION = "production"
+
+
+class StorageBackend(StrEnum):
+    LOCAL = "local"
+    S3 = "s3"
 
 
 class Settings(BaseSettings):
@@ -29,6 +35,14 @@ class Settings(BaseSettings):
     # Base de los enlaces de los correos (activar cuenta, restablecer contraseña).
     public_web_url: str = "http://localhost:5173"
     rate_limits_enabled: bool = True
+
+    # Archivos (fotos): en disco para desarrollo y pruebas; S3 privado en producción.
+    storage_backend: StorageBackend = StorageBackend.LOCAL
+    storage_local_dir: Path = Path("var/storage")
+    storage_s3_bucket: str | None = None
+    storage_s3_region: str | None = None
+    # Base de las URLs firmadas del almacenamiento en disco (las sirve esta misma API).
+    public_api_url: str = "http://localhost:8000"
 
     @property
     def secure_cookies(self) -> bool:

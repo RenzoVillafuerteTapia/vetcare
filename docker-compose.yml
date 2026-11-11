@@ -36,9 +36,11 @@ services:
       - ./apps/api/tests:/app/tests
       - ./apps/api/migrations:/app/migrations
       - ./apps/api/alembic.ini:/app/alembic.ini
+      - api-files:/app/var/storage
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
   db-data:
+  api-files:

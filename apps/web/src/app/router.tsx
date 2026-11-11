@@ -54,6 +54,29 @@ export const routes: RouteObject[] = [
             ],
           },
           {
+            element: <RequirePermission permission="pets:read" />,
+            children: [
+              {
+                path: "/clientes",
+                lazy: async () => ({
+                  Component: (await import("@/features/customers/clients-page")).ClientsPage,
+                }),
+              },
+              {
+                path: "/clientes/:clientId",
+                lazy: async () => ({
+                  Component: (await import("@/features/customers/client-page")).ClientPage,
+                }),
+              },
+              {
+                path: "/mascotas/:petId",
+                lazy: async () => ({
+                  Component: (await import("@/features/customers/pet-page")).PetPage,
+                }),
+              },
+            ],
+          },
+          {
             element: <RequirePermission permission="clinic_setup:manage" />,
             children: [
               {

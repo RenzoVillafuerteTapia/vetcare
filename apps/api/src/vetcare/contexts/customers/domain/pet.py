@@ -115,6 +115,8 @@ class Pet(AggregateRoot):
     notes: str | None = None
     status: PetStatus = PetStatus.ACTIVE
     weights: list[WeightRecord] = field(default_factory=list)
+    # Clave del archivo en el almacén privado; nunca una URL.
+    photo_key: str | None = None
     version: int = field(default=0, compare=False)
 
     def __post_init__(self) -> None:
@@ -186,6 +188,11 @@ class Pet(AggregateRoot):
 
     def set_status(self, status: PetStatus) -> None:
         self.status = status
+
+    def set_photo(self, key: str | None) -> str | None:
+        """Cambia (o quita, con None) la foto y devuelve la clave anterior, para borrarla."""
+        previous, self.photo_key = self.photo_key, key
+        return previous
 
     def record_weight(self, record: WeightRecord) -> None:
         self.weights = sorted([*self.weights, record], key=lambda w: w.measured_at)

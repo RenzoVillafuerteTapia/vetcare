@@ -10,8 +10,9 @@ API FastAPI de la plataforma. Arquitectura en [docs/architecture/overview.md](..
 
 ```
 src/vetcare/
-├── shared_kernel/   AggregateRoot, DomainEvent, errores de dominio, Clock, UnitOfWork, UUID v7
-├── platform/        settings, db, outbox, unidad de trabajo, errores HTTP, salud, límite de solicitudes
+├── shared_kernel/   AggregateRoot, DomainEvent, errores de dominio, Clock, UnitOfWork, FileStorage, UUID v7
+├── platform/        settings, db, outbox, unidad de trabajo, errores HTTP, salud, límite de solicitudes,
+│                    almacenamiento de archivos (disco y S3)
 ├── contexts/
 │   └── identity/    cuentas, sesiones, roles, permisos y auditoría (domain, application,
 │                    infrastructure, api, public)

@@ -515,6 +515,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/pets/{pet_id}/photo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Subir o reemplazar la foto de una mascota
+         * @description Imagen JPG, PNG o WebP de hasta 5 MB, en el campo `file` de un formulario `multipart/form-data`. El formato se comprueba con el contenido, no con el nombre.
+         */
+        put: operations["set_pet_photo_api_v1_pets__pet_id__photo_put"];
+        post?: never;
+        /** Quitar la foto de una mascota */
+        delete: operations["remove_pet_photo_api_v1_pets__pet_id__photo_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/pets/{pet_id}/guardians": {
         parameters: {
             query?: never;
@@ -826,6 +847,11 @@ export interface components {
          * @enum {string}
          */
         AppointmentStatus: "requested" | "confirmed" | "checked_in" | "completed" | "cancelled" | "no_show";
+        /** Body_set_pet_photo_api_v1_pets__pet_id__photo_put */
+        Body_set_pet_photo_api_v1_pets__pet_id__photo_put: {
+            /** File */
+            file: string;
+        };
         /** BookAppointmentRequest */
         BookAppointmentRequest: {
             /**
@@ -1205,6 +1231,11 @@ export interface components {
              * @description Notas internas: solo para el personal.
              */
             notes: string | null;
+            /**
+             * Photo Url
+             * @description URL firmada de la foto, válida 5 minutos. Para renovarla, vuelve a pedir la mascota. No la guardes ni la registres.
+             */
+            photo_url: string | null;
             /** Weights */
             weights: components["schemas"]["WeightResponse"][];
             /** Guardians */
@@ -3458,6 +3489,144 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PetResponse"];
+                };
+            };
+            /** @description No autenticado */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Sin permiso */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description No existe */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflicto (duplicado, último dueño o modificación concurrente) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Datos inválidos */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    set_pet_photo_api_v1_pets__pet_id__photo_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pet_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_set_pet_photo_api_v1_pets__pet_id__photo_put"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PetResponse"];
+                };
+            };
+            /** @description No autenticado */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Sin permiso */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description No existe */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflicto (duplicado, último dueño o modificación concurrente) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Datos inválidos */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    remove_pet_photo_api_v1_pets__pet_id__photo_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pet_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };

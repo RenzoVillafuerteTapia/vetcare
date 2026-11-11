@@ -2620,6 +2620,191 @@
         }
       }
     },
+    "/api/v1/pets/{pet_id}/photo": {
+      "put": {
+        "tags": [
+          "Mascotas"
+        ],
+        "summary": "Subir o reemplazar la foto de una mascota",
+        "description": "Imagen JPG, PNG o WebP de hasta 5 MB, en el campo `file` de un formulario `multipart/form-data`. El formato se comprueba con el contenido, no con el nombre.",
+        "operationId": "set_pet_photo_api_v1_pets__pet_id__photo_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "pet_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pet Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_set_pet_photo_api_v1_pets__pet_id__photo_put"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PetResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin permiso",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No existe",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflicto (duplicado, último dueño o modificación concurrente)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Datos inválidos",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Mascotas"
+        ],
+        "summary": "Quitar la foto de una mascota",
+        "operationId": "remove_pet_photo_api_v1_pets__pet_id__photo_delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "pet_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Pet Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PetResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin permiso",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No existe",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflicto (duplicado, último dueño o modificación concurrente)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Datos inválidos",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/pets/{pet_id}/guardians": {
       "post": {
         "tags": [
@@ -4166,6 +4351,20 @@
         ],
         "title": "AppointmentStatus"
       },
+      "Body_set_pet_photo_api_v1_pets__pet_id__photo_put": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_set_pet_photo_api_v1_pets__pet_id__photo_put"
+      },
       "BookAppointmentRequest": {
         "properties": {
           "pet_id": {
@@ -5181,6 +5380,18 @@
             "title": "Notes",
             "description": "Notas internas: solo para el personal."
           },
+          "photo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Photo Url",
+            "description": "URL firmada de la foto, válida 5 minutos. Para renovarla, vuelve a pedir la mascota. No la guardes ni la registres."
+          },
           "weights": {
             "items": {
               "$ref": "#/components/schemas/WeightResponse"
@@ -5209,6 +5420,7 @@
           "status",
           "allergies",
           "notes",
+          "photo_url",
           "weights",
           "guardians"
         ],

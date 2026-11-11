@@ -1,7 +1,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, Request, status
+from fastapi import APIRouter, Depends, Query, Request, UploadFile, status
 
 from vetcare.contexts.customers.api.schemas import (
     ClientPage,
@@ -15,6 +15,7 @@ from vetcare.contexts.customers.api.schemas import (
     WeightRequest,
 )
 from vetcare.contexts.customers.application.services import CustomersService
+from vetcare.contexts.customers.domain.photo import MAX_PHOTO_BYTES
 from vetcare.contexts.identity.public.http import CurrentUser
 from vetcare.platform.errors import problem_responses
 
@@ -153,6 +154,26 @@ async def record_weight(
     pet_id: UUID, body: WeightRequest, user: CurrentUser, service: Customers
 ) -> PetResponse:
     return PetResponse.of(await service.record_weight(user, pet_id, body.kilograms))
+
+
+@pets_router.put(
+    "/{pet_id}/photo",
+    summary="Subir o reemplazar la foto de una mascota",
+    description="Imagen JPG, PNG o WebP de hasta 5 MB, en el campo `file` de un formulario "
+    "`multipart/form-data`. El formato se comprueba con el contenido, no con el nombre.",
+    responses=_WRITE,
+)
+async def set_pet_photo(
+    pet_id: UUID, file: UploadFile, user: CurrentUser, service: Customers
+) -> PetResponse:
+    # Un byte de más basta para saber que excede el límite sin cargar el archivo entero.
+    content = await file.read(MAX_PHOTO_BYTES + 1)
+    return PetResponse.of(await service.set_pet_photo(user, pet_id, content))
+
+
+@pets_router.delete("/{pet_id}/photo", summary="Quitar la foto de una mascota", responses=_WRITE)
+async def remove_pet_photo(pet_id: UUID, user: CurrentUser, service: Customers) -> PetResponse:
+    return PetResponse.of(await service.remove_pet_photo(user, pet_id))
 
 
 @pets_router.post(

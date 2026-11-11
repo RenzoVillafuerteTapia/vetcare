@@ -67,8 +67,9 @@
 | `POST /api/v1/clients/{id}/invitation` | `clients:manage` | Crear la cuenta del cliente y enviarle la invitación a la app |
 | `GET /api/v1/clients/{id}/pets` | Personal | Mascotas del cliente |
 | `POST /api/v1/clients/{id}/pets` | `pets:manage` | Registrar una mascota con el cliente como dueño |
-| `GET /api/v1/pets/{id}` | Personal o tutela activa | Perfil; para el cliente sin notas internas y alergias según permiso |
+| `GET /api/v1/pets/{id}` | Personal o tutela activa | Perfil; para el cliente sin notas internas y alergias según permiso. `photo_url` es una URL firmada que vence a los 5 minutos |
 | `PUT /api/v1/pets/{id}` · `PATCH …/status` · `POST …/weights` | `pets:manage` | Perfil, estado y peso |
+| `PUT /api/v1/pets/{id}/photo` · `DELETE …/photo` | `pets:manage` | Subir (campo `file` en `multipart/form-data`; JPG, PNG o WebP de hasta 5 MB), reemplazar o quitar la foto |
 | `POST /api/v1/pets/{id}/guardians` · `PUT`/`DELETE …/guardians/{client_id}` | `guardianships:manage` | Dueños y responsables autorizados |
 | `GET /api/v1/me/pets` | Cliente | Mascotas donde el cliente autenticado tiene tutela |
 

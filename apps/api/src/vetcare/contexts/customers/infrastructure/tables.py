@@ -49,6 +49,7 @@ pets = Table(
     Column("allergies", Text, nullable=True),
     Column("notes", Text, nullable=True),
     Column("status", String(20), nullable=False),
+    Column("photo_key", String(120), nullable=True),
     Column("created_at", _TS, nullable=False),
     Column("version", Integer, nullable=False),
 )

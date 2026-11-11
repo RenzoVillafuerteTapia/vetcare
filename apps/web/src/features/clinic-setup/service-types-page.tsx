@@ -33,7 +33,7 @@ import {
   KINDS,
   type ServiceType,
 } from "./labels";
-import { EmptyState, ErrorState, LoadingState } from "./query-state";
+import { EmptyState, ErrorState, LoadingState } from "@/components/query-state";
 
 const SERVICE_TYPES = ["clinic", "service-types"] as const;
 

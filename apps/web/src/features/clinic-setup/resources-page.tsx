@@ -32,7 +32,7 @@ import {
   type Resource,
   type ScheduleEntry,
 } from "./labels";
-import { EmptyState, ErrorState, LoadingState } from "./query-state";
+import { EmptyState, ErrorState, LoadingState } from "@/components/query-state";
 import { normalizeSchedule, scheduleProblem, scheduleSummary } from "./schedule";
 import { ScheduleEditor } from "./schedule-editor";
 

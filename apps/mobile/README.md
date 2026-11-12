@@ -2,10 +2,10 @@
 
 App para dueños y responsables de mascotas (React Native + Expo + TypeScript, Android e iOS).
 
-> Estado: **base de la aplicación.** Tiene inicio de sesión, recuperación de sesión al abrir la
-> app, cierre de sesión, solicitud de recuperación de contraseña y un inicio con los módulos que
-> llegan en las fases 2 a 4. Las mascotas, citas y el seguimiento en vivo se agregan con sus
-> endpoints.
+> Estado: **mascotas y citas.** Además del inicio de sesión, la recuperación de sesión al abrir
+> la app y la recuperación de contraseña, muestra las mascotas vinculadas con su perfil y la
+> próxima cita, y permite ver, solicitar, reprogramar y cancelar citas. El seguimiento en vivo
+> llega en la fase 3.
 
 ## Ejecutar
 
@@ -32,10 +32,13 @@ app/                rutas de Expo Router
 ├── login.tsx
 ├── recuperar-contrasena.tsx
 └── (app)/          rutas que requieren sesión
+    ├── index.tsx               inicio: próxima cita y mascotas
+    ├── mascotas/[petId].tsx    perfil de la mascota
+    └── citas/                  listado, detalle, nueva y reprogramar/[id]
 src/
-├── components/     componentes del sistema de diseño (ui.tsx)
+├── components/     componentes del sistema de diseño (ui.tsx), citas y mascotas
 ├── session/        sesión, almacenamiento seguro del refresh token
-├── lib/            errores de la API, entorno, cliente de TanStack Query
+├── lib/            errores de la API, entorno, TanStack Query, hora de la sede, reglas de citas
 ├── theme/          tokens de diseño (los mismos de la web, en hex)
 └── test/           API simulada y pruebas de pantallas
 ```
@@ -51,6 +54,20 @@ src/
   un refresh token ya rotado, la API cerraría la sesión.
 - **La app es solo para el rol cliente.** Una cuenta del personal que inicia sesión aquí recibe un
   mensaje que la envía a la web, y la sesión que abrió se revoca.
+
+## Mascotas y citas
+
+- Las horas se muestran siempre en la hora de la sede (America/Lima), sin depender de la zona
+  del teléfono ni de los datos de `Intl` del motor (`src/lib/time.ts`).
+- La app solo ve lo que la API le entrega: las mascotas donde el cliente tiene una tutela activa
+  y, de ellas, las alergias solo si su tutela permite ver información clínica.
+- Al solicitar o reprogramar solo se ofrecen los horarios libres que informa la API, para los
+  próximos 14 días. Si el horario se ocupa mientras se elige, la API responde 409 y se vuelven a
+  pedir los libres. Cada solicitud lleva una `Idempotency-Key`: reintentar no la duplica.
+- Una cita confirmada se reprograma o cancela con al menos 2 horas de anticipación; una
+  reprogramación vuelve a quedar por confirmar. La app oculta las acciones fuera de plazo, pero
+  la API decide: si rechaza algo (por ejemplo, una tutela sin permiso para reservar), se muestra
+  su mensaje.
 
 ## Diseño
 
@@ -74,3 +91,10 @@ npm test             --workspace @vetcare/mobile
 - `src/test/screens/*.test.tsx`: la app completa con sus rutas reales (`renderRouter`) y la API
   simulada. Expo Router conserva estado global entre montajes de un mismo archivo, por eso cada
   escenario vive en su propio archivo.
+- `fireEvent` de React Native Testing Library 14 es asíncrono: en las pruebas nuevas se espera
+  (`await fireEvent.press(...)`). Sin `await`, dos acciones seguidas se solapan y React puede
+  descartar la actualización de la pantalla.
+- Las pruebas abren la app en el inicio y navegan con `goTo` (`src/test/render-app.tsx`). Abrir
+  la app directamente en una ruta protegida antes de recuperar la sesión no funciona todavía;
+  hará falta para los enlaces de las notificaciones (fase 3).
+- `renderApp(handlers, "/", { now })` fija la hora del reloj falso para las reglas de fechas.

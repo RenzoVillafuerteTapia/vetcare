@@ -37,7 +37,8 @@ que tiene una tutela activa (lo verifica el contexto dueño del dato):
 
 | Permiso del cliente | Alcance |
 |---|---|
-| `own:pets:read` | Perfil de sus mascotas y lo que la veterinaria comparta |
+| `own:profile:manage` | Ver su ficha y corregir su teléfono y dirección |
+| `own:pets:read` | Perfil de sus mascotas y lo que la veterinaria comparta; si es `OWNER`, cambiar la foto |
 | `own:guardianships:manage` | Agregar o revocar responsables autorizados, solo si es `OWNER` |
 | `own:appointments:manage` | Consultar, solicitar, reprogramar y cancelar sus citas |
 | `own:tracking:read` | Seguimiento de sus servicios, solo lo publicado para el cliente |

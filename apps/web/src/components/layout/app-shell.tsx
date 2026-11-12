@@ -1,5 +1,15 @@
 import type { Permission } from "@vetcare/shared";
-import { House, LogOut, Menu, Settings, UserPlus, Users, X, type LucideIcon } from "lucide-react";
+import {
+  CalendarDays,
+  House,
+  LogOut,
+  Menu,
+  Settings,
+  UserPlus,
+  Users,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 import { Dialog } from "radix-ui";
 import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router";
@@ -21,6 +31,7 @@ interface NavItem {
 /** Solo secciones que existen. Cada fase agrega las suyas. */
 const NAV_ITEMS: NavItem[] = [
   { to: "/", label: "Inicio", icon: House },
+  { to: "/agenda", label: "Agenda", icon: CalendarDays, permission: "appointments:read" },
   { to: "/clientes", label: "Clientes", icon: Users, permission: "pets:read", nested: true },
   { to: "/usuarios/invitar", label: "Invitar usuario", icon: UserPlus, permission: "users:manage" },
   {

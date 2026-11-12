@@ -71,5 +71,7 @@ export const admin = () =>
       "pets:read",
       "pets:manage",
       "guardianships:manage",
+      "appointments:read",
+      "appointments:manage",
     ],
   });

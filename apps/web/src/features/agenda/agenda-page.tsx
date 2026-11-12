@@ -29,7 +29,8 @@ import { cn } from "@/lib/utils";
 import { AppointmentDialog } from "./appointment-dialog";
 import { BookDialog } from "./book-dialog";
 import { CLOSED_STATUSES, STATUS_LABELS, STATUS_STYLES, type Appointment } from "./labels";
-import { agendaKey, RESOURCES } from "./queries";
+import { calendarHours } from "./opening-hours";
+import { agendaKey, CALENDAR, RESOURCES } from "./queries";
 import { formatSlot, fromWall, limaTime, limaToday, toWall, wallNow } from "./time";
 
 const PLUGINS = [dayGridPlugin, timeGridPlugin, interactionPlugin, classicThemePlugin];
@@ -63,6 +64,13 @@ export function AgendaPage() {
     queryKey: RESOURCES,
     queryFn: () => unwrap(api.GET("/api/v1/clinic/resources")),
   });
+
+  // El rango de horas sale del horario de atención de la sede, no de un valor fijo.
+  const calendar = useQuery({
+    queryKey: CALENDAR,
+    queryFn: () => unwrap(api.GET("/api/v1/clinic/calendar")),
+  });
+  const hours = calendarHours(calendar.data);
 
   const agenda = useQuery({
     queryKey: agendaKey(range?.from ?? "", range?.to ?? "", resource || null),
@@ -261,9 +269,10 @@ export function AgendaPage() {
           height="100%"
           allDaySlot={false}
           nowIndicator
-          slotMinTime="06:00:00"
-          slotMaxTime="22:00:00"
-          scrollTime="08:00:00"
+          slotMinTime={hours.slotMinTime}
+          slotMaxTime={hours.slotMaxTime}
+          scrollTime={hours.slotMinTime}
+          businessHours={hours.businessHours}
           slotDuration="00:30:00"
           dayMaxEvents={4}
           eventInteractive

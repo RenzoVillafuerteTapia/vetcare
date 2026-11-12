@@ -10,3 +10,4 @@ export const availabilityKey = (serviceTypeId: string, day: string) =>
 /** Catálogo de la sede, compartido con la sección Configuración. */
 export const SERVICE_TYPES = ["clinic", "service-types"] as const;
 export const RESOURCES = ["clinic", "resources"] as const;
+export const CALENDAR = ["clinic", "calendar"] as const;

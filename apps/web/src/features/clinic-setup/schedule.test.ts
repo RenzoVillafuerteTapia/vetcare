@@ -64,3 +64,26 @@ describe("horario semanal", () => {
     expect(scheduleSummary([])).toEqual([]);
   });
 });
+
+describe("franjas hasta la medianoche", () => {
+  it("00:00 como fin es la medianoche, no un fin anterior al inicio", () => {
+    expect(scheduleProblem([{ weekday: 0, start: "20:00", end: "00:00" }])).toBeNull();
+    expect(scheduleProblem([{ weekday: 0, start: "00:00", end: "00:00" }])).toBeNull();
+    expect(
+      scheduleProblem([
+        { weekday: 0, start: "20:00", end: "00:00" },
+        { weekday: 0, start: "22:00", end: "23:00" },
+      ]),
+    ).toMatch(/superpuestas/);
+  });
+
+  it("se resumen como 24:00 o como 24 horas", () => {
+    expect(
+      scheduleSummary([
+        { weekday: 0, start: "00:00", end: "00:00" },
+        { weekday: 1, start: "00:00", end: "00:00" },
+        { weekday: 5, start: "18:00", end: "00:00" },
+      ]),
+    ).toEqual(["Lunes y martes: 24 horas", "Sábado: 18:00–24:00"]);
+  });
+});

@@ -22,6 +22,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 - Web: sección Configuración (solo con `clinic_setup:manage`) con el catálogo de servicios (alta, edición, activar y desactivar), los recursos de la agenda con su horario semanal y sus bloqueos, y el horario de atención y los feriados de la sede; los errores de la API se muestran junto al campo.
 - Web: sección Clientes (con `pets:read`): búsqueda paginada, alta y edición de clientes, invitación a la app, ficha del cliente con sus mascotas, y perfil de la mascota con foto (subir, cambiar y quitar), edición, estado, historial de peso y gestión de dueños y responsables autorizados con sus permisos. Las acciones se muestran según `clients:manage`, `pets:manage` y `guardianships:manage`.
 - Fotos de mascotas: puerto `FileStorage` con almacenamiento en disco (desarrollo y pruebas) y S3 privado (producción), subida validada por contenido (JPG, PNG o WebP de hasta 5 MB), claves sin datos personales y URLs firmadas de 5 minutos que solo recibe quien puede ver la mascota.
+- Web: sección Agenda (con `appointments:read`) con FullCalendar: vistas por día, semana y mes en hora de Lima, filtro por recurso, alta de citas entre los horarios libres (con `Idempotency-Key`), y confirmar, reprogramar, cancelar y registrar llegada, atención completada o inasistencia desde el detalle. Los conflictos y rechazos de la API se muestran en el diálogo.
+- Primer recorrido de extremo a extremo con Playwright (agendar, ver y cancelar una cita contra la API real), con `scripts/e2e-bootstrap.sh` y el workflow `e2e.yml`.
 
 ### Cambiado
 

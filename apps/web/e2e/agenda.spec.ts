@@ -72,7 +72,12 @@ test("recepción agenda una cita, la ve en el calendario y la cancela", async ({
     );
     await booking.getByLabel("Día").fill(day);
     await answered;
+    // La respuesta llega antes de que la lista se dibuje: se espera a una de las dos salidas.
     const options = time.locator("option:not([value=''])");
+    const noSlots = booking.getByText("No hay horarios libres ese día");
+    await expect
+      .poll(async () => (await options.count()) > 0 || (await noSlots.isVisible()))
+      .toBe(true);
     if ((await options.count()) > 0) {
       slot = (await options.first().textContent()) ?? "";
       await time.selectOption({ index: 1 });

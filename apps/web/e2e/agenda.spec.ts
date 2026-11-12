@@ -98,11 +98,12 @@ test("recepción agenda una cita, la ve en el calendario y la cancela", async ({
   await expect(detail.getByText(slot)).toBeVisible();
   await expect(detail.getByText("Recorrido E2E")).toBeVisible();
 
-  // --- Una transición que la API rechaza se explica al usuario ---
-  await detail.getByRole("button", { name: "No asistió" }).click();
-  await expect(detail.getByRole("alert")).toContainText(
-    "La inasistencia se registra después de la hora de la cita.",
-  );
+  // --- La llegada y la inasistencia no se ofrecen antes de tiempo ---
+  await expect(detail.getByRole("button", { name: "No asistió" })).toBeHidden();
+  await expect(detail.getByRole("button", { name: "Registrar llegada" })).toBeHidden();
+  await expect(detail.getByText(/La llegada se registra desde 2 horas antes/)).toBeVisible();
+  // El responsable se muestra para distinguir mascotas con el mismo nombre.
+  await expect(detail.getByRole("link", { name: client.full_name })).toBeVisible();
 
   // --- Cancelar ---
   await detail.getByRole("button", { name: "Cancelar cita" }).click();

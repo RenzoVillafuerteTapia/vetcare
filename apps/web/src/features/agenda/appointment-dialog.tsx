@@ -16,6 +16,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { usePermission, useSessionManager } from "@/features/auth/session-context";
+import { clientKey } from "@/features/customers/queries";
 import { errorMessage, unwrap } from "@/lib/api-error";
 
 import { HISTORY_LABELS, STATUS_LABELS, STATUS_STYLES, type Appointment } from "./labels";
@@ -24,6 +25,9 @@ import { SlotPicker } from "./slot-picker";
 import { formatSlot, formatStamp, limaDay } from "./time";
 
 type Transition = "confirm" | "check-in" | "complete" | "no-show";
+
+/** La llegada se registra desde esta antelación; la inasistencia, una vez pasada la hora. */
+const CHECK_IN_WINDOW_MS = 2 * 60 * 60 * 1000;
 
 const TRANSITION_PATHS = {
   confirm: "/api/v1/appointments/{appointment_id}/confirm",
@@ -59,10 +63,25 @@ export function AppointmentDialog({ appointment, onChanged }: AppointmentDialogP
   const [day, setDay] = useState(limaDay(appointment.start));
   const [start, setStart] = useState("");
   const [missingStart, setMissingStart] = useState(false);
+  // Momento en que se abrió el detalle: decide qué acciones de llegada se ofrecen.
+  const [openedAt] = useState(() => Date.now());
 
   const resources = useQuery({
     queryKey: RESOURCES,
     queryFn: () => unwrap(api.GET("/api/v1/clinic/resources")),
+  });
+  // Varias mascotas comparten nombre: el responsable y su teléfono las distinguen.
+  const owner = useQuery({
+    queryKey: clientKey(appointment.client_id),
+    queryFn: () =>
+      unwrap(
+        api.GET("/api/v1/clients/{client_id}", {
+          params: { path: { client_id: appointment.client_id } },
+        }),
+      ),
+    enabled: canSeePets,
+    // La misma ficha que ya pidió el calendario; editar al cliente invalida la consulta.
+    staleTime: 5 * 60 * 1000,
   });
   const resourceNames = appointment.resource_ids
     .map((id) => resources.data?.find((resource) => resource.id === id)?.name)
@@ -125,6 +144,9 @@ export function AppointmentDialog({ appointment, onChanged }: AppointmentDialogP
 
   const { status } = appointment;
   const open = status === "requested" || status === "confirmed";
+  const untilStart = Date.parse(appointment.start) - openedAt;
+  const canCheckIn = untilStart <= CHECK_IN_WINDOW_MS;
+  const canMarkNoShow = untilStart <= 0;
 
   return (
     <DialogContent>
@@ -159,6 +181,30 @@ export function AppointmentDialog({ appointment, onChanged }: AppointmentDialogP
               appointment.pet_name
             )}
           </Fact>
+          {canSeePets ? (
+            <Fact label="Responsable">
+              {owner.data ? (
+                <span className="grid gap-0.5">
+                  <Link
+                    to={`/clientes/${owner.data.id}`}
+                    className="font-semibold text-primary underline-offset-4 hover:underline"
+                  >
+                    {owner.data.full_name}
+                  </Link>
+                  <a
+                    href={`tel:${owner.data.phone}`}
+                    className="text-muted-foreground underline-offset-4 hover:underline"
+                  >
+                    {owner.data.phone}
+                  </a>
+                </span>
+              ) : owner.isError ? (
+                "—"
+              ) : (
+                <span className="text-muted-foreground">Cargando…</span>
+              )}
+            </Fact>
+          ) : null}
           <Fact label="Atiende">{resourceNames.length > 0 ? resourceNames.join(" · ") : "—"}</Fact>
           <Fact label="Origen">
             {appointment.channel === "client"
@@ -259,9 +305,16 @@ export function AppointmentDialog({ appointment, onChanged }: AppointmentDialogP
             </>
           ) : null}
           {canManage && status === "requested" ? act("confirm") : null}
-          {canManage && status === "confirmed" ? [act("no-show"), act("check-in")] : null}
+          {canManage && status === "confirmed" && canMarkNoShow ? act("no-show") : null}
+          {canManage && status === "confirmed" && canCheckIn ? act("check-in") : null}
           {canManage && status === "checked_in" ? act("complete") : null}
         </DialogFooter>
+      ) : null}
+      {mode === "detail" && canManage && status === "confirmed" && !canCheckIn ? (
+        <p className="text-right text-xs text-muted-foreground">
+          La llegada se registra desde 2 horas antes de la cita y la inasistencia, después de la
+          hora.
+        </p>
       ) : null}
     </DialogContent>
   );

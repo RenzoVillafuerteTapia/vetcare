@@ -9,7 +9,7 @@ import interactionPlugin from "@fullcalendar/react/interaction";
 import esLocale from "@fullcalendar/react/locales/es";
 import classicThemePlugin from "@fullcalendar/react/themes/classic";
 import timeGridPlugin from "@fullcalendar/react/timegrid";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQueries, useQuery } from "@tanstack/react-query";
 import { CalendarCheck, ChevronLeft, ChevronRight, LoaderCircle, Plus } from "lucide-react";
 import { useId, useMemo, useState } from "react";
 
@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { usePermission, useSessionManager } from "@/features/auth/session-context";
 import { KIND_LABELS, KINDS } from "@/features/clinic-setup/labels";
+import { clientKey } from "@/features/customers/queries";
 import { unwrap } from "@/lib/api-error";
 import { cn } from "@/lib/utils";
 
@@ -89,6 +90,26 @@ export function AgendaPage() {
       ),
     [agenda.data, showClosed],
   );
+  // El responsable distingue a las mascotas con el mismo nombre. Cada ficha se pide una vez.
+  const canSeePets = usePermission("pets:read");
+  const clientIds = useMemo(
+    () => [...new Set(appointments.map((appointment) => appointment.client_id))],
+    [appointments],
+  );
+  const owners = useQueries({
+    queries: clientIds.map((id) => ({
+      queryKey: clientKey(id),
+      queryFn: () =>
+        unwrap(api.GET("/api/v1/clients/{client_id}", { params: { path: { client_id: id } } })),
+      enabled: canSeePets,
+      staleTime: 5 * 60 * 1000,
+    })),
+  });
+  const ownerNames = new Map(
+    owners.flatMap((owner) => (owner.data ? [[owner.data.id, owner.data.full_name]] : [])),
+  );
+  const ownerKey = clientIds.map((id) => ownerNames.get(id) ?? "").join("|");
+
   const events = useMemo(
     () =>
       appointments.map((appointment) => ({
@@ -96,9 +117,11 @@ export function AgendaPage() {
         title: `${appointment.pet_name} · ${appointment.service_name}`,
         start: toWall(appointment.start),
         end: toWall(appointment.end),
-        extendedProps: { appointment },
+        extendedProps: { appointment, owner: ownerNames.get(appointment.client_id) },
       })),
-    [appointments],
+    // ownerKey cambia cuando llega el nombre de algún responsable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [appointments, ownerKey],
   );
 
   const view = controller.view;
@@ -234,16 +257,25 @@ export function AgendaPage() {
           slotHeaderFormat={{ hour: "2-digit", minute: "2-digit", hour12: false }}
           events={events}
           eventContent={(info) => {
-            const { appointment } = info.event.extendedProps as { appointment: Appointment };
-            // Primero la mascota: en una columna angosta es lo que cabe, y la hora ya la da la
-            // posición en la grilla.
+            const { appointment, owner } = info.event.extendedProps as {
+              appointment: Appointment;
+              owner?: string;
+            };
+            // Primero la mascota y su responsable: en una columna angosta es lo que cabe, y la
+            // hora ya la da la posición en la grilla.
             return (
               <div
                 className="truncate px-1.5 py-0.5 text-xs leading-tight"
-                title={`${limaTime(appointment.start)} – ${limaTime(appointment.end)}`}
+                title={[
+                  `${limaTime(appointment.start)} – ${limaTime(appointment.end)}`,
+                  info.event.title,
+                  owner,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
               >
-                <span>{info.event.title}</span>{" "}
-                <span className="font-normal">{limaTime(appointment.start)}</span>
+                <span>{info.event.title}</span>
+                {owner ? <span className="font-normal"> · {owner}</span> : null}
               </div>
             );
           }}

@@ -319,23 +319,74 @@ describe("detalle y estados de una cita", () => {
   it("muestra el motivo si la API rechaza la transición", async () => {
     const api = createFakeApi(
       agendaRoutes(() => [cita], {
-        [`POST /api/v1/appointments/${cita.id}/no-show`]: () =>
+        [`POST /api/v1/appointments/${cita.id}/check-in`]: () =>
           problem(
             409,
-            "no_show_too_early",
-            "La inasistencia se registra después de la hora de la cita.",
+            "invalid_appointment_transition",
+            "No se puede registrar la llegada de una cita cancelada.",
           ),
       }),
     );
     renderApp("/agenda", api.fetch);
     const dialog = within(await open());
 
-    await userEvent.click(dialog.getByRole("button", { name: "No asistió" }));
+    await userEvent.click(dialog.getByRole("button", { name: "Registrar llegada" }));
 
     expect(await dialog.findByRole("alert")).toHaveTextContent(
-      "La inasistencia se registra después de la hora de la cita.",
+      "No se puede registrar la llegada de una cita cancelada.",
     );
     expect(dialog.getByText("Confirmada")).toBeInTheDocument();
+  });
+
+  it("ofrece la llegada desde 2 horas antes y la inasistencia solo pasada la hora", async () => {
+    // Son las 09:00. Mañana a las 10:30: ni llegada ni inasistencia.
+    const manana: Appointment = {
+      ...cita,
+      start: "2026-11-13T15:30:00Z",
+      end: "2026-11-13T16:00:00Z",
+    };
+    // Hoy a las 08:00, ya pasada: llegada (tardía) e inasistencia.
+    const pasada: Appointment = {
+      ...cita,
+      id: "0192f0a4-0000-7000-8000-0000000000d3",
+      pet_name: "Toby",
+      start: "2026-11-12T13:00:00Z",
+      end: "2026-11-12T13:30:00Z",
+    };
+    renderApp("/agenda", createFakeApi(agendaRoutes(() => [manana, pasada])).fetch);
+
+    await userEvent.click(await screen.findByText("Luna · Consulta general"));
+    let dialog = within(await screen.findByRole("dialog", { name: "Luna · Consulta general" }));
+    expect(dialog.queryByRole("button", { name: "Registrar llegada" })).not.toBeInTheDocument();
+    expect(dialog.queryByRole("button", { name: "No asistió" })).not.toBeInTheDocument();
+    expect(dialog.getByText(/La llegada se registra desde 2 horas antes/)).toBeInTheDocument();
+    expect(dialog.getByRole("button", { name: "Reprogramar" })).toBeInTheDocument();
+    await userEvent.keyboard("{Escape}");
+
+    await userEvent.click(await screen.findByText("Toby · Consulta general"));
+    dialog = within(await screen.findByRole("dialog", { name: "Toby · Consulta general" }));
+    expect(dialog.getByRole("button", { name: "Registrar llegada" })).toBeInTheDocument();
+    expect(dialog.getByRole("button", { name: "No asistió" })).toBeInTheDocument();
+  });
+
+  it("muestra el responsable con su teléfono, también en el calendario", async () => {
+    const api = createFakeApi(
+      agendaRoutes(() => [cita], { [`GET /api/v1/clients/${rosa.id}`]: () => json(rosa) }),
+    );
+    renderApp("/agenda", api.fetch);
+
+    expect(await screen.findByText("· Rosa Quispe Mamani")).toBeInTheDocument();
+    const dialog = within(await open());
+    expect(await dialog.findByRole("link", { name: "Rosa Quispe Mamani" })).toHaveAttribute(
+      "href",
+      `/clientes/${rosa.id}`,
+    );
+    expect(dialog.getByRole("link", { name: "987654321" })).toHaveAttribute(
+      "href",
+      "tel:987654321",
+    );
+    // La ficha se pidió una sola vez, aunque la usan el calendario y el detalle.
+    expect(api.calls(`GET /api/v1/clients/${rosa.id}`)).toHaveLength(1);
   });
 
   it("cancela con un motivo", async () => {

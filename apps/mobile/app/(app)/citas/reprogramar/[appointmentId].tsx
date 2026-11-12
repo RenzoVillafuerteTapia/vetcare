@@ -53,7 +53,7 @@ export default function RescheduleScreen() {
   });
 
   return (
-    <Screen>
+    <Screen tabs>
       <BackLink />
       <View style={{ gap: spacing(1.5) }}>
         <Heading>Reprogramar</Heading>

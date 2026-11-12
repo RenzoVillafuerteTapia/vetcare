@@ -41,26 +41,39 @@ it("solicita una cita entre los horarios libres y reintenta con la misma clave",
   await goTo("/citas/nueva");
 
   expect(await screen.findByRole("header", { name: "Solicitar una cita" })).toBeOnTheScreen();
-  // Solo mascotas activas y servicios activos.
-  expect(await screen.findByRole("radio", { name: "Luna" })).toBeOnTheScreen();
+  expect(screen.getByText("Paso 1 de 3 · Mascota y servicio")).toBeOnTheScreen();
+  // Solo mascotas activas y servicios activos. Con una sola mascota activa, ya está elegida.
+  expect(await screen.findByRole("radio", { name: "Luna" })).toBeChecked();
   expect(screen.queryByRole("radio", { name: "Toby" })).not.toBeOnTheScreen();
   expect(screen.queryByRole("radio", { name: "Cirugía" })).not.toBeOnTheScreen();
 
-  await fireEvent.press(screen.getByRole("button", { name: "Enviar solicitud" }));
-  expect(await screen.findByText("Elige la mascota.")).toBeOnTheScreen();
-  expect(screen.getByText("Elige el servicio.")).toBeOnTheScreen();
-  expect(api.calls("POST /api/v1/appointments")).toHaveLength(0);
-
-  await fireEvent.press(screen.getByRole("radio", { name: "Luna" }));
+  // Paso 1: sin servicio no avanza.
+  await fireEvent.press(screen.getByRole("button", { name: "Siguiente" }));
+  expect(await screen.findByText("Elige el servicio.")).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("radio", { name: "Consulta general" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Siguiente" }));
+
+  // Paso 2: día y hora. Sin hora no avanza.
+  expect(await screen.findByText("Paso 2 de 3 · Día y hora")).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole("radio", { name: "Mañana" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Siguiente" }));
+  expect(await screen.findByText("Elige una hora libre.")).toBeOnTheScreen();
   await fireEvent.press(await screen.findByRole("radio", { name: "10:30" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Siguiente" }));
+
+  // Paso 3: resumen y motivo.
+  expect(await screen.findByText("Paso 3 de 3 · Confirmar")).toBeOnTheScreen();
+  expect(screen.getByText("viernes 13 de noviembre")).toBeOnTheScreen();
+  expect(screen.getByText("10:30")).toBeOnTheScreen();
   await fireEvent.changeText(screen.getByLabelText("Motivo (opcional)"), "Tose de noche");
+  expect(api.calls("POST /api/v1/appointments")).toHaveLength(0);
   await fireEvent.press(screen.getByRole("button", { name: "Enviar solicitud" }));
 
+  // El horario se ocupó: vuelve al paso de la hora con los horarios renovados.
   expect(
     await screen.findByText("El horario ya no está disponible. Elige otro."),
   ).toBeOnTheScreen();
+  expect(screen.getByText("Paso 2 de 3 · Día y hora")).toBeOnTheScreen();
   // Primero hoy (el día por defecto) y luego mañana, siempre para el servicio elegido.
   const queried = api
     .calls("GET /api/v1/scheduling/availability")
@@ -74,7 +87,8 @@ it("solicita una cita entre los horarios libres y reintenta con la misma clave",
 
   taken = false;
   await fireEvent.press(await screen.findByRole("radio", { name: "11:00" }));
-  await fireEvent.press(screen.getByRole("button", { name: "Enviar solicitud" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Siguiente" }));
+  await fireEvent.press(await screen.findByRole("button", { name: "Enviar solicitud" }));
   await waitFor(() => expect(api.calls("POST /api/v1/appointments")).toHaveLength(2));
 
   expect(

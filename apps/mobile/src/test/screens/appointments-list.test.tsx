@@ -21,17 +21,26 @@ it("lista las próximas citas y las anteriores, y abre el detalle", async () => 
   );
   await goTo("/citas");
 
-  expect(await screen.findByRole("header", { name: "Próximas" })).toBeOnTheScreen();
-  expect(screen.getByRole("header", { name: "Anteriores" })).toBeOnTheScreen();
+  // Próximas e historial van en pestañas separadas, con su cantidad.
+  expect(await screen.findByRole("tab", { name: "Próximas (1)" })).toBeOnTheScreen();
   expect(
-    screen.getByRole("button", {
+    await screen.findByRole("button", {
+      name: "Cita de Luna: Consulta general, viernes 13 de noviembre · 10:30 – 11:00",
+    }),
+  ).toBeOnTheScreen();
+  expect(screen.queryByText("Completada")).not.toBeOnTheScreen();
+
+  await fireEvent.press(screen.getByRole("tab", { name: "Historial (1)" }));
+  expect(
+    await screen.findByRole("button", {
       name: "Cita de Luna: Vacunación, lunes 12 de octubre · 10:00 – 10:15",
     }),
   ).toBeOnTheScreen();
   expect(screen.getByText("Completada")).toBeOnTheScreen();
 
+  await fireEvent.press(screen.getByRole("tab", { name: "Próximas (1)" }));
   await fireEvent.press(
-    screen.getByRole("button", {
+    await screen.findByRole("button", {
       name: "Cita de Luna: Consulta general, viernes 13 de noviembre · 10:30 – 11:00",
     }),
   );

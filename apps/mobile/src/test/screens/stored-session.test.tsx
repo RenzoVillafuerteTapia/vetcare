@@ -17,7 +17,9 @@ it("recupera la sesión guardada al abrir la app y permite cerrarla", async () =
   });
 
   expect(await screen.findByRole("header", { name: "Hola, Ana" })).toBeOnTheScreen();
-  fireEvent.press(screen.getByRole("button", { name: "Cerrar sesión" }));
+  // El cierre de sesión está en la pestaña Cuenta; el avatar del inicio lleva a ella.
+  await fireEvent.press(screen.getByRole("button", { name: "Sesión de Ana Pérez" }));
+  await fireEvent.press(await screen.findByRole("button", { name: "Cerrar sesión" }));
 
   expect(await screen.findByRole("header", { name: "Iniciar sesión" })).toBeOnTheScreen();
   expect(await api.calls("POST /api/v1/auth/logout")[0]?.json()).toEqual({

@@ -88,6 +88,22 @@ export class SessionManager {
     await this.startSession(tokens.access_token, tokens.expires_in);
   }
 
+  /**
+   * Cambia la contraseña. La API cierra todas las sesiones y entrega una nueva, que reemplaza a
+   * la guardada: el dispositivo sigue conectado y los demás quedan fuera.
+   */
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    const tokens = await unwrap(
+      this.api.POST("/api/v1/auth/password", {
+        body: { current_password: currentPassword, new_password: newPassword, client: "mobile" },
+      }),
+    );
+    if (tokens.refresh_token) {
+      await this.store.set(tokens.refresh_token);
+    }
+    await this.startSession(tokens.access_token, tokens.expires_in);
+  }
+
   async logout(reason: "expired" | "logged_out" = "logged_out"): Promise<void> {
     const refreshToken = await this.store.get();
     try {

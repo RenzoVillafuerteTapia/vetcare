@@ -11,6 +11,8 @@ it("recupera la sesión guardada al abrir la app y permite cerrarla", async () =
   const { api } = await renderApp({
     "POST /api/v1/auth/refresh": () => tokens("access-2", "refresh-rotado"),
     "GET /api/v1/auth/me": () => json(user()),
+    "GET /api/v1/me/pets": () => json([]),
+    "GET /api/v1/me/appointments": () => json([]),
     "POST /api/v1/auth/logout": () => empty(),
   });
 

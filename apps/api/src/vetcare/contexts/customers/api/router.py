@@ -8,6 +8,8 @@ from vetcare.contexts.customers.api.schemas import (
     ClientRequest,
     ClientResponse,
     GuardianRequest,
+    MyProfileRequest,
+    MyProfileResponse,
     PetRequest,
     PetResponse,
     PetStatusRequest,
@@ -15,6 +17,7 @@ from vetcare.contexts.customers.api.schemas import (
     WeightRequest,
 )
 from vetcare.contexts.customers.application.services import CustomersService
+from vetcare.contexts.customers.domain.client import PhoneNumber
 from vetcare.contexts.customers.domain.photo import MAX_PHOTO_BYTES
 from vetcare.contexts.identity.public.http import CurrentUser
 from vetcare.platform.errors import problem_responses
@@ -160,7 +163,8 @@ async def record_weight(
     "/{pet_id}/photo",
     summary="Subir o reemplazar la foto de una mascota",
     description="Imagen JPG, PNG o WebP de hasta 5 MB, en el campo `file` de un formulario "
-    "`multipart/form-data`. El formato se comprueba con el contenido, no con el nombre.",
+    "`multipart/form-data`. El formato se comprueba con el contenido, no con el nombre. "
+    "La sube el personal o, desde la app, un dueño de la mascota.",
     responses=_WRITE,
 )
 async def set_pet_photo(
@@ -231,3 +235,28 @@ async def revoke_guardian(
 )
 async def my_pets(user: CurrentUser, service: Customers) -> list[PetResponse]:
     return [PetResponse.of(d) for d in await service.my_pets(user)]
+
+
+@me_router.get(
+    "/profile",
+    summary="Mis datos de contacto",
+    description="Ficha del cliente vinculada a la cuenta, sin las notas internas.",
+    responses=_READ,
+)
+async def my_profile(user: CurrentUser, service: Customers) -> MyProfileResponse:
+    return MyProfileResponse.of(await service.my_profile(user))
+
+
+@me_router.put(
+    "/profile",
+    summary="Actualizar mi teléfono y dirección",
+    description=(
+        "El nombre y el documento los corrige la veterinaria; el correo es el de la cuenta."
+    ),
+    responses=_WRITE,
+)
+async def update_my_profile(
+    body: MyProfileRequest, user: CurrentUser, service: Customers
+) -> MyProfileResponse:
+    client = await service.update_my_profile(user, PhoneNumber(body.phone), body.address)
+    return MyProfileResponse.of(client)

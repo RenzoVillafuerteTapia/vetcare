@@ -32,6 +32,7 @@ class Permission(StrEnum):
     AUDIT_READ = "audit:read"
     # Permisos de un cliente sobre lo propio. El contexto dueño del dato verifica además la
     # relación (tutela) con el recurso concreto.
+    OWN_PROFILE_MANAGE = "own:profile:manage"
     OWN_PETS_READ = "own:pets:read"
     OWN_GUARDIANSHIPS_MANAGE = "own:guardianships:manage"
     OWN_APPOINTMENTS_MANAGE = "own:appointments:manage"
@@ -96,6 +97,7 @@ ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
     ),
     Role.CLIENT: frozenset(
         {
+            P.OWN_PROFILE_MANAGE,
             P.OWN_PETS_READ,
             P.OWN_GUARDIANSHIPS_MANAGE,
             P.OWN_APPOINTMENTS_MANAGE,

@@ -249,6 +249,73 @@
         ]
       }
     },
+    "/api/v1/auth/password": {
+      "post": {
+        "tags": [
+          "Autenticación"
+        ],
+        "summary": "Cambiar la contraseña con la actual",
+        "description": "Cierra todas las sesiones abiertas y devuelve una nueva para quien hizo el cambio. Una contraseña actual errónea cuenta como intento fallido para el bloqueo de la cuenta.",
+        "operationId": "change_password_api_v1_auth_password_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado o credenciales inválidas",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Datos inválidos",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Demasiadas solicitudes; reintenta después de Retry-After",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/auth/invitations/accept": {
       "post": {
         "tags": [
@@ -2626,7 +2693,7 @@
           "Mascotas"
         ],
         "summary": "Subir o reemplazar la foto de una mascota",
-        "description": "Imagen JPG, PNG o WebP de hasta 5 MB, en el campo `file` de un formulario `multipart/form-data`. El formato se comprueba con el contenido, no con el nombre.",
+        "description": "Imagen JPG, PNG o WebP de hasta 5 MB, en el campo `file` de un formulario `multipart/form-data`. El formato se comprueba con el contenido, no con el nombre. La sube el personal o, desde la app, un dueño de la mascota.",
         "operationId": "set_pet_photo_api_v1_pets__pet_id__photo_put",
         "security": [
           {
@@ -3152,6 +3219,148 @@
           },
           "404": {
             "description": "No existe",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/me/profile": {
+      "get": {
+        "tags": [
+          "Mi cuenta"
+        ],
+        "summary": "Mis datos de contacto",
+        "description": "Ficha del cliente vinculada a la cuenta, sin las notas internas.",
+        "operationId": "my_profile_api_v1_me_profile_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyProfileResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin acceso",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No existe",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Mi cuenta"
+        ],
+        "summary": "Actualizar mi teléfono y dirección",
+        "description": "El nombre y el documento los corrige la veterinaria; el correo es el de la cuenta.",
+        "operationId": "update_my_profile_api_v1_me_profile_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MyProfileRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyProfileResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin permiso",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No existe",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflicto (duplicado, último dueño o modificación concurrente)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Datos inválidos",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -4490,6 +4699,39 @@
         "type": "object",
         "title": "CancelRequest"
       },
+      "ChangePasswordRequest": {
+        "properties": {
+          "current_password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Current Password"
+          },
+          "new_password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "New Password"
+          },
+          "client": {
+            "type": "string",
+            "enum": [
+              "web",
+              "mobile"
+            ],
+            "title": "Client",
+            "description": "Dónde entregar la sesión nueva, igual que al iniciar sesión."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "current_password",
+          "new_password",
+          "client"
+        ],
+        "title": "ChangePasswordRequest"
+      },
       "Channel": {
         "type": "string",
         "enum": [
@@ -5127,6 +5369,86 @@
         "type": "object",
         "title": "LogoutRequest"
       },
+      "MyProfileRequest": {
+        "properties": {
+          "phone": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 6,
+            "title": "Phone"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "phone"
+        ],
+        "title": "MyProfileRequest"
+      },
+      "MyProfileResponse": {
+        "properties": {
+          "full_name": {
+            "type": "string",
+            "title": "Full Name"
+          },
+          "document_type": {
+            "$ref": "#/components/schemas/DocumentType"
+          },
+          "document_number": {
+            "type": "string",
+            "title": "Document Number"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          }
+        },
+        "type": "object",
+        "required": [
+          "full_name",
+          "document_type",
+          "document_number",
+          "phone",
+          "email",
+          "address"
+        ],
+        "title": "MyProfileResponse",
+        "description": "Los datos que el cliente ve de sí mismo. Las notas internas no se incluyen."
+      },
       "OpeningHoursRequest": {
         "properties": {
           "opening_hours": {
@@ -5201,6 +5523,7 @@
           "tracking:authorize_discharge",
           "tracking:hand_over",
           "audit:read",
+          "own:profile:manage",
           "own:pets:read",
           "own:guardianships:manage",
           "own:appointments:manage",
@@ -5405,6 +5728,11 @@
             },
             "type": "array",
             "title": "Guardians"
+          },
+          "can_change_photo": {
+            "type": "boolean",
+            "title": "Can Change Photo",
+            "description": "Si quien consulta puede subir o quitar la foto: el personal o un dueño."
           }
         },
         "type": "object",
@@ -5422,7 +5750,8 @@
           "notes",
           "photo_url",
           "weights",
-          "guardians"
+          "guardians",
+          "can_change_photo"
         ],
         "title": "PetResponse"
       },

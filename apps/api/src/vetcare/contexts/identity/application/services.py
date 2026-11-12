@@ -33,6 +33,7 @@ from vetcare.shared_kernel.clock import Clock
 from vetcare.shared_kernel.errors import (
     AuthenticationError,
     ConflictError,
+    FieldError,
     NotFoundError,
     PermissionDeniedError,
     ValidationFailedError,
@@ -42,6 +43,10 @@ from vetcare.shared_kernel.ids import new_id
 logger = logging.getLogger(__name__)
 
 INVALID_CREDENTIALS = "Correo o contraseña incorrectos."
+
+
+def _field_error(field_name: str, message: str) -> ValidationFailedError:
+    return ValidationFailedError(message, [FieldError(field_name, message)])
 
 
 @dataclass(frozen=True)
@@ -350,6 +355,52 @@ class IdentityService:
             )
             await self._audit(uow, AuditAction.PASSWORD_RESET_COMPLETED, user.id, ctx, user)
             await uow.commit()
+
+    async def change_password(
+        self, actor: UserAccount, current: str, new: str, ctx: RequestContext
+    ) -> SessionTokens:
+        """Cambia la contraseña con la actual. Cierra todas las sesiones y abre una nueva para
+        quien hizo el cambio, así no tiene que volver a ingresar."""
+        now = self._clock.now()
+        async with self._uow_factory() as uow:
+            user = await uow.users.get(actor.id)
+            if user is None or user.password_hash is None:
+                raise AuthenticationError("Tu sesión no es válida. Inicia sesión de nuevo.")
+            if not self._hasher.verify(user.password_hash, current):
+                # Cuenta como un intento fallido: adivinar la actual también bloquea la cuenta.
+                was_locked = user.is_locked(now)
+                user.record_failed_login(now, self._lockout)
+                await uow.users.save(user)
+                uow.track(user)
+                await self._audit(
+                    uow, AuditAction.LOGIN_FAILED, user.id, ctx, user, reason="password_change"
+                )
+                if user.is_locked(now) and not was_locked:
+                    await self._audit(uow, AuditAction.ACCOUNT_LOCKED, user.id, ctx, user)
+                await uow.commit()
+                raise _field_error("current_password", "La contraseña actual no es correcta.")
+            if new == current:
+                raise _field_error("new_password", "Elige una contraseña distinta de la actual.")
+            try:
+                validate_password(new, user.email)
+            except ValidationFailedError as error:
+                raise ValidationFailedError(
+                    str(error), [FieldError("new_password", e.message) for e in error.errors]
+                ) from None
+            user.change_password(self._hasher.hash(new))
+            await uow.users.save(user)
+            await uow.refresh_tokens.revoke_all_for_user(
+                user.id, RevocationReason.PASSWORD_CHANGED, now
+            )
+            refresh = generate_token()
+            await uow.refresh_tokens.add(
+                RefreshTokenFamily.start(
+                    id=new_id(), user_id=user.id, token_hash=hash_token(refresh), now=now
+                )
+            )
+            await self._audit(uow, AuditAction.PASSWORD_CHANGED, user.id, ctx, user)
+            await uow.commit()
+            return SessionTokens(self._access_tokens.issue(user, now), refresh)
 
     # --- Auxiliares -----------------------------------------------------------------------
 

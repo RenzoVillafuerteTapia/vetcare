@@ -127,9 +127,8 @@ async def test_solo_quien_puede_ver_la_mascota_recibe_la_url(api: Api) -> None:
     assert (
         await api.client.get(f"/api/v1/pets/{toby['id']}", headers=auth(token_ana))
     ).status_code == 404
-    # Un cliente no sube ni quita fotos, ni siquiera de su mascota.
-    assert (await subir(api, token_ana, luna["id"], PNG)).status_code == 403
-    assert (await subir(api, token_ana, toby["id"], PNG)).status_code == 403
+    # Un cliente no toca la foto de una mascota ajena (la del dueño, en test_client_self_service).
+    assert (await subir(api, token_ana, toby["id"], PNG)).status_code == 404
 
     # Un responsable autorizado la ve mientras dure su tutela.
     await create(

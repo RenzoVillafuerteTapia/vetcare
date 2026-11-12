@@ -13,6 +13,7 @@ class AuditAction(StrEnum):
     REFRESH_REUSE_DETECTED = "auth.refresh_reuse_detected"
     PASSWORD_RESET_REQUESTED = "auth.password_reset_requested"  # noqa: S105
     PASSWORD_RESET_COMPLETED = "auth.password_reset_completed"  # noqa: S105
+    PASSWORD_CHANGED = "auth.password_changed"  # noqa: S105
     USER_INVITED = "users.invited"
     INVITATION_RESENT = "users.invitation_resent"
     USER_ACTIVATED = "users.activated"

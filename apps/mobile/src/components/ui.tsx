@@ -9,11 +9,12 @@ import {
   PawPrint,
   type LucideIcon,
 } from "lucide-react-native";
-import { useId, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import {
   ActivityIndicator,
   Modal,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -54,13 +55,23 @@ export function Screen({
   contentStyle,
   tabs = false,
   footer,
+  onRefresh,
 }: {
   children: ReactNode;
   background?: string;
   contentStyle?: StyleProp<ViewStyle>;
   tabs?: boolean;
   footer?: ReactNode;
+  /** Deslizar hacia abajo para actualizar. */
+  onRefresh?: () => Promise<unknown>;
 }) {
+  const [refreshing, setRefreshing] = useState(false);
+  const refresh = onRefresh
+    ? () => {
+        setRefreshing(true);
+        void onRefresh().finally(() => setRefreshing(false));
+      }
+    : undefined;
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor: background }}
@@ -69,6 +80,16 @@ export function Screen({
       <ScrollView
         contentContainerStyle={[styles.screen, contentStyle]}
         keyboardShouldPersistTaps="handled"
+        refreshControl={
+          refresh ? (
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={refresh}
+              colors={[colors.primary]}
+              tintColor={colors.primary}
+            />
+          ) : undefined
+        }
       >
         {children}
       </ScrollView>

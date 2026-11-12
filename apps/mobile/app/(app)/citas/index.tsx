@@ -28,10 +28,10 @@ export default function AppointmentsScreen() {
   const shown = view === "proximas" ? next : previous;
 
   return (
-    <Screen tabs>
+    <Screen tabs onRefresh={() => appointments.refetch()}>
       <PageHeader
         title="Citas"
-        subtitle="Las próximas y las de los últimos 90 días."
+        subtitle="Se actualizan solas. Desliza hacia abajo para ver lo último."
         action={
           <Pressable
             accessibilityRole="button"

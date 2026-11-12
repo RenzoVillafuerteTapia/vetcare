@@ -48,7 +48,7 @@ export default function HomeScreen() {
   const hasPets = (pets.data?.length ?? 0) > 0;
 
   return (
-    <Screen tabs>
+    <Screen tabs onRefresh={() => Promise.all([pets.refetch(), appointments.refetch()])}>
       <View style={styles.topBar}>
         <Brand />
         <Pressable

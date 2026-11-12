@@ -1,5 +1,5 @@
 import * as SecureStore from "expo-secure-store";
-import { fireEvent, screen, waitFor } from "expo-router/testing-library";
+import { fireEvent, screen } from "expo-router/testing-library";
 
 import { json, problem, tokens } from "@/test/fake-api";
 import { NOW, REFRESH_KEY, signedIn } from "@/test/fixtures";
@@ -54,8 +54,8 @@ it("cambia la contraseña y guarda la sesión nueva", async () => {
     new_password: NUEVA,
     client: "mobile",
   });
-  // La API cerró las demás sesiones: este dispositivo guarda la nueva.
-  await waitFor(async () =>
-    expect(await SecureStore.getItemAsync(REFRESH_KEY)).toBe("refresh-nuevo"),
-  );
+  // La API cerró las demás sesiones: este dispositivo guarda la nueva (antes de avisar el éxito).
+  // Sin waitFor asíncrono: con temporizadores falsos deja reintentos vivos que frenan al
+  // siguiente archivo del mismo worker.
+  expect(await SecureStore.getItemAsync(REFRESH_KEY)).toBe("refresh-nuevo");
 });

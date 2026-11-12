@@ -1,5 +1,5 @@
 import * as SecureStore from "expo-secure-store";
-import { fireEvent, screen, waitFor } from "expo-router/testing-library";
+import { fireEvent, screen } from "expo-router/testing-library";
 
 import { empty, json, tokens, user } from "@/test/fake-api";
 import { cleanupTimers, REFRESH_KEY, renderApp } from "@/test/render-app";
@@ -25,5 +25,6 @@ it("recupera la sesión guardada al abrir la app y permite cerrarla", async () =
   expect(await api.calls("POST /api/v1/auth/logout")[0]?.json()).toEqual({
     refresh_token: "refresh-rotado",
   });
-  await waitFor(async () => expect(await SecureStore.getItemAsync(REFRESH_KEY)).toBeNull());
+  // La sesión se borra del almacén antes de mostrar el login.
+  expect(await SecureStore.getItemAsync(REFRESH_KEY)).toBeNull();
 });

@@ -17,7 +17,8 @@ import { ClientFormDialog } from "./client-form-dialog";
 import { DOCUMENT_LABELS } from "./labels";
 import { CLIENTS } from "./queries";
 
-const PAGE_SIZE = 20;
+// Dos columnas de 8 filas caben en una pantalla de laptop sin desplazarse.
+const PAGE_SIZE = 16;
 
 export function ClientsPage() {
   const { api } = useSessionManager();
@@ -42,13 +43,21 @@ export function ClientsPage() {
   const pages = clients.data ? Math.max(1, Math.ceil(clients.data.total / PAGE_SIZE)) : 1;
 
   return (
-    <div className="max-w-5xl">
+    <div className="max-w-6xl">
       <PageHeader
         title="Clientes"
-        description="Dueños y responsables de las mascotas. Desde la ficha de cada cliente se registran sus mascotas."
+        description="Dueños y responsables de las mascotas. Desde la ficha se registran sus mascotas."
+        actions={
+          canManage ? (
+            <Button onClick={() => setCreating(true)}>
+              <Plus aria-hidden />
+              Nuevo cliente
+            </Button>
+          ) : null
+        }
       />
 
-      <div className="mb-6 flex flex-wrap items-center gap-3">
+      <div className="mb-4 flex flex-wrap items-center gap-3">
         <div className="relative min-w-60 flex-1">
           <Search
             className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground"
@@ -66,12 +75,6 @@ export function ClientsPage() {
             }}
           />
         </div>
-        {canManage ? (
-          <Button onClick={() => setCreating(true)}>
-            <Plus aria-hidden />
-            Nuevo cliente
-          </Button>
-        ) : null}
       </div>
 
       {clients.isPending ? (
@@ -92,21 +95,21 @@ export function ClientsPage() {
         )
       ) : (
         <>
-          <ul className="grid gap-3" aria-label="Clientes">
+          <ul className="grid gap-2 xl:grid-cols-2" aria-label="Clientes">
             {clients.data.items.map((client) => (
               <li key={client.id}>
                 <Link
                   to={`/clientes/${client.id}`}
-                  className="grid gap-1 rounded-3xl border border-border/70 bg-card p-5 transition-colors outline-none hover:bg-accent/40 focus-visible:ring-[3px] focus-visible:ring-ring/50 sm:grid-cols-[1fr_auto] sm:items-center"
+                  className="grid gap-0.5 rounded-2xl border border-border/70 bg-card px-4 py-2.5 transition-colors outline-none hover:bg-accent/40 focus-visible:ring-[3px] focus-visible:ring-ring/50 sm:grid-cols-[1fr_auto] sm:items-center"
                 >
-                  <span className="grid gap-1">
+                  <span className="grid min-w-0 gap-0.5">
                     <span className="flex flex-wrap items-center gap-2">
-                      <span className="font-display text-lg font-medium">{client.full_name}</span>
+                      <span className="font-display text-base font-medium">{client.full_name}</span>
                       {client.has_account ? (
                         <Badge variant="soft">Con cuenta en la app</Badge>
                       ) : null}
                     </span>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="truncate text-sm text-muted-foreground">
                       {DOCUMENT_LABELS[client.document_type]} {client.document_number} ·{" "}
                       {client.phone}
                       {client.email ? ` · ${client.email}` : ""}
@@ -120,7 +123,7 @@ export function ClientsPage() {
               </li>
             ))}
           </ul>
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
             <span role="status">
               {clients.data.total === 1 ? "1 cliente" : `${clients.data.total} clientes`}
               {pages > 1 ? ` · página ${page} de ${pages}` : ""}

@@ -178,7 +178,7 @@ function ResourceDialog({ editing, onClose }: { editing: Resource | null; onClos
             />
           </div>
         </div>
-        <DialogFooter className="mt-8">
+        <DialogFooter className="mt-6">
           <Button type="button" variant="outline" onClick={onClose}>
             Cancelar
           </Button>
@@ -281,7 +281,7 @@ function TimeOffDialog({ resource, onClose }: { resource: Resource; onClose: () 
             {...register("reason")}
           />
         </div>
-        <DialogFooter className="mt-8">
+        <DialogFooter className="mt-6">
           <Button type="button" variant="outline" onClick={onClose}>
             Cancelar
           </Button>
@@ -324,9 +324,9 @@ export function ResourcesPage() {
   });
 
   return (
-    <section aria-labelledby="recursos" className="grid gap-5">
+    <section aria-labelledby="recursos" className="grid gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="recursos" className="text-2xl font-medium">
+        <h2 id="recursos" className="text-xl font-medium">
           Recursos de la agenda
         </h2>
         <Button onClick={() => setDialog({ type: "new" })}>
@@ -348,21 +348,43 @@ export function ResourcesPage() {
           </p>
         </EmptyState>
       ) : (
-        <ul className="grid gap-3 lg:grid-cols-2">
+        <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {resources.data.map((resource) => {
             const summary = scheduleSummary(resource.schedule);
             return (
               <li
                 key={resource.id}
                 className={cn(
-                  "grid content-start gap-4 rounded-3xl border border-border/70 bg-card p-5",
+                  "grid content-start gap-2.5 rounded-3xl border border-border/70 bg-card p-4",
                   !resource.active && "bg-sidebar",
                 )}
               >
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-lg font-medium">{resource.name}</h3>
-                  <Badge variant="soft">{KIND_LABELS[resource.kind]}</Badge>
-                  {resource.active ? null : <Badge>Inactivo</Badge>}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-base font-medium">{resource.name}</h3>
+                    <Badge variant="soft">{KIND_LABELS[resource.kind]}</Badge>
+                    {resource.active ? null : <Badge>Inactivo</Badge>}
+                  </div>
+                  <div className="-mt-1 -mr-1 flex shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Editar ${resource.name}`}
+                      title="Editar"
+                      onClick={() => setDialog({ type: "edit", resource })}
+                    >
+                      <Pencil aria-hidden />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Bloquear ${resource.name}`}
+                      title="Bloquear (vacaciones, mantenimiento)"
+                      onClick={() => setDialog({ type: "time-off", resource })}
+                    >
+                      <CalendarOff aria-hidden />
+                    </Button>
+                  </div>
                 </div>
                 {summary.length === 0 ? (
                   <p className="text-sm text-muted-foreground">Sin horario: no recibe citas.</p>
@@ -375,12 +397,12 @@ export function ResourcesPage() {
                 )}
                 {resource.time_off.length > 0 ? (
                   <div className="grid gap-2">
-                    <h4 className="text-sm font-semibold">Bloqueos</h4>
-                    <ul className="grid gap-2">
+                    <h4 className="text-xs font-semibold">Bloqueos</h4>
+                    <ul className="grid gap-1">
                       {resource.time_off.map((block) => (
                         <li
                           key={block.id}
-                          className="flex items-center justify-between gap-2 rounded-2xl bg-sidebar px-4 py-2 text-sm"
+                          className="flex items-center justify-between gap-2 rounded-2xl bg-sidebar py-0.5 pr-1 pl-3 text-xs"
                         >
                           <span>
                             {formatDateTime(block.start)} – {formatDateTime(block.end)}
@@ -407,26 +429,6 @@ export function ResourcesPage() {
                     </ul>
                   </div>
                 ) : null}
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    aria-label={`Editar ${resource.name}`}
-                    onClick={() => setDialog({ type: "edit", resource })}
-                  >
-                    <Pencil aria-hidden />
-                    Editar
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    aria-label={`Bloquear ${resource.name}`}
-                    onClick={() => setDialog({ type: "time-off", resource })}
-                  >
-                    <CalendarOff aria-hidden />
-                    Bloquear
-                  </Button>
-                </div>
               </li>
             );
           })}

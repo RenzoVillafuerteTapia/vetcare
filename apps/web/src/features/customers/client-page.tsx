@@ -74,7 +74,7 @@ function AppAccess({ client }: { client: Client }) {
             </span>
           </p>
         ) : client.email ? (
-          <p className="text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Todavía no tiene cuenta. La invitación llega a {client.email}.
           </p>
         ) : (
@@ -116,7 +116,7 @@ function ClientPets({ client }: { client: Client }) {
   return (
     <section aria-labelledby="mascotas" className="grid gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="mascotas" className="text-2xl font-medium">
+        <h2 id="mascotas" className="text-xl font-medium">
           Mascotas
         </h2>
         {canManagePets ? (
@@ -133,7 +133,7 @@ function ClientPets({ client }: { client: Client }) {
         <ErrorState error={pets.error} onRetry={() => void pets.refetch()} />
       ) : pets.data.length === 0 ? (
         <EmptyState title="Sin mascotas registradas">
-          <p className="text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Registra a su primera mascota para poder agendarle citas.
           </p>
         </EmptyState>
@@ -199,7 +199,7 @@ export function ClientPage() {
   });
 
   return (
-    <div className="grid max-w-5xl gap-8">
+    <div className="grid max-w-6xl gap-5">
       <Link
         to="/clientes"
         className="flex w-fit items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
@@ -216,8 +216,8 @@ export function ClientPage() {
         <>
           <header className="flex flex-wrap items-start justify-between gap-3">
             <div className="grid gap-1.5">
-              <h1 className="text-3xl font-medium md:text-4xl">{client.data.full_name}</h1>
-              <p className="text-muted-foreground">
+              <h1 className="text-2xl font-medium md:text-3xl">{client.data.full_name}</h1>
+              <p className="text-sm text-muted-foreground">
                 {DOCUMENT_LABELS[client.data.document_type]} {client.data.document_number}
               </p>
             </div>

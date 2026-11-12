@@ -34,13 +34,13 @@ export function HomePage() {
     session.status === "authenticated" ? (session.user.full_name.split(" ")[0] ?? "") : "";
 
   return (
-    <div className="grid gap-8">
+    <div className="grid gap-5">
       <header className="grid gap-1.5">
-        <h1 className="text-4xl font-medium md:text-5xl">Hola, {firstName}</h1>
-        <p className="text-lg text-muted-foreground">Este es el punto de partida de tu jornada.</p>
+        <h1 className="text-3xl font-medium md:text-4xl">Hola, {firstName}</h1>
+        <p className="text-muted-foreground">Este es el punto de partida de tu jornada.</p>
       </header>
 
-      <section className="relative overflow-hidden rounded-[2rem] bg-surface-strong p-7 text-surface-strong-foreground md:p-9">
+      <section className="relative overflow-hidden rounded-[2rem] bg-surface-strong p-6 text-surface-strong-foreground md:p-7">
         <div className="relative z-10 grid max-w-xl gap-4">
           <Badge variant="glass" className="w-fit">
             <PawPrint aria-hidden />

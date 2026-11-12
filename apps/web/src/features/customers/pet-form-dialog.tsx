@@ -197,32 +197,34 @@ export function PetFormDialog({
               La fecha es aproximada
             </label>
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor={allergiesId}>Alergias (opcional)</Label>
-            <Textarea
-              id={allergiesId}
-              className="min-h-20"
-              aria-invalid={errors.allergies ? true : undefined}
-              {...register("allergies")}
-            />
-            {errors.allergies ? (
-              <p className="text-sm text-destructive">{errors.allergies.message}</p>
-            ) : null}
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor={notesId}>Notas internas (opcional)</Label>
-            <Textarea
-              id={notesId}
-              className="min-h-20"
-              aria-invalid={errors.notes ? true : undefined}
-              {...register("notes")}
-            />
-            {errors.notes ? (
-              <p className="text-sm text-destructive">{errors.notes.message}</p>
-            ) : null}
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="grid gap-2">
+              <Label htmlFor={allergiesId}>Alergias (opcional)</Label>
+              <Textarea
+                id={allergiesId}
+                className="min-h-20"
+                aria-invalid={errors.allergies ? true : undefined}
+                {...register("allergies")}
+              />
+              {errors.allergies ? (
+                <p className="text-sm text-destructive">{errors.allergies.message}</p>
+              ) : null}
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor={notesId}>Notas internas (opcional)</Label>
+              <Textarea
+                id={notesId}
+                className="min-h-20"
+                aria-invalid={errors.notes ? true : undefined}
+                {...register("notes")}
+              />
+              {errors.notes ? (
+                <p className="text-sm text-destructive">{errors.notes.message}</p>
+              ) : null}
+            </div>
           </div>
         </div>
-        <DialogFooter className="mt-8">
+        <DialogFooter className="mt-6">
           <Button type="button" variant="outline" onClick={onClose}>
             Cancelar
           </Button>

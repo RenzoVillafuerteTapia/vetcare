@@ -42,13 +42,12 @@ function OpeningHoursCard({ calendar }: { calendar: Calendar }) {
       <CardHeader>
         <CardTitle>Horario de atención</CardTitle>
         <CardDescription>
-          La agenda solo ofrece citas dentro de este horario. Las horas son de la sede
-          (America/Lima).
+          La agenda solo ofrece citas dentro de este horario, en hora de Lima.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form
-          className="grid gap-5"
+          className="grid gap-3"
           noValidate
           onSubmit={(event) => {
             event.preventDefault();
@@ -209,7 +208,7 @@ export function CalendarPage() {
     return <ErrorState error={calendar.error} onRetry={() => void calendar.refetch()} />;
   }
   return (
-    <div className="grid gap-6">
+    <div className="grid items-start gap-5 xl:grid-cols-2">
       <OpeningHoursCard calendar={calendar.data} />
       <HolidaysCard calendar={calendar.data} />
     </div>

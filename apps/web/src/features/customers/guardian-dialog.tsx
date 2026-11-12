@@ -214,7 +214,7 @@ export function GuardianDialog({ pet, editing, onClose }: GuardianDialogProps) {
             ) : null}
           </fieldset>
         </div>
-        <DialogFooter className="mt-8">
+        <DialogFooter className="mt-6">
           <Button type="button" variant="outline" onClick={onClose}>
             Cancelar
           </Button>

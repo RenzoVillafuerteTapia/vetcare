@@ -180,7 +180,7 @@ export function AppShell() {
           <div className="hidden md:block" />
           <UserMenu />
         </header>
-        <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-background px-4 py-8 md:rounded-[2rem] md:px-10 md:py-10">
+        <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-background px-4 py-5 md:rounded-[2rem] md:px-8 md:py-6">
           <Outlet />
         </main>
       </div>

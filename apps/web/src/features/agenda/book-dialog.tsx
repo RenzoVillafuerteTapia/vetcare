@@ -135,7 +135,7 @@ export function BookDialog({ initialStart, initialDay, onBooked, onClose }: Book
   };
 
   return (
-    <DialogContent>
+    <DialogContent className="max-w-2xl">
       <DialogHeader>
         <DialogTitle>Nueva cita</DialogTitle>
         <DialogDescription>
@@ -311,28 +311,30 @@ export function BookDialog({ initialStart, initialDay, onBooked, onClose }: Book
             </div>
           ) : null}
 
-          <div className="grid gap-2">
-            <Label htmlFor={reasonId}>Motivo (opcional)</Label>
-            <Textarea
-              id={reasonId}
-              className="min-h-20"
-              maxLength={500}
-              value={reason}
-              onChange={(event) => setReason(event.target.value)}
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor={notesId}>Notas internas (opcional)</Label>
-            <Textarea
-              id={notesId}
-              className="min-h-20"
-              maxLength={1000}
-              value={notes}
-              onChange={(event) => setNotes(event.target.value)}
-            />
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="grid gap-2">
+              <Label htmlFor={reasonId}>Motivo (opcional)</Label>
+              <Textarea
+                id={reasonId}
+                className="min-h-20"
+                maxLength={500}
+                value={reason}
+                onChange={(event) => setReason(event.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor={notesId}>Notas internas (opcional)</Label>
+              <Textarea
+                id={notesId}
+                className="min-h-20"
+                maxLength={1000}
+                value={notes}
+                onChange={(event) => setNotes(event.target.value)}
+              />
+            </div>
           </div>
         </div>
-        <DialogFooter className="mt-8">
+        <DialogFooter className="mt-6">
           <Button type="button" variant="outline" onClick={onClose}>
             Cancelar
           </Button>

@@ -128,19 +128,21 @@ export function AgendaPage() {
   const buttons = controller.getButtonState();
 
   return (
-    <div className="grid gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <PageHeader
-          title="Agenda"
-          description="Citas de la sede en hora de Lima. Elige una cita para ver su detalle."
-        />
-        {canManage ? (
-          <Button onClick={() => setBooking({})}>
-            <Plus aria-hidden />
-            Nueva cita
-          </Button>
-        ) : null}
-      </div>
+    // Ocupa el alto disponible: el calendario se desplaza por dentro y la página no.
+    <div className="flex h-full min-h-[34rem] flex-col gap-3">
+      <PageHeader
+        className="mb-0"
+        title="Agenda"
+        description="Citas de la sede en hora de Lima. Elige una cita para ver su detalle."
+        actions={
+          canManage ? (
+            <Button onClick={() => setBooking({})}>
+              <Plus aria-hidden />
+              Nueva cita
+            </Button>
+          ) : null
+        }
+      />
 
       {booked ? (
         <Alert variant="success">
@@ -154,7 +156,7 @@ export function AgendaPage() {
         <ErrorState error={agenda.error} onRetry={() => void agenda.refetch()} />
       ) : null}
 
-      <div className="flex flex-wrap items-end justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => controller.today()}>
             Hoy
@@ -177,7 +179,7 @@ export function AgendaPage() {
           >
             <ChevronRight aria-hidden />
           </Button>
-          <h2 aria-live="polite" className="ml-2 text-xl font-medium first-letter:uppercase">
+          <h2 aria-live="polite" className="ml-1 text-lg font-medium first-letter:uppercase">
             {view?.title}
           </h2>
           {agenda.isFetching ? (
@@ -188,9 +190,21 @@ export function AgendaPage() {
           ) : null}
         </div>
 
-        <div className="flex flex-wrap items-end gap-4">
-          <div className="grid gap-1.5">
-            <Label htmlFor={resourceId}>Recurso</Label>
+        <div className="flex flex-wrap items-center gap-3">
+          <label htmlFor={closedId} className="flex cursor-pointer items-center gap-2 text-sm">
+            <input
+              id={closedId}
+              type="checkbox"
+              className="size-4 accent-primary"
+              checked={showClosed}
+              onChange={(event) => setShowClosed(event.target.checked)}
+            />
+            Mostrar canceladas e inasistencias
+          </label>
+          <div>
+            <Label htmlFor={resourceId} className="sr-only">
+              Recurso
+            </Label>
             <Select
               id={resourceId}
               className="h-9 min-w-52"
@@ -234,7 +248,7 @@ export function AgendaPage() {
         </div>
       </div>
 
-      <div className="agenda-calendar overflow-hidden rounded-3xl border bg-card">
+      <div className="agenda-calendar min-h-0 flex-1 overflow-hidden rounded-3xl border bg-card">
         <FullCalendar
           plugins={PLUGINS}
           controller={controller}
@@ -244,7 +258,7 @@ export function AgendaPage() {
           initialView="timeGridWeek"
           headerToolbar={false}
           firstDay={1}
-          height={680}
+          height="100%"
           allDaySlot={false}
           nowIndicator
           slotMinTime="06:00:00"
@@ -299,31 +313,19 @@ export function AgendaPage() {
         />
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 text-sm">
-        <ul aria-label="Estados" className="flex flex-wrap gap-2">
-          {(["requested", "confirmed", "checked_in", "completed"] as const).map((status) => (
-            <li
-              key={status}
-              className={cn(
-                "rounded-full border px-3 py-1 text-xs font-semibold",
-                STATUS_STYLES[status],
-              )}
-            >
-              {STATUS_LABELS[status]}
-            </li>
-          ))}
-        </ul>
-        <label htmlFor={closedId} className="flex cursor-pointer items-center gap-3">
-          <input
-            id={closedId}
-            type="checkbox"
-            className="size-4 accent-primary"
-            checked={showClosed}
-            onChange={(event) => setShowClosed(event.target.checked)}
-          />
-          Mostrar canceladas e inasistencias
-        </label>
-      </div>
+      <ul aria-label="Estados" className="flex flex-wrap gap-2">
+        {(["requested", "confirmed", "checked_in", "completed"] as const).map((status) => (
+          <li
+            key={status}
+            className={cn(
+              "rounded-full border px-2.5 py-0.5 text-xs font-semibold",
+              STATUS_STYLES[status],
+            )}
+          >
+            {STATUS_LABELS[status]}
+          </li>
+        ))}
+      </ul>
 
       <Dialog open={selected !== null} onOpenChange={(open) => (open ? null : setSelected(null))}>
         {selected ? (

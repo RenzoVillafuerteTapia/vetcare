@@ -149,7 +149,7 @@ export function AppointmentDialog({ appointment, onChanged }: AppointmentDialogP
   const canMarkNoShow = untilStart <= 0;
 
   return (
-    <DialogContent>
+    <DialogContent className="max-w-2xl">
       <DialogHeader>
         <DialogTitle>
           {appointment.pet_name} · {appointment.service_name}
@@ -165,7 +165,7 @@ export function AppointmentDialog({ appointment, onChanged }: AppointmentDialogP
           </Alert>
         ) : null}
 
-        <dl className="grid gap-4 sm:grid-cols-2">
+        <dl className="grid gap-4 sm:grid-cols-3">
           <Fact label="Estado">
             <Badge className={STATUS_STYLES[status]}>{STATUS_LABELS[status]}</Badge>
           </Fact>

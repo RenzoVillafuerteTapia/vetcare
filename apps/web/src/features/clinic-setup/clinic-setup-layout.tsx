@@ -11,27 +11,28 @@ const TABS = [
 
 export function ClinicSetupLayout() {
   return (
-    <div className="max-w-5xl">
+    <div className="max-w-6xl">
       <PageHeader
         title="Configuración"
-        description="Lo que la agenda necesita para ofrecer horarios: los servicios, quién y dónde los atiende, y cuándo abre la sede."
+        actions={
+          <nav aria-label="Configuración" className="flex flex-wrap gap-2">
+            {TABS.map(({ to, label }) => (
+              <NavLink
+                key={to}
+                to={to}
+                className={({ isActive }) =>
+                  cn(
+                    "rounded-full bg-sidebar px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground",
+                    isActive && "bg-secondary text-secondary-foreground",
+                  )
+                }
+              >
+                {label}
+              </NavLink>
+            ))}
+          </nav>
+        }
       />
-      <nav aria-label="Configuración" className="mb-8 flex flex-wrap gap-2">
-        {TABS.map(({ to, label }) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={({ isActive }) =>
-              cn(
-                "rounded-full bg-sidebar px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground",
-                isActive && "bg-secondary text-secondary-foreground",
-              )
-            }
-          >
-            {label}
-          </NavLink>
-        ))}
-      </nav>
       <Outlet />
     </div>
   );

@@ -325,15 +325,15 @@ export function PetPage() {
   const data = pet.data;
 
   return (
-    <div className="grid max-w-5xl gap-8">
+    <div className="grid max-w-6xl gap-5">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="grid gap-4">
           <div className="grid gap-1.5">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-3xl font-medium md:text-4xl">{data.name}</h1>
+              <h1 className="text-2xl font-medium md:text-3xl">{data.name}</h1>
               {data.status === "active" ? null : <Badge>{STATUS_LABELS[data.status]}</Badge>}
             </div>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {SPECIES_LABELS[data.species]}
               {data.breed ? ` · ${data.breed}` : ""} · {SEX_LABELS[data.sex]}
             </p>

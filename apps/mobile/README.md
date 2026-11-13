@@ -96,7 +96,9 @@ src/
 - Al solicitar o reprogramar, el cliente elige a su profesional de confianza o "Cualquiera". Se
   propone el que atendió a la mascota la última vez (o el de la cita, al reprogramar) y solo se
   muestran sus horarios libres. Las citas y el detalle dicen quién atiende.
-- Hoy solo se ofrecen horarios desde 30 minutos después de la hora actual (lo decide la API).
+- Los horarios se eligen como butacas de cine: se ve el día completo por la mañana, la tarde y la
+  noche; los ocupados aparecen oscuros y tachados y no se pueden tocar, y los que caen dentro de
+  los 30 minutos de antelación, atenuados (lo decide la API con `include_unavailable`).
 - Una cita confirmada se reprograma o cancela con al menos 2 horas de anticipación; una
   reprogramación vuelve a quedar por confirmar. La app oculta las acciones fuera de plazo, pero
   la API decide: si rechaza algo (por ejemplo, una tutela sin permiso para reservar), se muestra

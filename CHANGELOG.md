@@ -25,6 +25,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 - API: `GET`/`PUT /me/profile` (teléfono y dirección del cliente, permiso `own:profile:manage`), `POST /auth/password` (cambio con la actual; cierra las demás sesiones) y foto de la mascota por su dueño (`can_change_photo` en la respuesta).
 - App móvil: inicio con la próxima cita y las mascotas vinculadas (con estados vacíos útiles), perfil de la mascota con la información compartida, y citas: próximas y anteriores, detalle, solicitud entre los horarios libres (con `Idempotency-Key`), reprogramación y cancelación con la antelación mínima. Las horas se muestran siempre en la hora de la sede.
 - Avisos push: cuando la clínica confirma, reprograma o cancela una cita, el dueño recibe un aviso en su teléfono y al tocarlo se abre la cita. El worker del outbox (`python -m vetcare.worker`) entrega cada evento una sola vez por manejador, reintenta con espera exponencial y deja en `failed` lo que no pudo enviar. Incluye `PUT /me/devices` y `POST /me/devices/unregister` (permiso `own:notifications:manage`), emisor de Expo y emisor de consola para desarrollo. Recibirlos en un teléfono requiere el proyecto de EAS y las credenciales de FCM/APNs.
+- Veterinario de confianza: al solicitar o reprogramar una cita en la app, el dueño elige al profesional (o "Cualquiera") y solo ve sus horarios libres; se propone el que atendió a la mascota la última vez, y las citas muestran quién atiende. API: `GET /scheduling/professionals` y `professional_id` en la disponibilidad.
 
 ### Cambiado
 

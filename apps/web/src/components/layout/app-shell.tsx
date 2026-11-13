@@ -5,6 +5,7 @@ import {
   LogOut,
   Menu,
   Package,
+  PawPrint,
   Radio,
   Receipt,
   Settings,
@@ -39,6 +40,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: "/cobros", label: "Cobros", icon: Receipt, permission: "charges:manage" },
   { to: "/inventario", label: "Inventario", icon: Package, permission: "inventory:read" },
   { to: "/clientes", label: "Clientes", icon: Users, permission: "pets:read", nested: true },
+  { to: "/mascotas", label: "Mascotas", icon: PawPrint, permission: "pets:read", nested: true },
   { to: "/usuarios/invitar", label: "Invitar usuario", icon: UserPlus, permission: "users:manage" },
   {
     to: "/configuracion",

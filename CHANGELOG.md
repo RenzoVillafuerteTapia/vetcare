@@ -35,6 +35,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 - App móvil: elegir la hora como en el cine. Se ve el día completo agrupado por mañana, tarde y noche, con leyenda y conteo de libres; los horarios ocupados se ven oscuros y no se pueden elegir. API: `include_unavailable` en la disponibilidad marca cada horario como `free`, `taken` o `too_soon`.
 - Ventas (web y API): inventario de productos con costo, precio de venta, stock mínimo y movimientos (entradas, uso interno, ajustes por conteo); registro de cobros por servicios, productos y otros conceptos con su medio de pago (efectivo, tarjeta, Yape, Plin o transferencia), que descuenta el stock y se anula con motivo; y resumen de ingresos, costo y ganancia por periodo. Permisos `inventory:read`, `inventory:manage`, `charges:manage` y `reports:read`.
 - Web: el inicio es un panel con datos reales del día (citas, mascotas en atención y listas, ingresos y ganancia, stock bajo) en lugar de la portada de la fase 1.
+- Web: sección Mascotas con todas las mascotas (búsqueda por nombre o dueño y filtro por especie). Mascotas, Clientes e Inventario se muestran como tarjetas de catálogo: imagen o ícono, etiqueta destacada (alergias, usa la app, stock bajo o margen), chips, nombre y el dato principal resaltado. API: `GET /pets`.
 
 ### Cambiado
 

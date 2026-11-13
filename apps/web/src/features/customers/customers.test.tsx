@@ -110,7 +110,10 @@ describe("listado de clientes", () => {
     renderApp("/clientes", api.fetch);
 
     expect(await screen.findByText("Rosa Quispe Mamani")).toBeInTheDocument();
-    expect(screen.getByText("DNI 45678912 · 987654321 · rosa@example.test")).toBeInTheDocument();
+    // Tarjeta: documento, teléfono destacado y correo.
+    expect(screen.getByText("DNI 45678912")).toBeInTheDocument();
+    expect(screen.getByText("987654321")).toBeInTheDocument();
+    expect(screen.getByText("rosa@example.test")).toBeInTheDocument();
     expect(screen.getByText("2 clientes")).toBeInTheDocument();
 
     await userEvent.type(screen.getByRole("searchbox", { name: "Buscar clientes" }), "zzz");

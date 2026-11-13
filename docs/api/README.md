@@ -72,6 +72,7 @@
 | `PUT /api/v1/pets/{id}` · `PATCH …/status` · `POST …/weights` | `pets:manage` | Perfil, estado y peso |
 | `PUT /api/v1/pets/{id}/photo` · `DELETE …/photo` | `pets:manage` o cliente dueño | Subir (campo `file` en `multipart/form-data`; JPG, PNG o WebP de hasta 5 MB), reemplazar o quitar la foto |
 | `POST /api/v1/pets/{id}/guardians` · `PUT`/`DELETE …/guardians/{client_id}` | `guardianships:manage` | Dueños y responsables autorizados |
+| `GET /api/v1/pets?q=&species=&page=&page_size=` | `pets:read` | Todas las mascotas con sus responsables y foto; `q` busca por el nombre de la mascota o de un responsable activo |
 | `GET /api/v1/me/pets` | Cliente | Mascotas donde el cliente autenticado tiene tutela. `can_change_photo` indica si puede cambiar la foto (solo un dueño) |
 | `GET /api/v1/me/profile` · `PUT` | `own:profile:manage` | Sus datos de contacto (sin notas internas). Solo cambia teléfono y dirección; el nombre y el documento los corrige la veterinaria |
 

@@ -1,12 +1,26 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CircleAlert, History, PackagePlus, Pencil, Plus, Search } from "lucide-react";
+import {
+  Bone,
+  CircleAlert,
+  Droplets,
+  History,
+  Package,
+  PackagePlus,
+  Pencil,
+  Pill,
+  Plus,
+  Search,
+  Syringe,
+  Tag,
+  type LucideIcon,
+} from "lucide-react";
 import { useId, useState } from "react";
 
+import { CatalogCard, CatalogGrid } from "@/components/catalog-card";
 import { FormField } from "@/components/form-field";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState, ErrorState, LoadingState } from "@/components/query-state";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -36,6 +50,24 @@ import {
   type Product,
   type ProductCategory,
 } from "./labels";
+
+const CATEGORY_ICONS: Record<ProductCategory, LucideIcon> = {
+  medicine: Pill,
+  food: Bone,
+  accessory: Tag,
+  hygiene: Droplets,
+  supply: Syringe,
+  other: Package,
+};
+
+const CATEGORY_TONES: Record<ProductCategory, string> = {
+  medicine: "bg-sky-100 text-sky-700",
+  food: "bg-amber-100 text-amber-700",
+  accessory: "bg-pink-100 text-pink-700",
+  hygiene: "bg-emerald-100 text-emerald-700",
+  supply: "bg-violet-100 text-violet-700",
+  other: "bg-muted text-muted-foreground",
+};
 
 type StockAction = "receive" | "use" | "count";
 
@@ -131,94 +163,88 @@ export function InventoryPage() {
           ) : null}
         </EmptyState>
       ) : (
-        <Card className="overflow-x-auto p-0">
-          <table className="w-full min-w-[720px] text-sm">
-            <thead>
-              <tr className="border-b text-left text-xs text-muted-foreground">
-                <th className="px-4 py-3 font-semibold">Producto</th>
-                <th className="px-4 py-3 font-semibold">Stock</th>
-                <th className="px-4 py-3 text-right font-semibold">Costo</th>
-                <th className="px-4 py-3 text-right font-semibold">Venta</th>
-                <th className="px-4 py-3 text-right font-semibold">Margen</th>
-                <th className="px-4 py-3">
-                  <span className="sr-only">Acciones</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {shown.map((p) => {
-                const margin = Number(p.sale_price) - Number(p.cost_price);
-                return (
-                  <tr
-                    key={p.id}
-                    className={cn("border-b last:border-0", !p.active && "opacity-60")}
-                  >
-                    <td className="px-4 py-3">
-                      <div className="font-semibold">{p.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {CATEGORY_LABELS[p.category]}
-                        {p.sku ? ` · ${p.sku}` : ""}
-                        {!p.active ? " · Desactivado" : ""}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={cn("font-semibold", p.low_stock && "text-destructive")}>
-                        {qty(p.stock)} {p.unit}
-                      </span>
-                      {p.low_stock ? (
-                        <Badge className="ml-2 border-destructive/40 text-destructive">
-                          Stock bajo
-                        </Badge>
+        <CatalogGrid label="Productos">
+          {shown.map((p) => {
+            const margin = Number(p.sale_price) - Number(p.cost_price);
+            const marginPct =
+              Number(p.cost_price) > 0 ? Math.round((margin / Number(p.cost_price)) * 100) : null;
+            const Icon = CATEGORY_ICONS[p.category];
+            return (
+              <li key={p.id}>
+                <CatalogCard
+                  className={cn(!p.active && "opacity-60")}
+                  media={
+                    <span
+                      className={cn(
+                        "flex size-24 items-center justify-center rounded-3xl",
+                        CATEGORY_TONES[p.category],
+                      )}
+                    >
+                      <Icon className="size-12" aria-hidden />
+                    </span>
+                  }
+                  corner={
+                    !p.active
+                      ? { label: "Desactivado", tone: "dark" }
+                      : p.low_stock
+                        ? { label: "Stock bajo", tone: "red" }
+                        : marginPct !== null
+                          ? { label: `+${marginPct}%`, tone: "green" }
+                          : null
+                  }
+                  chips={[
+                    { label: CATEGORY_LABELS[p.category], tone: "green" },
+                    { label: p.unit, tone: "blue" },
+                    ...(p.sku ? [{ label: p.sku, tone: "pink" as const }] : []),
+                  ]}
+                  title={p.name}
+                  highlight={money(p.sale_price)}
+                  secondary={`Costo ${money(p.cost_price)}`}
+                  footer={`Stock: ${qty(p.stock)} ${p.unit} · mínimo ${qty(p.min_stock)}`}
+                  footerTone={p.low_stock ? "warn" : "ok"}
+                  actions={
+                    <>
+                      {canManage ? (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setStock({ product: p, action: "receive" })}
+                          >
+                            <PackagePlus aria-hidden /> Entrada
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setStock({ product: p, action: "count" })}
+                          >
+                            Ajustar
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            aria-label={`Editar ${p.name}`}
+                            onClick={() => setEditing(p)}
+                          >
+                            <Pencil aria-hidden />
+                          </Button>
+                        </>
                       ) : null}
-                      <div className="text-xs text-muted-foreground">Mínimo {qty(p.min_stock)}</div>
-                    </td>
-                    <td className="px-4 py-3 text-right">{money(p.cost_price)}</td>
-                    <td className="px-4 py-3 text-right font-semibold">{money(p.sale_price)}</td>
-                    <td className="px-4 py-3 text-right text-muted-foreground">{money(margin)}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex justify-end gap-1">
-                        {canManage ? (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setStock({ product: p, action: "receive" })}
-                            >
-                              <PackagePlus aria-hidden /> Entrada
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => setStock({ product: p, action: "count" })}
-                            >
-                              Ajustar
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              aria-label={`Editar ${p.name}`}
-                              onClick={() => setEditing(p)}
-                            >
-                              <Pencil aria-hidden />
-                            </Button>
-                          </>
-                        ) : null}
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          aria-label={`Movimientos de ${p.name}`}
-                          onClick={() => setHistory(p)}
-                        >
-                          <History aria-hidden />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </Card>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        aria-label={`Movimientos de ${p.name}`}
+                        onClick={() => setHistory(p)}
+                      >
+                        <History aria-hidden />
+                      </Button>
+                    </>
+                  }
+                />
+              </li>
+            );
+          })}
+        </CatalogGrid>
       )}
 
       <Dialog open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>

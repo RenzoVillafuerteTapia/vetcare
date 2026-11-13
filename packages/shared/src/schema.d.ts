@@ -1729,7 +1729,17 @@ export interface components {
              * Format: date-time
              */
             end: string;
+            /**
+             * @description `free`; con `include_unavailable`, también `taken` (ocupado) y `too_soon` (dentro de la antelación mínima del cliente).
+             * @default free
+             */
+            status: components["schemas"]["SlotStatus"];
         };
+        /**
+         * SlotStatus
+         * @enum {string}
+         */
+        SlotStatus: "free" | "taken" | "too_soon";
         /**
          * Species
          * @enum {string}
@@ -4534,6 +4544,8 @@ export interface operations {
                 date: string;
                 /** @description Solo los horarios de este profesional (de `/scheduling/professionals`). */
                 professional_id?: string | null;
+                /** @description Devolver también los horarios ocupados, marcados (vista del día). */
+                include_unavailable?: boolean;
             };
             header?: never;
             path?: never;

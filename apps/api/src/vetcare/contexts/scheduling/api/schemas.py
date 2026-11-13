@@ -11,7 +11,7 @@ from vetcare.contexts.scheduling.domain.appointment import (
     Channel,
     HistoryAction,
 )
-from vetcare.contexts.scheduling.domain.availability import SlotOption
+from vetcare.contexts.scheduling.domain.availability import SlotOption, SlotStatus
 
 
 class _Request(BaseModel):
@@ -21,10 +21,15 @@ class _Request(BaseModel):
 class SlotResponse(BaseModel):
     start: datetime
     end: datetime
+    status: SlotStatus = Field(
+        default=SlotStatus.FREE,
+        description="`free`; con `include_unavailable`, también `taken` (ocupado) y `too_soon` "
+        "(dentro de la antelación mínima del cliente).",
+    )
 
     @classmethod
     def of(cls, option: SlotOption) -> "SlotResponse":
-        return cls(start=option.slot.start, end=option.slot.end)
+        return cls(start=option.slot.start, end=option.slot.end, status=option.status)
 
 
 class ProfessionalResponse(BaseModel):

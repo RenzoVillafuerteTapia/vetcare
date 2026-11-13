@@ -3431,6 +3431,18 @@
               "title": "Professional Id"
             },
             "description": "Solo los horarios de este profesional (de `/scheduling/professionals`)."
+          },
+          {
+            "name": "include_unavailable",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Devolver también los horarios ocupados, marcados (vista del día).",
+              "default": false,
+              "title": "Include Unavailable"
+            },
+            "description": "Devolver también los horarios ocupados, marcados (vista del día)."
           }
         ],
         "responses": {
@@ -7109,6 +7121,11 @@
             "type": "string",
             "format": "date-time",
             "title": "End"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SlotStatus",
+            "description": "`free`; con `include_unavailable`, también `taken` (ocupado) y `too_soon` (dentro de la antelación mínima del cliente).",
+            "default": "free"
           }
         },
         "type": "object",
@@ -7117,6 +7134,15 @@
           "end"
         ],
         "title": "SlotResponse"
+      },
+      "SlotStatus": {
+        "type": "string",
+        "enum": [
+          "free",
+          "taken",
+          "too_soon"
+        ],
+        "title": "SlotStatus"
       },
       "Species": {
         "type": "string",

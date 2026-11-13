@@ -12,11 +12,12 @@ import {
   type ScrollViewInstance,
 } from "react-native";
 
+import { SlotGrid } from "@/components/slot-grid";
 import { Body, Card, Notice } from "@/components/ui";
 import { errorMessage, unwrap } from "@/lib/api-error";
 import { STATUS_LABELS, type Appointment, type AppointmentStatus } from "@/lib/labels";
 import { availabilityKey, professionalsKey } from "@/lib/queries";
-import { formatSlot, limaDay, limaTime, upcomingDays } from "@/lib/time";
+import { formatSlot, limaDay, upcomingDays } from "@/lib/time";
 import { useSessionManager } from "@/session/context";
 import { colors, fonts, radius, spacing } from "@/theme/tokens";
 
@@ -305,6 +306,8 @@ export function SlotPicker({
             query: {
               service_type_id: serviceTypeId ?? "",
               date: day,
+              // El día completo, con los ocupados marcados (vista tipo cine).
+              include_unavailable: true,
               ...(professional ? { professional_id: professional } : {}),
             },
           },
@@ -332,27 +335,18 @@ export function SlotPicker({
       ) : slots.data.length === 0 ? (
         <Body muted>
           {professional
-            ? "No hay horarios libres ese día con este profesional. Prueba con otro día o elige «Cualquiera»."
-            : "No hay horarios libres ese día. Prueba con otro."}
+            ? "La sede no atiende ese día con este profesional. Prueba con otro día o elige «Cualquiera»."
+            : "La sede no atiende ese día. Prueba con otro."}
         </Body>
       ) : (
-        <ChoiceChips
-          label="Hora"
-          options={slots.data.map((slot) => ({ value: slot.start, label: limaTime(slot.start) }))}
-          compact
-          value={start}
-          onChange={onStartChange}
-          error={error}
-        />
+        <SlotGrid slots={slots.data} value={start} onChange={onStartChange} />
       )}
       {day === today ? (
         <Body muted style={{ fontSize: 13 }}>
           Hoy puedes pedir hora desde 30 minutos después de ahora.
         </Body>
       ) : null}
-      {error && (serviceTypeId === null || !slots.data?.length) ? (
-        <Text style={styles.error}>{error}</Text>
-      ) : null}
+      {error ? <Text style={styles.error}>{error}</Text> : null}
     </Card>
   );
 }

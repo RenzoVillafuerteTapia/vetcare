@@ -4,7 +4,7 @@ import { CalendarPlus, Clock, PawPrint, Scissors, type LucideIcon } from "lucide
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { AppointmentCard, Loading, SectionTitle } from "@/components/appointments";
-import { PetAvatar } from "@/components/pets";
+import { PetTile } from "@/components/pets";
 import { TrackingCard } from "@/components/tracking";
 import { Badge, Body, Brand, Button, Card, Notice, Screen } from "@/components/ui";
 import { errorMessage, unwrap } from "@/lib/api-error";
@@ -60,7 +60,7 @@ export default function HomeScreen() {
       onRefresh={() => Promise.all([pets.refetch(), appointments.refetch(), tracking.refetch()])}
     >
       <View style={styles.topBar}>
-        <Brand />
+        <Brand inverted />
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`Sesión de ${user.full_name}`}
@@ -122,7 +122,7 @@ export default function HomeScreen() {
             style={({ pressed }) => [styles.shortcut, pressed && { opacity: 0.85 }]}
           >
             <View style={styles.shortcutIcon}>
-              <Icon size={20} color={colors.primary} />
+              <Icon size={20} color={colors.accentForeground} />
             </View>
             <Text style={styles.shortcutText}>{label}</Text>
           </Pressable>
@@ -162,12 +162,9 @@ export default function HomeScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={`Perfil de ${pet.name}`}
                 onPress={() => router.navigate(`/mascotas/${pet.id}`)}
-                style={({ pressed }) => [styles.pet, pressed && { opacity: 0.85 }]}
+                style={({ pressed }) => pressed && { opacity: 0.85 }}
               >
-                <PetAvatar pet={pet} size={64} />
-                <Text style={styles.petName} numberOfLines={1}>
-                  {pet.name}
-                </Text>
+                <PetTile pet={pet} />
               </Pressable>
             ))}
           </ScrollView>
@@ -187,16 +184,25 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  topBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  avatar: {
-    width: 40,
-    height: 40,
+  topBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: colors.sky,
     borderRadius: radius.pill,
-    backgroundColor: colors.primary,
+    paddingVertical: spacing(2),
+    paddingLeft: spacing(3),
+    paddingRight: spacing(2),
+  },
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.pill,
+    backgroundColor: colors.accent,
     alignItems: "center",
     justifyContent: "center",
   },
-  avatarText: { fontFamily: fonts.display, fontSize: 17, color: colors.primaryForeground },
+  avatarText: { fontFamily: fonts.display, fontSize: 18, color: colors.accentForeground },
   hello: { fontFamily: fonts.display, fontSize: 28, lineHeight: 32, color: colors.foreground },
   sectionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   more: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.mutedForeground },
@@ -211,10 +217,10 @@ const styles = StyleSheet.create({
     gap: spacing(2),
   },
   shortcutIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 14,
-    backgroundColor: colors.secondary,
+    width: 48,
+    height: 48,
+    borderRadius: radius.pill,
+    backgroundColor: colors.accent,
     alignItems: "center",
     justifyContent: "center",
   },

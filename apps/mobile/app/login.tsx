@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "expo-router";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { PawPrint } from "lucide-react-native";
 import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
 import { z } from "zod";
 
@@ -48,6 +49,9 @@ export default function LoginScreen() {
     >
       <Screen contentStyle={styles.content}>
         <View style={styles.hero}>
+          <View style={styles.heroPaw} accessibilityElementsHidden>
+            <PawPrint size={180} color="rgba(255,255,255,0.18)" />
+          </View>
           <Brand inverted />
           <Heading style={styles.heroTitle}>El cuidado de tu mascota, siempre a la vista.</Heading>
           <Body style={styles.heroText}>
@@ -111,11 +115,16 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   content: { paddingTop: spacing(3) },
   hero: {
-    backgroundColor: colors.primary,
-    borderRadius: 32,
+    backgroundColor: colors.sky,
+    borderRadius: 34,
     padding: spacing(6),
+    paddingTop: spacing(8),
     gap: spacing(4),
+    minHeight: 300,
+    justifyContent: "flex-end",
+    overflow: "hidden",
   },
+  heroPaw: { position: "absolute", right: -30, top: -20, transform: [{ rotate: "-18deg" }] },
   heroTitle: { color: "#fff", fontSize: 30, lineHeight: 34 },
   heroText: { color: "rgba(255,255,255,0.85)" },
   form: { gap: spacing(4) },

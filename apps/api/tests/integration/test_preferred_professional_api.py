@@ -164,3 +164,48 @@ async def test_el_cliente_reserva_desde_30_minutos_despues_y_el_personal_desde_y
         headers=e["ana"],
     )
     assert r.status_code == 422
+
+
+async def test_vista_del_dia_con_los_horarios_ocupados(api: Api, e: dict[str, Any]) -> None:
+    # Son las 09:00 del lunes; el Veterinario 1 tiene una consulta a las 10:00.
+    api.app.state.scheduling = build_scheduling(
+        api.app.state.session_factory,
+        api.app.state.clinic_catalog,
+        api.app.state.pet_access,
+        clock=RelojFijo(datetime.combine(LUNES, time(9), CLINIC_TZ).astimezone(UTC)),
+    )
+    r = await api.client.post(
+        "/api/v1/appointments",
+        json={
+            "pet_id": e["toby"],
+            "service_type_id": e["consulta"],
+            "start": lima(10),
+            "resource_ids": [e["vet1"]],
+        },
+        headers=e["rec"],
+    )
+    assert r.status_code == 201, r.text
+
+    params = {
+        "service_type_id": e["consulta"],
+        "date": LUNES.isoformat(),
+        "professional_id": e["vet1"],
+        "include_unavailable": "true",
+    }
+    r = await api.client.get("/api/v1/scheduling/availability", params=params, headers=e["ana"])
+    estado = {
+        datetime.fromisoformat(s["start"]).astimezone(CLINIC_TZ).strftime("%H:%M"): s["status"]
+        for s in r.json()
+    }
+    # Dentro de los 30 minutos: visibles pero no reservables. La consulta de las 10:00 ocupa
+    # 09:45 a 10:15 (30 min). El almuerzo del veterinario también aparece como ocupado.
+    assert (estado["09:00"], estado["09:15"], estado["09:30"]) == ("too_soon", "too_soon", "free")
+    assert (estado["09:45"], estado["10:00"], estado["10:15"]) == ("taken", "taken", "taken")
+    assert estado["10:30"] == "free" and estado["12:45"] == "taken"
+    # Fuera del horario de la sede no aparece nada.
+    assert "08:45" not in estado and "19:00" not in estado
+
+    # Sin el parámetro, como antes: solo los libres.
+    del params["include_unavailable"]
+    r = await api.client.get("/api/v1/scheduling/availability", params=params, headers=e["ana"])
+    assert {s["status"] for s in r.json()} == {"free"}

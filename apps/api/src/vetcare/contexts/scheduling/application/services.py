@@ -127,6 +127,8 @@ class SchedulingService:
         service_type_id: UUID,
         day: date,
         professional_id: UUID | None = None,
+        *,
+        include_unavailable: bool = False,
     ) -> list[SlotOption]:
         viewer = await self._viewer(actor)
         service = await self._service(service_type_id, viewer)
@@ -153,6 +155,8 @@ class SchedulingService:
             step_minutes=self._policy.slot_step_minutes,
             not_before=not_before,
             preferred=preferred,
+            include_unavailable=include_unavailable,
+            now=now,
         )
 
     # --- Reserva ----------------------------------------------------------------------------

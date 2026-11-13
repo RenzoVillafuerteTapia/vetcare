@@ -66,8 +66,14 @@ async def availability(
             description="Solo los horarios de este profesional (de `/scheduling/professionals`)."
         ),
     ] = None,
+    include_unavailable: Annotated[
+        bool,
+        Query(description="Devolver también los horarios ocupados, marcados (vista del día)."),
+    ] = False,
 ) -> list[SlotResponse]:
-    options = await service.availability(user, service_type_id, day, professional_id)
+    options = await service.availability(
+        user, service_type_id, day, professional_id, include_unavailable=include_unavailable
+    )
     return [SlotResponse.of(o) for o in options]
 
 

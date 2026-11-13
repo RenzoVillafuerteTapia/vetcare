@@ -6,8 +6,9 @@ bloqueados, porque entre consultar y reservar otra persona puede haber ocupado e
 """
 
 from collections.abc import Callable, Iterable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from enum import StrEnum
 from typing import Protocol
 from uuid import UUID
 
@@ -23,10 +24,19 @@ class Bookable(Protocol):
     def is_available(self, start: datetime, end: datetime) -> bool: ...
 
 
+class SlotStatus(StrEnum):
+    FREE = "free"
+    # Dentro del horario de la sede, pero sin recurso libre (o el profesional elegido ocupado).
+    TAKEN = "taken"
+    # Aún no pasó, pero está dentro de la antelación mínima del cliente.
+    TOO_SOON = "too_soon"
+
+
 @dataclass(frozen=True)
 class SlotOption:
     slot: TimeSlot
-    resource_ids: frozenset[UUID]
+    resource_ids: frozenset[UUID] = field(default_factory=frozenset)
+    status: SlotStatus = SlotStatus.FREE
 
 
 class Availability:
@@ -68,17 +78,32 @@ class Availability:
         step_minutes: int,
         not_before: datetime,
         preferred: Mapping[str, UUID] | None = None,
+        include_unavailable: bool = False,
+        now: datetime | None = None,
     ) -> list[SlotOption]:
         """Horarios donde cabe el servicio. Con ``preferred``, solo con esos recursos (p. ej. el
-        veterinario que eligió el cliente)."""
+        veterinario que eligió el cliente).
+
+        Con ``include_unavailable`` también devuelve, marcados, los horarios de la sede que están
+        ocupados y los que caen dentro de la antelación mínima (desde ``now``): así se puede
+        mostrar el día completo, como la sala de un cine. Lo que ya pasó o con la sede cerrada
+        nunca se devuelve.
+        """
+        shown_from = now if now is not None else not_before
         options: list[SlotOption] = []
         start = day_start
         while start + timedelta(minutes=duration_minutes) <= day_end:
-            if start >= not_before:
-                slot = TimeSlot.starting(start, duration_minutes)
-                resource_ids = self.assign(slot, preferred)
-                if resource_ids is not None:
-                    options.append(SlotOption(slot, resource_ids))
+            slot = TimeSlot.starting(start, duration_minutes)
+            if start >= shown_from and self._is_open(slot.start, slot.end):
+                if start < not_before:
+                    if include_unavailable:
+                        options.append(SlotOption(slot, status=SlotStatus.TOO_SOON))
+                else:
+                    resource_ids = self.assign(slot, preferred)
+                    if resource_ids is not None:
+                        options.append(SlotOption(slot, resource_ids))
+                    elif include_unavailable:
+                        options.append(SlotOption(slot, status=SlotStatus.TAKEN))
             start += timedelta(minutes=step_minutes)
         return options
 

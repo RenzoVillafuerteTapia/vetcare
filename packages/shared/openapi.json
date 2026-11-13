@@ -4620,6 +4620,655 @@
           }
         ]
       }
+    },
+    "/api/v1/appointments/{appointment_id}/tracking": {
+      "post": {
+        "tags": [
+          "Seguimiento"
+        ],
+        "summary": "Iniciar el seguimiento de una cita",
+        "description": "Con la llegada registrada. Idempotente: si ya existe, lo devuelve.",
+        "operationId": "start_tracking_api_v1_appointments__appointment_id__tracking_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "appointment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Appointment Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackedServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin permiso (p. ej. el alta la autoriza un veterinario)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No existe",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "La etapa ya cambió, el servicio terminó o la cita no tiene la llegada registrada",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Datos inválidos",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Seguimiento"
+        ],
+        "summary": "Seguimiento de una cita",
+        "operationId": "tracking_of_appointment_api_v1_appointments__appointment_id__tracking_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "appointment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Appointment Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackedServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin acceso",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No existe",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Datos inválidos",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tracked-services": {
+      "get": {
+        "tags": [
+          "Seguimiento"
+        ],
+        "summary": "Tablero de seguimiento",
+        "description": "En curso y listos para recoger, más lo entregado en las últimas 12 horas.",
+        "operationId": "board_api_v1_tracked_services_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TrackedServiceResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Board Api V1 Tracked Services Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin acceso",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No existe",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/tracked-services/{service_id}": {
+      "get": {
+        "tags": [
+          "Seguimiento"
+        ],
+        "summary": "Detalle del seguimiento",
+        "operationId": "get_tracked_service_api_v1_tracked_services__service_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "service_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Service Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackedServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin acceso",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No existe",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Datos inválidos",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tracked-services/{service_id}/advance": {
+      "post": {
+        "tags": [
+          "Seguimiento"
+        ],
+        "summary": "Pasar a la etapa siguiente",
+        "operationId": "advance_api_v1_tracked_services__service_id__advance_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "service_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Service Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdvanceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackedServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin permiso (p. ej. el alta la autoriza un veterinario)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No existe",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "La etapa ya cambió, el servicio terminó o la cita no tiene la llegada registrada",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Datos inválidos",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tracked-services/{service_id}/updates": {
+      "post": {
+        "tags": [
+          "Seguimiento"
+        ],
+        "summary": "Publicar un avance para el dueño",
+        "operationId": "publish_update_api_v1_tracked_services__service_id__updates_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "service_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Service Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackedServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin permiso (p. ej. el alta la autoriza un veterinario)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No existe",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "La etapa ya cambió, el servicio terminó o la cita no tiene la llegada registrada",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Datos inválidos",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tracked-services/{service_id}/hand-over": {
+      "post": {
+        "tags": [
+          "Seguimiento"
+        ],
+        "summary": "Entregar la mascota",
+        "operationId": "hand_over_api_v1_tracked_services__service_id__hand_over_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "service_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Service Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackedServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin permiso (p. ej. el alta la autoriza un veterinario)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No existe",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "La etapa ya cambió, el servicio terminó o la cita no tiene la llegada registrada",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Datos inválidos",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/tracked-services": {
+      "get": {
+        "tags": [
+          "Mi cuenta"
+        ],
+        "summary": "Seguimiento de mis mascotas",
+        "description": "Servicios de la última semana de las mascotas con tutela activa.",
+        "operationId": "my_tracked_services_api_v1_me_tracked_services_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TrackedServiceResponse"
+                  },
+                  "type": "array",
+                  "title": "Response My Tracked Services Api V1 Me Tracked Services Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin acceso",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No existe",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -4646,6 +5295,22 @@
           "password"
         ],
         "title": "AcceptInvitationRequest"
+      },
+      "AdvanceRequest": {
+        "properties": {
+          "from_stage": {
+            "type": "string",
+            "maxLength": 40,
+            "title": "From Stage",
+            "description": "Etapa actual que ve quien avanza; si cambió, responde 409."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "from_stage"
+        ],
+        "title": "AdvanceRequest"
       },
       "AppointmentResponse": {
         "properties": {
@@ -6466,6 +7131,56 @@
         ],
         "title": "Species"
       },
+      "StageResponse": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "done",
+              "current",
+              "pending"
+            ],
+            "title": "State"
+          },
+          "reached_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reached At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "label",
+          "state",
+          "reached_at"
+        ],
+        "title": "StageResponse"
+      },
+      "Template": {
+        "type": "string",
+        "enum": [
+          "grooming",
+          "surgery",
+          "general"
+        ],
+        "title": "Template"
+      },
       "TimeOffRequest": {
         "properties": {
           "start": {
@@ -6561,6 +7276,131 @@
         ],
         "title": "TokenResponse"
       },
+      "TrackedServiceResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "appointment_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Appointment Id"
+          },
+          "pet_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Pet Id"
+          },
+          "pet_name": {
+            "type": "string",
+            "title": "Pet Name"
+          },
+          "service_name": {
+            "type": "string",
+            "title": "Service Name"
+          },
+          "template": {
+            "$ref": "#/components/schemas/Template"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TrackingStatus"
+          },
+          "stages": {
+            "items": {
+              "$ref": "#/components/schemas/StageResponse"
+            },
+            "type": "array",
+            "title": "Stages"
+          },
+          "current_stage": {
+            "type": "string",
+            "title": "Current Stage"
+          },
+          "next_stage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Stage",
+            "description": "Etiqueta de la etapa siguiente, si queda alguna."
+          },
+          "next_is_discharge": {
+            "type": "boolean",
+            "title": "Next Is Discharge",
+            "description": "El siguiente paso es el alta de una cirugía."
+          },
+          "updates": {
+            "items": {
+              "$ref": "#/components/schemas/UpdateResponse"
+            },
+            "type": "array",
+            "title": "Updates",
+            "description": "Avances publicados, del más reciente."
+          },
+          "updates_hidden": {
+            "type": "boolean",
+            "title": "Updates Hidden",
+            "description": "El cliente no ve los textos de los avances (su tutela no incluye lo clínico)."
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Started At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "handed_over_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Handed Over At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "appointment_id",
+          "pet_id",
+          "pet_name",
+          "service_name",
+          "template",
+          "status",
+          "stages",
+          "current_stage",
+          "next_stage",
+          "next_is_discharge",
+          "updates",
+          "updates_hidden",
+          "started_at",
+          "updated_at",
+          "handed_over_at"
+        ],
+        "title": "TrackedServiceResponse"
+      },
+      "TrackingStatus": {
+        "type": "string",
+        "enum": [
+          "in_progress",
+          "ready",
+          "handed_over"
+        ],
+        "title": "TrackingStatus"
+      },
       "UpdateGuardianRequest": {
         "properties": {
           "kind": {
@@ -6577,6 +7417,22 @@
           "permissions"
         ],
         "title": "UpdateGuardianRequest"
+      },
+      "UpdateRequest": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "UpdateRequest"
       },
       "UpdateResourceRequest": {
         "properties": {
@@ -6619,6 +7475,31 @@
           "active"
         ],
         "title": "UpdateResourceRequest"
+      },
+      "UpdateResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "At"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "at",
+          "text"
+        ],
+        "title": "UpdateResponse"
       },
       "UserResponse": {
         "properties": {

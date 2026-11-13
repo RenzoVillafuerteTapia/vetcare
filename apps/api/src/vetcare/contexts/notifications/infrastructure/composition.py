@@ -2,7 +2,10 @@ from collections.abc import Callable
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from vetcare.contexts.notifications.application.handlers import AppointmentPushHandler
+from vetcare.contexts.notifications.application.handlers import (
+    AppointmentPushHandler,
+    TrackingPushHandler,
+)
 from vetcare.contexts.notifications.application.ports import ClientAccounts, PushSender
 from vetcare.contexts.notifications.application.services import DevicesService
 from vetcare.contexts.notifications.infrastructure.repositories import SqlDeviceRepository
@@ -50,6 +53,10 @@ def build_push_handlers(
     sender: PushSender,
     *,
     clock: Clock | None = None,
-) -> list[AppointmentPushHandler]:
+) -> list[AppointmentPushHandler | TrackingPushHandler]:
     real_clock = clock or SystemClock()
-    return [AppointmentPushHandler(_uow(session_factory, real_clock), accounts, sender, real_clock)]
+    uow = _uow(session_factory, real_clock)
+    return [
+        AppointmentPushHandler(uow, accounts, sender, real_clock),
+        TrackingPushHandler(uow, accounts, sender, real_clock),
+    ]

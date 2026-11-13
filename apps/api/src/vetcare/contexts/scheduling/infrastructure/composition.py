@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from vetcare.contexts.clinic.public import ClinicCatalog
 from vetcare.contexts.customers.public import PetAccess
+from vetcare.contexts.scheduling.application.queries import AppointmentDirectory
 from vetcare.contexts.scheduling.application.services import SchedulingService
 from vetcare.contexts.scheduling.domain.appointment import SchedulingPolicy
 from vetcare.contexts.scheduling.infrastructure.repositories import (
@@ -39,3 +40,10 @@ def build_scheduling(
     return SchedulingService(
         uow_factory=uow, catalog=catalog, pets=pets, clock=real_clock, policy=policy
     )
+
+
+def build_appointment_directory(
+    session_factory: async_sessionmaker[AsyncSession], *, clock: Clock | None = None
+) -> AppointmentDirectory:
+    real_clock = clock or SystemClock()
+    return AppointmentDirectory(lambda: SqlSchedulingUnitOfWork(session_factory, real_clock))

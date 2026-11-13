@@ -13,7 +13,12 @@ from vetcare.contexts.identity.infrastructure.composition import build_identity_
 from vetcare.contexts.notifications.api import router as notifications
 from vetcare.contexts.notifications.infrastructure.composition import build_devices
 from vetcare.contexts.scheduling.api import router as scheduling
-from vetcare.contexts.scheduling.infrastructure.composition import build_scheduling
+from vetcare.contexts.scheduling.infrastructure.composition import (
+    build_appointment_directory,
+    build_scheduling,
+)
+from vetcare.contexts.tracking.api import router as tracking
+from vetcare.contexts.tracking.infrastructure.composition import build_tracking
 from vetcare.integrations import IdentityAccountInviter
 from vetcare.platform import health, openapi
 from vetcare.platform.db import create_engine, create_session_factory
@@ -76,6 +81,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if app.state.session_factory is not None
         else None
     )
+    app.state.tracking = (
+        build_tracking(
+            app.state.session_factory,
+            appointments=build_appointment_directory(app.state.session_factory),
+            catalog=app.state.clinic_catalog,
+            pets=app.state.pet_access,
+        )
+        if app.state.session_factory is not None
+        else None
+    )
     app.state.devices = (
         build_devices(app.state.session_factory) if app.state.session_factory is not None else None
     )
@@ -99,6 +114,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(scheduling.router, prefix=API_PREFIX)
     app.include_router(scheduling.me_router, prefix=API_PREFIX)
     app.include_router(notifications.me_router, prefix=API_PREFIX)
+    app.include_router(tracking.router, prefix=API_PREFIX)
+    app.include_router(tracking.me_router, prefix=API_PREFIX)
     if isinstance(app.state.file_storage, LocalFileStorage):
         # Solo con almacenamiento en disco: en producción las URLs firmadas apuntan a S3.
         app.include_router(app.state.file_storage.router(), prefix=API_PREFIX)

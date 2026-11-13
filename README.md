@@ -21,6 +21,14 @@ responsables autorizados de las mascotas, conectadas a una **API común**.
 | Seguimiento de baños y peluquería | API, web y app móvil implementadas | 3 |
 | Seguimiento de cirugías (alta por el veterinario) | API, web y app móvil implementadas | 3 |
 | Seguimiento en tiempo real y notificaciones push | Push y refresco cada 10 s implementados; SSE pendiente | 3 |
+| Configuración de la clínica (servicios, recursos, horarios) | API implementada; web pendiente | 2 |
+| Clientes, mascotas y responsables autorizados | API y app móvil implementadas (web en el PR de #24) | 2 |
+| Agenda y citas sin conflictos | API y app móvil implementadas (web en el PR de #26) | 2 |
+| Clientes, mascotas y responsables autorizados | API y web implementadas; móvil pendiente | 2 |
+| Agenda y citas sin conflictos | API y web implementadas; móvil pendiente | 2 |
+| Seguimiento de baños y peluquería | Planificado | 3 |
+| Seguimiento de cirugías | Planificado | 3 |
+| Seguimiento en tiempo real (SSE) y notificaciones push | Planificado | 3 |
 | Historial clínico, tratamientos y recordatorios | Pendiente (fuera del MVP) | 4 |
 | Presupuestos, pagos y comprobantes internos | Pendiente (fuera del MVP) | 5 |
 | Inventario, lotes y vencimientos | Pendiente (fuera del MVP) | 6 |

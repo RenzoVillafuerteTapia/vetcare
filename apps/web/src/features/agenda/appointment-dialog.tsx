@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { usePermission, useSessionManager } from "@/features/auth/session-context";
 import { clientKey } from "@/features/customers/queries";
+import { AppointmentTracking } from "@/features/tracking/appointment-tracking";
 import { errorMessage, unwrap } from "@/lib/api-error";
 
 import { HISTORY_LABELS, STATUS_LABELS, STATUS_STYLES, type Appointment } from "./labels";
@@ -292,6 +293,9 @@ export function AppointmentDialog({ appointment, onChanged }: AppointmentDialogP
         ) : null}
       </div>
 
+      {mode === "detail" && (status === "checked_in" || status === "completed") ? (
+        <AppointmentTracking appointmentId={appointment.id} />
+      ) : null}
       {mode === "detail" && canManage && (open || status === "checked_in") ? (
         <DialogFooter className="flex-wrap">
           {canManage && open ? (

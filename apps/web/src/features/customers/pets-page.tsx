@@ -22,7 +22,8 @@ import {
 import { PetPhoto } from "./pet-photo";
 import { PETS } from "./queries";
 
-const PAGE_SIZE = 20;
+// Dos filas de seis tarjetas: caben en una pantalla de laptop sin desplazarse.
+const PAGE_SIZE = 12;
 
 /** Edad aproximada: "8 meses", "3 años". */
 function ageOf(birth: string | null, now: Date): string | null {

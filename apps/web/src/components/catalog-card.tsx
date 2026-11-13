@@ -59,12 +59,12 @@ export function CatalogCard({
   className,
 }: CatalogCardProps) {
   const top = (
-    <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-sidebar">
+    <div className="relative flex h-24 items-center justify-center overflow-hidden bg-sidebar">
       {media}
       {corner ? (
         <span
           className={cn(
-            "absolute top-3 left-3 rounded-full px-2.5 py-1 text-xs font-bold shadow-sm",
+            "absolute top-2 left-2 rounded-full px-2 py-0.5 text-[11px] font-bold shadow-sm",
             CORNER_TONES[corner.tone ?? "red"],
           )}
         >
@@ -74,14 +74,14 @@ export function CatalogCard({
     </div>
   );
   const body = (
-    <div className="grid gap-2 p-4">
+    <div className="grid gap-1 p-3">
       {chips.length > 0 ? (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex h-5 flex-wrap gap-1 overflow-hidden">
           {chips.map((chip) => (
             <span
               key={chip.label}
               className={cn(
-                "rounded-md border px-2 py-0.5 text-[11px] font-semibold",
+                "rounded-md border px-1.5 text-[10px] leading-4 font-semibold",
                 CHIP_TONES[chip.tone ?? "gray"],
               )}
             >
@@ -90,19 +90,21 @@ export function CatalogCard({
           ))}
         </div>
       ) : null}
-      <h3 className="line-clamp-2 min-h-[2.5rem] text-sm leading-5 font-semibold text-foreground">
+      <h3 className="truncate text-sm leading-5 font-semibold text-foreground" title={title}>
         {title}
       </h3>
       {highlight || secondary ? (
-        <p className="flex flex-wrap items-baseline gap-x-2">
-          {highlight ? <span className="text-lg font-bold text-primary">{highlight}</span> : null}
+        <p className="flex items-baseline gap-x-2 truncate">
+          {highlight ? (
+            <span className="truncate text-base font-bold text-primary">{highlight}</span>
+          ) : null}
           {secondary ? <span className="text-xs text-muted-foreground">{secondary}</span> : null}
         </p>
       ) : null}
       {footer ? (
         <p
           className={cn(
-            "text-xs font-semibold",
+            "truncate text-xs font-semibold",
             footerTone === "ok" && "text-success",
             footerTone === "warn" && "text-destructive",
             footerTone === "muted" && "text-muted-foreground",
@@ -139,17 +141,18 @@ export function CatalogCard({
         top
       )}
       {body}
-      {actions ? <div className="flex flex-wrap gap-1 px-4 pb-4">{actions}</div> : null}
+      {actions ? <div className="flex flex-wrap gap-1 px-2 pb-2">{actions}</div> : null}
     </article>
   );
 }
 
-/** Rejilla de tarjetas: 2 columnas en el teléfono, hasta 5 en pantallas anchas. */
+/** Rejilla compacta: 2 columnas en el teléfono, hasta 6 en pantallas anchas (12 por página
+ * caben en una pantalla de laptop sin desplazarse). */
 export function CatalogGrid({ label, children }: { label: string; children: ReactNode }) {
   return (
     <ul
       aria-label={label}
-      className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5"
+      className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
     >
       {children}
     </ul>

@@ -17,8 +17,8 @@ import { ClientFormDialog } from "./client-form-dialog";
 import { DOCUMENT_LABELS } from "./labels";
 import { CLIENTS } from "./queries";
 
-// Cuatro filas de tarjetas en una pantalla ancha.
-const PAGE_SIZE = 20;
+// Dos filas de seis tarjetas: caben en una pantalla de laptop sin desplazarse.
+const PAGE_SIZE = 12;
 
 export function ClientsPage() {
   const { api } = useSessionManager();
@@ -179,7 +179,7 @@ function Initials({ name }: { name: string }) {
   return (
     <span
       aria-hidden
-      className={`flex size-24 items-center justify-center rounded-full font-display text-3xl font-medium ${tone}`}
+      className={`flex size-16 items-center justify-center rounded-full font-display text-xl font-medium ${tone}`}
     >
       {initials}
     </span>

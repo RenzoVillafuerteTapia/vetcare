@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Bone,
+  ChevronLeft,
+  ChevronRight,
   CircleAlert,
   Droplets,
   History,
@@ -69,6 +71,9 @@ const CATEGORY_TONES: Record<ProductCategory, string> = {
   other: "bg-muted text-muted-foreground",
 };
 
+// Dos filas de seis tarjetas: caben en una pantalla de laptop sin desplazarse.
+const PAGE_SIZE = 12;
+
 type StockAction = "receive" | "use" | "count";
 
 /** Inventario: productos con su stock, precios y movimientos. */
@@ -94,6 +99,10 @@ export function InventoryPage() {
   const all = products.data ?? [];
   const low = all.filter((p) => p.low_stock);
   const shown = onlyLow ? low : all;
+  const [page, setPage] = useState(1);
+  const pages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
+  const current = Math.min(page, pages);
+  const pageItems = shown.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
   const value = all.reduce((sum, p) => sum + Number(p.stock) * Number(p.cost_price), 0);
 
   return (
@@ -110,24 +119,24 @@ export function InventoryPage() {
         }
       />
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-3">
-        <Card className="p-4">
+      <div className="mb-3 grid gap-3 sm:grid-cols-3">
+        <Card className="gap-0.5 px-4 py-3">
           <p className="text-xs font-semibold text-muted-foreground">Productos activos</p>
-          <p className="text-2xl font-medium">{all.filter((p) => p.active).length}</p>
+          <p className="text-xl font-medium">{all.filter((p) => p.active).length}</p>
         </Card>
-        <Card className={cn("p-4", low.length > 0 && "border-destructive/40")}>
+        <Card className={cn("gap-0.5 px-4 py-3", low.length > 0 && "border-destructive/40")}>
           <p className="text-xs font-semibold text-muted-foreground">Con stock bajo</p>
-          <p className={cn("text-2xl font-medium", low.length > 0 && "text-destructive")}>
+          <p className={cn("text-xl font-medium", low.length > 0 && "text-destructive")}>
             {low.length}
           </p>
         </Card>
-        <Card className="p-4">
+        <Card className="gap-0.5 px-4 py-3">
           <p className="text-xs font-semibold text-muted-foreground">Valor del stock (al costo)</p>
-          <p className="text-2xl font-medium">{money(value)}</p>
+          <p className="text-xl font-medium">{money(value)}</p>
         </Card>
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center gap-3">
+      <div className="mb-3 flex flex-wrap items-center gap-3">
         <div className="relative min-w-60 flex-1">
           <Search
             className="absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground"
@@ -138,13 +147,19 @@ export function InventoryPage() {
             placeholder="Buscar por nombre o código"
             className="pl-10"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
           />
         </div>
         <Button
           variant={onlyLow ? "default" : "outline"}
           aria-pressed={onlyLow}
-          onClick={() => setOnlyLow(!onlyLow)}
+          onClick={() => {
+            setOnlyLow(!onlyLow);
+            setPage(1);
+          }}
         >
           <CircleAlert aria-hidden /> Solo stock bajo
         </Button>
@@ -164,7 +179,7 @@ export function InventoryPage() {
         </EmptyState>
       ) : (
         <CatalogGrid label="Productos">
-          {shown.map((p) => {
+          {pageItems.map((p) => {
             const margin = Number(p.sale_price) - Number(p.cost_price);
             const marginPct =
               Number(p.cost_price) > 0 ? Math.round((margin / Number(p.cost_price)) * 100) : null;
@@ -176,11 +191,11 @@ export function InventoryPage() {
                   media={
                     <span
                       className={cn(
-                        "flex size-24 items-center justify-center rounded-3xl",
+                        "flex size-16 items-center justify-center rounded-2xl",
                         CATEGORY_TONES[p.category],
                       )}
                     >
-                      <Icon className="size-12" aria-hidden />
+                      <Icon className="size-8" aria-hidden />
                     </span>
                   }
                   corner={
@@ -246,6 +261,34 @@ export function InventoryPage() {
           })}
         </CatalogGrid>
       )}
+      {shown.length > 0 ? (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
+          <span role="status">
+            {shown.length === 1 ? "1 producto" : `${shown.length} productos`}
+            {pages > 1 ? ` · página ${current} de ${pages}` : ""}
+          </span>
+          {pages > 1 ? (
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={current <= 1}
+                onClick={() => setPage(current - 1)}
+              >
+                <ChevronLeft aria-hidden /> Anterior
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={current >= pages}
+                onClick={() => setPage(current + 1)}
+              >
+                Siguiente <ChevronRight aria-hidden />
+              </Button>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
       <Dialog open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>
         {editing ? (

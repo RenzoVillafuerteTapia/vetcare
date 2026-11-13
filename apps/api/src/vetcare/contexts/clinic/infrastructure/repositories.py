@@ -17,7 +17,7 @@ from vetcare.contexts.clinic.domain.model import (
     ServiceType,
     TimeOff,
 )
-from vetcare.contexts.clinic.domain.schedule import TimeRange, Weekday, WeeklySchedule
+from vetcare.contexts.clinic.domain.schedule import MIDNIGHT, TimeRange, Weekday, WeeklySchedule
 from vetcare.contexts.clinic.infrastructure.tables import (
     CALENDAR_ROW_ID,
     calendar,
@@ -36,7 +36,11 @@ CONCURRENT = ConflictError(
 
 def schedule_to_json(schedule: WeeklySchedule) -> list[dict[str, Any]]:
     return [
-        {"weekday": int(day), "start": r.start.strftime("%H:%M"), "end": r.end.strftime("%H:%M")}
+        {
+            "weekday": int(day),
+            "start": r.start.strftime("%H:%M"),
+            "end": "24:00" if r.until_midnight else r.end.strftime("%H:%M"),
+        }
         for day, r in schedule.entries()
     ]
 
@@ -45,7 +49,10 @@ def schedule_from_json(data: list[dict[str, Any]]) -> WeeklySchedule:
     return WeeklySchedule.build(
         (
             Weekday(item["weekday"]),
-            TimeRange(time.fromisoformat(item["start"]), time.fromisoformat(item["end"])),
+            TimeRange(
+                time.fromisoformat(item["start"]),
+                MIDNIGHT if item["end"] == "24:00" else time.fromisoformat(item["end"]),
+            ),
         )
         for item in data
     )

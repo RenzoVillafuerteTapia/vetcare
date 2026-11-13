@@ -66,6 +66,33 @@ def test_franjas_contiguas_si_se_admiten() -> None:
     )
 
 
+def test_una_franja_puede_llegar_hasta_la_medianoche() -> None:
+    noche = franja("20:00", "00:00")
+    dia_completo = franja("00:00", "00:00")
+
+    assert (noche.end_seconds, str(noche)) == (24 * 3600, "20:00 a 24:00")
+    assert str(dia_completo) == "00:00 a 24:00"
+    # 00:00 como fin es la medianoche, nunca un fin anterior al inicio.
+    assert noche.overlaps(franja("23:00", "23:30"))
+    assert not noche.overlaps(franja("08:00", "20:00"))
+
+
+VEINTICUATRO_HORAS = WeeklySchedule.build([(d, franja("00:00", "00:00")) for d in Weekday])
+
+
+@pytest.mark.parametrize(
+    ("inicio", "fin", "cubre"),
+    [
+        (lima(LUNES, 0), lima(LUNES, 0, 30), True),  # apenas empieza el día
+        (lima(LUNES, 23, 30), lima(LUNES + timedelta(days=1), 0), True),  # termina a las 24:00
+        (lima(LUNES, 3, 15), lima(LUNES, 4), True),  # de madrugada
+        (lima(LUNES, 23, 30), lima(LUNES + timedelta(days=1), 0, 30), False),  # cruza el día
+    ],
+)
+def test_una_sede_abierta_las_24_horas(inicio: datetime, fin: datetime, cubre: bool) -> None:
+    assert VEINTICUATRO_HORAS.covers(inicio, fin) is cubre
+
+
 @pytest.mark.parametrize(
     ("inicio", "fin", "cubre"),
     [

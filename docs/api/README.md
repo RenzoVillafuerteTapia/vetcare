@@ -92,7 +92,8 @@ Errores propios: `slot_unavailable` (409, el horario se ocupó o no cabe),
 `idempotency_key_reused` (409, misma clave con otro cuerpo).
 
 Los horarios semanales usan hora local de Lima (`{"weekday": 0, "start": "09:00", "end": "13:00"}`,
-con 0 = lunes). Los instantes (bloqueos y, más adelante, citas) viajan en ISO 8601 con zona y se
+con 0 = lunes). `00:00` como fin significa medianoche (24:00): `{"start": "00:00", "end": "00:00"}`
+abre el día completo. Una franja no cruza la medianoche, y una cita tampoco. Los instantes (bloqueos y, más adelante, citas) viajan en ISO 8601 con zona y se
 devuelven en UTC.
 
 ## Errores

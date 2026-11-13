@@ -67,13 +67,16 @@ class Availability:
         duration_minutes: int,
         step_minutes: int,
         not_before: datetime,
+        preferred: Mapping[str, UUID] | None = None,
     ) -> list[SlotOption]:
+        """Horarios donde cabe el servicio. Con ``preferred``, solo con esos recursos (p. ej. el
+        veterinario que eligió el cliente)."""
         options: list[SlotOption] = []
         start = day_start
         while start + timedelta(minutes=duration_minutes) <= day_end:
             if start >= not_before:
                 slot = TimeSlot.starting(start, duration_minutes)
-                resource_ids = self.assign(slot)
+                resource_ids = self.assign(slot, preferred)
                 if resource_ids is not None:
                     options.append(SlotOption(slot, resource_ids))
             start += timedelta(minutes=step_minutes)

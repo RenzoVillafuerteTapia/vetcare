@@ -655,6 +655,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/scheduling/professionals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Veterinarios y groomers
+         * @description Profesionales activos, por nombre. Con `service_type_id`, solo los que prestan ese servicio (para el cliente, solo servicios reservables). No incluye sus horarios.
+         */
+        get: operations["professionals_api_v1_scheduling_professionals_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/appointments": {
         parameters: {
             query?: never;
@@ -956,7 +976,7 @@ export interface components {
             start: string;
             /**
              * Resource Ids
-             * @description Solo personal: fijar un recurso por tipo (p. ej. una veterinaria concreta).
+             * @description Fijar un recurso por tipo (p. ej. una veterinaria concreta). El cliente solo puede fijar al profesional (veterinario o groomer).
              */
             resource_ids?: string[];
             /**
@@ -1421,6 +1441,20 @@ export interface components {
              * @description Errores por campo, solo en respuestas 422.
              */
             errors?: components["schemas"]["FieldProblem"][] | null;
+        };
+        /**
+         * ProfessionalResponse
+         * @description Un veterinario o groomer, sin su horario: para elegirlo y para mostrar quién atiende.
+         */
+        ProfessionalResponse: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            kind: components["schemas"]["ResourceKind"];
         };
         /** RefreshRequest */
         RefreshRequest: {
@@ -4257,6 +4291,8 @@ export interface operations {
                 service_type_id: string;
                 /** @description Día en hora de Lima, AAAA-MM-DD. */
                 date: string;
+                /** @description Solo los horarios de este profesional (de `/scheduling/professionals`). */
+                professional_id?: string | null;
             };
             header?: never;
             path?: never;
@@ -4271,6 +4307,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SlotResponse"][];
+                };
+            };
+            /** @description No autenticado */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Sin acceso */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description No existe */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Datos inválidos */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    professionals_api_v1_scheduling_professionals_get: {
+        parameters: {
+            query?: {
+                service_type_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfessionalResponse"][];
                 };
             };
             /** @description No autenticado */

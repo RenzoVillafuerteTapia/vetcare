@@ -1,5 +1,8 @@
+import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
 import {
-  CalendarClock,
+  CalendarPlus,
+  ChevronRight,
   LogOut,
   PawPrint,
   Pill,
@@ -7,20 +10,19 @@ import {
   type LucideIcon,
 } from "lucide-react-native";
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Badge, Body, Brand, Button, Card, Heading, Screen } from "@/components/ui";
+import { AppointmentCard, Loading, SectionTitle } from "@/components/appointments";
+import { PetAvatar } from "@/components/pets";
+import { Badge, Body, Brand, Button, Card, Heading, Notice, Screen } from "@/components/ui";
+import { errorMessage, unwrap } from "@/lib/api-error";
+import { SPECIES_LABELS, upcoming } from "@/lib/labels";
+import { MY_APPOINTMENTS, MY_PETS } from "@/lib/queries";
 import { useSession, useSessionManager } from "@/session/context";
 import { colors, fonts, radius, spacing } from "@/theme/tokens";
 
-/** Lo que verá el dueño a medida que se habiliten los módulos. Sin datos de ejemplo. */
-const UPCOMING: { icon: LucideIcon; title: string; description: string; phase: string }[] = [
-  {
-    icon: CalendarClock,
-    title: "Tus citas",
-    description: "Próximas citas, confirmaciones y solicitudes de nuevas citas.",
-    phase: "Fase 2",
-  },
+/** Lo que llega en las fases siguientes. Sin datos de ejemplo. */
+const COMING: { icon: LucideIcon; title: string; description: string; phase: string }[] = [
   {
     icon: Scissors,
     title: "Servicios en vivo",
@@ -38,12 +40,26 @@ const UPCOMING: { icon: LucideIcon; title: string; description: string; phase: s
 export default function HomeScreen() {
   const session = useSession();
   const manager = useSessionManager();
+  const router = useRouter();
   const [leaving, setLeaving] = useState(false);
+  const { api } = manager;
+
+  const pets = useQuery({
+    queryKey: MY_PETS,
+    queryFn: () => unwrap(api.GET("/api/v1/me/pets")),
+  });
+  const appointments = useQuery({
+    queryKey: MY_APPOINTMENTS,
+    queryFn: () => unwrap(api.GET("/api/v1/me/appointments")),
+  });
+
   if (session.status !== "authenticated") {
     return null;
   }
   const { user } = session;
   const firstName = user.full_name.split(" ")[0] ?? "";
+  const next = appointments.data ? upcoming(appointments.data)[0] : undefined;
+  const hasPets = (pets.data?.length ?? 0) > 0;
 
   return (
     <Screen>
@@ -59,28 +75,91 @@ export default function HomeScreen() {
         <Body muted>Aquí verás el cuidado de tus mascotas.</Body>
       </View>
 
-      <View style={styles.highlight}>
-        <Badge glass>Tus mascotas</Badge>
-        <Text style={styles.highlightTitle} accessibilityRole="header">
-          Pronto aparecerán aquí
-        </Text>
-        <Body style={styles.highlightText}>
-          Cuando la veterinaria vincule a tus mascotas con tu cuenta, verás su perfil, sus vacunas y
-          los servicios en curso.
-        </Body>
-        <PawPrint
-          size={180}
-          strokeWidth={1.25}
-          color="rgba(255,255,255,0.07)"
-          style={styles.highlightPaw}
-        />
+      {/* Próxima cita */}
+      <View style={{ gap: spacing(3) }}>
+        <View style={styles.sectionHeader}>
+          <SectionTitle>Próxima cita</SectionTitle>
+          {appointments.data && appointments.data.length > 0 ? (
+            <Button label="Ver todas" variant="ghost" onPress={() => router.push("/citas")} />
+          ) : null}
+        </View>
+        {appointments.isPending ? (
+          <Loading label="Cargando tus citas…" />
+        ) : appointments.isError ? (
+          <Notice tone="error">{errorMessage(appointments.error)}</Notice>
+        ) : next ? (
+          <AppointmentCard appointment={next} />
+        ) : (
+          <Card>
+            <Body muted>
+              {hasPets
+                ? "No tienes citas próximas. Solicita una y la veterinaria la confirmará."
+                : "Cuando tengas mascotas vinculadas podrás solicitar citas desde aquí."}
+            </Body>
+            {hasPets ? (
+              <Button
+                label="Solicitar una cita"
+                icon={CalendarPlus}
+                onPress={() => router.push("/citas/nueva")}
+              />
+            ) : null}
+          </Card>
+        )}
+      </View>
+
+      {/* Mascotas */}
+      <View style={{ gap: spacing(3) }}>
+        <SectionTitle>Tus mascotas</SectionTitle>
+        {pets.isPending ? (
+          <Loading label="Cargando tus mascotas…" />
+        ) : pets.isError ? (
+          <View style={{ gap: spacing(3) }}>
+            <Notice tone="error">{errorMessage(pets.error)}</Notice>
+            <Button label="Reintentar" variant="outline" onPress={() => void pets.refetch()} />
+          </View>
+        ) : pets.data.length === 0 ? (
+          <View style={styles.highlight}>
+            <Badge glass>Tus mascotas</Badge>
+            <Text style={styles.highlightTitle} accessibilityRole="header">
+              Todavía no hay mascotas vinculadas
+            </Text>
+            <Body style={styles.highlightText}>
+              Pide en la veterinaria que te registren como dueño o responsable de tu mascota. Al
+              hacerlo, aparecerá aquí con su perfil y sus citas.
+            </Body>
+            <PawPrint
+              size={180}
+              strokeWidth={1.25}
+              color="rgba(255,255,255,0.07)"
+              style={styles.highlightPaw}
+            />
+          </View>
+        ) : (
+          pets.data.map((pet) => (
+            <Pressable
+              key={pet.id}
+              accessibilityRole="button"
+              accessibilityLabel={`Perfil de ${pet.name}`}
+              onPress={() => router.push(`/mascotas/${pet.id}`)}
+              style={({ pressed }) => [styles.pet, pressed && { opacity: 0.85 }]}
+            >
+              <PetAvatar pet={pet} />
+              <View style={{ flex: 1, gap: spacing(0.5) }}>
+                <Text style={styles.petName}>{pet.name}</Text>
+                <Body muted style={{ fontSize: 14 }}>
+                  {SPECIES_LABELS[pet.species]}
+                  {pet.breed ? ` · ${pet.breed}` : ""}
+                </Body>
+              </View>
+              <ChevronRight size={20} color={colors.mutedForeground} />
+            </Pressable>
+          ))
+        )}
       </View>
 
       <View style={{ gap: spacing(3) }}>
-        <Text style={styles.sectionTitle} accessibilityRole="header">
-          En preparación
-        </Text>
-        {UPCOMING.map(({ icon: Icon, title, description, phase }) => (
+        <SectionTitle>En preparación</SectionTitle>
+        {COMING.map(({ icon: Icon, title, description, phase }) => (
           <Card key={title} style={styles.moduleCard}>
             <View style={styles.moduleHeader}>
               <View style={styles.moduleIcon}>
@@ -125,6 +204,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   avatarText: { fontFamily: fonts.display, fontSize: 18, color: colors.primaryForeground },
+  sectionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   highlight: {
     backgroundColor: colors.surfaceStrong,
     borderRadius: radius.panel,
@@ -134,8 +214,8 @@ const styles = StyleSheet.create({
   },
   highlightTitle: {
     fontFamily: fonts.display,
-    fontSize: 26,
-    lineHeight: 30,
+    fontSize: 24,
+    lineHeight: 28,
     color: colors.surfaceStrongForeground,
   },
   highlightText: { color: "rgba(238,247,246,0.8)" },
@@ -145,7 +225,15 @@ const styles = StyleSheet.create({
     bottom: -50,
     transform: [{ rotate: "-18deg" }],
   },
-  sectionTitle: { fontFamily: fonts.display, fontSize: 20, color: colors.foreground },
+  pet: {
+    backgroundColor: colors.card,
+    borderRadius: radius.card,
+    padding: spacing(4),
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing(4),
+  },
+  petName: { fontFamily: fonts.display, fontSize: 20, color: colors.foreground },
   moduleCard: { gap: spacing(2) },
   moduleHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   moduleIcon: {

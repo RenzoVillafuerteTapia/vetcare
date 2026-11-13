@@ -29,6 +29,14 @@ En el emulador de Android conviene usar `http://localhost:8000` y redirigir el p
 Las cuentas de cliente se crean por invitación desde la web de administración. El enlace del
 correo abre la web, donde la persona elige su contraseña, y luego ingresa en la app.
 
+## Seguimiento en vivo
+
+Cuando la veterinaria inicia el seguimiento de una cita (baño, cirugía u otra atención), el
+inicio muestra "En la veterinaria" con la etapa actual. La pantalla del seguimiento tiene la
+línea de tiempo con la hora de cada etapa y los avances publicados, y se vuelve a pedir cada
+10 s mientras está abierta (`TRACKING_REFRESH_MS`); el envío por SSE queda para una entrega
+posterior.
+
 ## Avisos push
 
 La app registra el teléfono al iniciar sesión (`PUT /me/devices`) y lo da de baja al cerrarla.

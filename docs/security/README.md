@@ -100,6 +100,9 @@ Push y correos usan textos genéricos. Nunca incluyen diagnósticos, procedimien
 directos a documentos; el detalle se ve en la app después de autenticarse.
 
 - Un aviso de cita solo lleva el nombre de la mascota y la fecha: ni el servicio ni el motivo.
+- Un aviso de seguimiento dice que hay novedades, nunca el texto del avance. En la app, un
+  responsable sin `can_view_clinical` ve las etapas pero no los textos de los avances.
+- El alta de una cirugía requiere `tracking:authorize_discharge` (solo el rol veterinario).
 - El token de Expo identifica al teléfono, no a la persona. Si otra cuenta inicia sesión en el
   mismo teléfono, el token pasa a esa cuenta; al cerrar sesión, la app lo da de baja antes de
   revocar la sesión. Los tokens que Expo marca como no registrados se borran.

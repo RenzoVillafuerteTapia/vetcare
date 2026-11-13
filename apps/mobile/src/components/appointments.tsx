@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
-import { useRef, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -15,8 +15,8 @@ import {
 import { Body, Card, Notice } from "@/components/ui";
 import { errorMessage, unwrap } from "@/lib/api-error";
 import { STATUS_LABELS, type Appointment, type AppointmentStatus } from "@/lib/labels";
-import { availabilityKey } from "@/lib/queries";
-import { formatSlot, limaTime, upcomingDays } from "@/lib/time";
+import { availabilityKey, professionalsKey } from "@/lib/queries";
+import { formatSlot, limaDay, limaTime, upcomingDays } from "@/lib/time";
 import { useSessionManager } from "@/session/context";
 import { colors, fonts, radius, spacing } from "@/theme/tokens";
 
@@ -76,8 +76,75 @@ export function StatusBadge({ status }: { status: AppointmentStatus }) {
 }
 
 /** Tarjeta de una cita que abre su detalle. */
+// --- Profesionales -----------------------------------------------------------------------
+
+/** Valor de "cualquier profesional" en el selector: la agenda asigna el que esté libre. */
+export const ANY_PROFESSIONAL = "cualquiera";
+
+/** Veterinarios o groomers activos (de un servicio, o todos). Sin horarios. */
+export function useProfessionals(serviceTypeId: string | null = "") {
+  const { api } = useSessionManager();
+  return useQuery({
+    queryKey: professionalsKey(serviceTypeId ?? ""),
+    queryFn: () =>
+      unwrap(
+        api.GET("/api/v1/scheduling/professionals", {
+          params: { query: serviceTypeId ? { service_type_id: serviceTypeId } : {} },
+        }),
+      ),
+    enabled: serviceTypeId !== null,
+    staleTime: 5 * 60_000,
+  });
+}
+
+/** Quién atiende la cita: el profesional entre sus recursos asignados, si se conoce. */
+export function useProfessionalOf(appointment: Pick<Appointment, "resource_ids">): string | null {
+  const professionals = useProfessionals();
+  const found = professionals.data?.find((p) => appointment.resource_ids.includes(p.id));
+  return found?.name ?? null;
+}
+
+/**
+ * "¿Con quién?": el cliente elige a su profesional de confianza o deja "Cualquiera" para ver
+ * todos los horarios. Si no se pueden cargar los profesionales, no se muestra (se reserva con
+ * cualquiera).
+ */
+export function ProfessionalPicker({
+  serviceTypeId,
+  value,
+  onChange,
+}: {
+  serviceTypeId: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const professionals = useProfessionals(serviceTypeId);
+  if (!professionals.data || professionals.data.length < 2) {
+    return null; // Con uno solo no hay nada que elegir.
+  }
+  return (
+    <Card style={{ gap: spacing(2) }}>
+      <ChoiceChips
+        label="¿Con quién?"
+        options={[
+          { value: ANY_PROFESSIONAL, label: "Cualquiera" },
+          ...professionals.data.map((p) => ({ value: p.id, label: p.name })),
+        ]}
+        value={value}
+        onChange={onChange}
+      />
+      <Body muted style={{ fontSize: 13 }}>
+        {value === ANY_PROFESSIONAL
+          ? "Verás los horarios de todos y la veterinaria asigna a quien esté libre."
+          : "Solo verás los horarios libres de este profesional."}
+      </Body>
+    </Card>
+  );
+}
+
 export function AppointmentCard({ appointment }: { appointment: Appointment }) {
   const router = useRouter();
+  const professional = useProfessionalOf(appointment);
   return (
     <Pressable
       accessibilityRole="button"
@@ -96,6 +163,11 @@ export function AppointmentCard({ appointment }: { appointment: Appointment }) {
         <Body muted style={{ fontSize: 14 }}>
           {formatSlot(appointment.start, appointment.end)}
         </Body>
+        {professional ? (
+          <Body muted style={{ fontSize: 14 }}>
+            Con {professional}
+          </Body>
+        ) : null}
       </View>
       <ChevronRight size={20} color={colors.mutedForeground} />
     </Pressable>
@@ -205,6 +277,7 @@ export function ChoiceChips({
 /** Día y hora de una cita, entre los horarios libres que informa la API para el servicio. */
 export function SlotPicker({
   serviceTypeId,
+  professionalId = ANY_PROFESSIONAL,
   day,
   start,
   onDayChange,
@@ -212,6 +285,8 @@ export function SlotPicker({
   error,
 }: {
   serviceTypeId: string | null;
+  /** Un profesional concreto, o `ANY_PROFESSIONAL`. */
+  professionalId?: string;
   day: string;
   start: string;
   onDayChange: (day: string) => void;
@@ -219,12 +294,20 @@ export function SlotPicker({
   error?: string | undefined;
 }) {
   const { api } = useSessionManager();
+  const professional = professionalId === ANY_PROFESSIONAL ? "" : professionalId;
+  const [today] = useState(() => limaDay(Date.now()));
   const slots = useQuery({
-    queryKey: availabilityKey(serviceTypeId ?? "", day),
+    queryKey: availabilityKey(serviceTypeId ?? "", day, professional),
     queryFn: () =>
       unwrap(
         api.GET("/api/v1/scheduling/availability", {
-          params: { query: { service_type_id: serviceTypeId ?? "", date: day } },
+          params: {
+            query: {
+              service_type_id: serviceTypeId ?? "",
+              date: day,
+              ...(professional ? { professional_id: professional } : {}),
+            },
+          },
         }),
       ),
     enabled: serviceTypeId !== null,
@@ -247,7 +330,11 @@ export function SlotPicker({
       ) : slots.isError ? (
         <Notice tone="error">{errorMessage(slots.error)}</Notice>
       ) : slots.data.length === 0 ? (
-        <Body muted>No hay horarios libres ese día. Prueba con otro.</Body>
+        <Body muted>
+          {professional
+            ? "No hay horarios libres ese día con este profesional. Prueba con otro día o elige «Cualquiera»."
+            : "No hay horarios libres ese día. Prueba con otro."}
+        </Body>
       ) : (
         <ChoiceChips
           label="Hora"
@@ -258,6 +345,11 @@ export function SlotPicker({
           error={error}
         />
       )}
+      {day === today ? (
+        <Body muted style={{ fontSize: 13 }}>
+          Hoy puedes pedir hora desde 30 minutos después de ahora.
+        </Body>
+      ) : null}
       {error && (serviceTypeId === null || !slots.data?.length) ? (
         <Text style={styles.error}>{error}</Text>
       ) : null}

@@ -4,7 +4,7 @@ import { CalendarClock, X } from "lucide-react-native";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { BackLink, Loading, StatusBadge } from "@/components/appointments";
+import { BackLink, Loading, StatusBadge, useProfessionalOf } from "@/components/appointments";
 import { Body, Button, Card, Heading, Notice, Screen, TextField } from "@/components/ui";
 import { errorMessage, unwrap } from "@/lib/api-error";
 import { clientCanChange } from "@/lib/labels";
@@ -39,6 +39,8 @@ export default function AppointmentScreen() {
         }),
       ),
   });
+
+  const professional = useProfessionalOf({ resource_ids: appointment.data?.resource_ids ?? [] });
 
   const cancel = useMutation({
     mutationFn: () =>
@@ -93,6 +95,12 @@ export default function AppointmentScreen() {
       </View>
 
       <Card>
+        {professional ? (
+          <View style={styles.fact}>
+            <Text style={styles.factLabel}>Atiende</Text>
+            <Body>{professional}</Body>
+          </View>
+        ) : null}
         <View style={styles.fact}>
           <Text style={styles.factLabel}>Motivo</Text>
           <Body>{data.reason ?? "Sin detalle"}</Body>

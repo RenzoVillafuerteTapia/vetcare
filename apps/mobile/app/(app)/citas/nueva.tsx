@@ -4,11 +4,19 @@ import { ArrowLeft, ArrowRight, Send } from "lucide-react-native";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { BackLink, ChoiceChips, Loading, SlotPicker } from "@/components/appointments";
+import {
+  ANY_PROFESSIONAL,
+  BackLink,
+  ChoiceChips,
+  Loading,
+  ProfessionalPicker,
+  SlotPicker,
+  useProfessionals,
+} from "@/components/appointments";
 import { Body, Button, Card, Fact, Notice, PageHeader, Screen, TextField } from "@/components/ui";
 import { ApiError, errorMessage, unwrap } from "@/lib/api-error";
 import { formatDuration } from "@/lib/labels";
-import { ME, MY_PETS, newIdempotencyKey, SERVICE_TYPES } from "@/lib/queries";
+import { ME, MY_APPOINTMENTS, MY_PETS, newIdempotencyKey, SERVICE_TYPES } from "@/lib/queries";
 import { formatDate, limaDay, limaTime } from "@/lib/time";
 import { useSessionManager } from "@/session/context";
 import { colors, fonts, spacing } from "@/theme/tokens";
@@ -39,6 +47,8 @@ export default function RequestAppointmentScreen() {
   const [service, setService] = useState(initialService ?? "");
   const [day, setDay] = useState(() => limaDay(Date.now()));
   const [start, setStart] = useState("");
+  // `null`: todavía no eligió; se propone el profesional que atendió a la mascota la última vez.
+  const [professional, setProfessional] = useState<string | null>(null);
   const [reason, setReason] = useState("");
   const [problems, setProblems] = useState<Problems>({});
 
@@ -50,13 +60,32 @@ export default function RequestAppointmentScreen() {
     queryKey: SERVICE_TYPES,
     queryFn: () => unwrap(api.GET("/api/v1/clinic/service-types")),
   });
+  const appointments = useQuery({
+    queryKey: MY_APPOINTMENTS,
+    queryFn: () => unwrap(api.GET("/api/v1/me/appointments")),
+  });
+  const professionals = useProfessionals(service || null);
+  const lastProfessional = [...(appointments.data ?? [])]
+    .filter((a) => a.pet_id === pet && a.status !== "cancelled")
+    .sort((a, b) => b.start.localeCompare(a.start))
+    .flatMap((a) => a.resource_ids)
+    .find((id) => professionals.data?.some((p) => p.id === id));
+  const chosenProfessional = professional ?? lastProfessional ?? ANY_PROFESSIONAL;
+  const professionalName =
+    professionals.data?.find((p) => p.id === chosenProfessional)?.name ?? "Quien esté libre";
 
   const request = useMutation({
     mutationFn: () =>
       unwrap(
         api.POST("/api/v1/appointments", {
           params: { header: { "Idempotency-Key": idempotencyKey } },
-          body: { pet_id: pet, service_type_id: service, start, reason: reason.trim() || null },
+          body: {
+            pet_id: pet,
+            service_type_id: service,
+            start,
+            reason: reason.trim() || null,
+            resource_ids: chosenProfessional === ANY_PROFESSIONAL ? [] : [chosenProfessional],
+          },
         }),
       ),
     onSuccess: async (appointment) => {
@@ -156,7 +185,10 @@ export default function RequestAppointmentScreen() {
             label="Mascota"
             options={activePets.map((p) => ({ value: p.id, label: p.name }))}
             value={pet}
-            onChange={setPet}
+            onChange={(value) => {
+              setPet(value);
+              setProfessional(null);
+            }}
             error={problems.pet}
           />
           <ChoiceChips
@@ -166,6 +198,7 @@ export default function RequestAppointmentScreen() {
             onChange={(value) => {
               setService(value);
               setStart("");
+              setProfessional(null);
             }}
             error={problems.service}
           />
@@ -177,19 +210,31 @@ export default function RequestAppointmentScreen() {
           ) : null}
         </>
       ) : step === 2 ? (
-        <SlotPicker
-          serviceTypeId={service || null}
-          day={day}
-          start={start}
-          onDayChange={setDay}
-          onStartChange={setStart}
-          error={start ? undefined : problems.start}
-        />
+        <>
+          <ProfessionalPicker
+            serviceTypeId={service}
+            value={chosenProfessional}
+            onChange={(value) => {
+              setProfessional(value);
+              setStart("");
+            }}
+          />
+          <SlotPicker
+            serviceTypeId={service || null}
+            professionalId={chosenProfessional}
+            day={day}
+            start={start}
+            onDayChange={setDay}
+            onStartChange={setStart}
+            error={start ? undefined : problems.start}
+          />
+        </>
       ) : (
         <>
           <Card style={styles.summary}>
             <Fact label="Mascota" value={chosenPet?.name ?? ""} />
             <Fact label="Servicio" value={chosenService?.name ?? ""} />
+            <Fact label="Atiende" value={professionalName} />
             <Fact label="Día" value={start ? formatDate(start) : ""} />
             <Fact label="Hora" value={start ? limaTime(start) : ""} />
           </Card>

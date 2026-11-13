@@ -1,8 +1,10 @@
 """Ayudas para las pruebas de integración HTTP: app real, MySQL y usuarios de cada rol."""
 
 import re
+import tempfile
 from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
+from pathlib import Path
 
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
@@ -68,18 +70,29 @@ class Api:
         return token
 
 
-def settings_para(url: str, *, rate_limits: bool = False) -> Settings:
+def settings_para(
+    url: str, *, rate_limits: bool = False, storage_dir: Path | None = None
+) -> Settings:
     return Settings(
         environment=Environment.TEST,
         database_url=SecretStr(url),
         jwt_secret=SecretStr(JWT_SECRET),
         public_web_url="https://web.example.test",
         rate_limits_enabled=rate_limits,
+        # El cliente de pruebas usa esta misma base: puede abrir las URLs firmadas.
+        public_api_url="https://test",
+        storage_local_dir=storage_dir or Path("var/storage"),
     )
 
 
 async def _api(url: str, rate_limits: bool = False) -> AsyncIterator[Api]:
-    settings = settings_para(url, rate_limits=rate_limits)
+    with tempfile.TemporaryDirectory() as storage_dir:
+        settings = settings_para(url, rate_limits=rate_limits, storage_dir=Path(storage_dir))
+        async for api in _api_with(settings):
+            yield api
+
+
+async def _api_with(settings: Settings) -> AsyncIterator[Api]:
     app = create_app(settings)
     buzon = Buzon()
     app.state.identity = build_identity_service(settings, app.state.session_factory, email=buzon)

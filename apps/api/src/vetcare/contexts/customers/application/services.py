@@ -7,8 +7,10 @@ Acceso:
 - Escribir requiere ``clients:manage``, ``pets:manage`` o ``guardianships:manage`` según el caso.
 """
 
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import timedelta
 from decimal import Decimal
 from enum import StrEnum
 from uuid import UUID
@@ -35,6 +37,7 @@ from vetcare.contexts.customers.domain.pet import (
     Species,
     WeightRecord,
 )
+from vetcare.contexts.customers.domain.photo import photo_key, validate_photo
 from vetcare.contexts.identity.public import AuthenticatedUser, Permission
 from vetcare.shared_kernel.clock import Clock
 from vetcare.shared_kernel.errors import (
@@ -45,8 +48,12 @@ from vetcare.shared_kernel.errors import (
     ValidationFailedError,
 )
 from vetcare.shared_kernel.ids import new_id
+from vetcare.shared_kernel.storage import FileStorage
+
+logger = logging.getLogger(__name__)
 
 PET_NOT_FOUND = "La mascota no existe."
+PHOTO_URL_TTL = timedelta(minutes=5)
 
 
 @dataclass(frozen=True)
@@ -93,6 +100,8 @@ class PetDetails:
     guardians: list[GuardianSummary]
     audience: Audience
     can_view_clinical: bool
+    # URL firmada de corta duración. Solo existe aquí porque el acceso ya se verificó.
+    photo_url: str | None = None
 
 
 def _require(actor: AuthenticatedUser, permission: Permission) -> None:
@@ -106,10 +115,12 @@ class CustomersService:
         *,
         uow_factory: Callable[[], CustomersUnitOfWork],
         inviter: AccountInviter,
+        storage: FileStorage,
         clock: Clock,
     ) -> None:
         self._uow_factory = uow_factory
         self._inviter = inviter
+        self._storage = storage
         self._clock = clock
 
     # --- Clientes ---------------------------------------------------------------------------
@@ -258,6 +269,38 @@ class CustomersService:
             await uow.commit()
             return await self._details(uow, pet, Audience.STAFF, can_view_clinical=True)
 
+    async def set_pet_photo(
+        self, actor: AuthenticatedUser, pet_id: UUID, content: bytes
+    ) -> PetDetails:
+        _require(actor, Permission.PETS_MANAGE)
+        image_format = validate_photo(content)
+        async with self._uow_factory() as uow:
+            pet = await self._get_pet(uow, pet_id)
+            key = photo_key(pet.id, new_id(), image_format)
+            await self._storage.save(key, content, image_format.content_type)
+            previous = pet.set_photo(key)
+            try:
+                await uow.pets.save(pet)
+                await uow.commit()
+            except BaseException:
+                # La mascota no quedó apuntando al archivo nuevo: no se deja huérfano.
+                await self._discard(key)
+                raise
+            if previous is not None:
+                await self._discard(previous)
+            return await self._details(uow, pet, Audience.STAFF, can_view_clinical=True)
+
+    async def remove_pet_photo(self, actor: AuthenticatedUser, pet_id: UUID) -> PetDetails:
+        _require(actor, Permission.PETS_MANAGE)
+        async with self._uow_factory() as uow:
+            pet = await self._get_pet(uow, pet_id)
+            previous = pet.set_photo(None)
+            if previous is not None:
+                await uow.pets.save(pet)
+                await uow.commit()
+                await self._discard(previous)
+            return await self._details(uow, pet, Audience.STAFF, can_view_clinical=True)
+
     async def get_pet(self, actor: AuthenticatedUser, pet_id: UUID) -> PetDetails:
         async with self._uow_factory() as uow:
             pet = await uow.pets.get(pet_id)
@@ -374,9 +417,15 @@ class CustomersService:
     async def _own_client(uow: CustomersUnitOfWork, actor: AuthenticatedUser) -> Client | None:
         return await uow.clients.get_by_user(actor.id)
 
-    @staticmethod
+    async def _discard(self, key: str) -> None:
+        """Borra un archivo que ya nadie referencia. Si falla, la operación principal sigue."""
+        try:
+            await self._storage.delete(key)
+        except Exception:
+            logger.exception("No se pudo borrar el archivo %s", key)
+
     async def _details(
-        uow: CustomersUnitOfWork, pet: Pet, audience: Audience, can_view_clinical: bool
+        self, uow: CustomersUnitOfWork, pet: Pet, audience: Audience, can_view_clinical: bool
     ) -> PetDetails:
         active = pet.active_guardianships
         clients = await uow.clients.get_many({g.client_id for g in active})
@@ -389,4 +438,9 @@ class CustomersService:
             ],
             audience=audience,
             can_view_clinical=can_view_clinical,
+            photo_url=(
+                await self._storage.signed_url(pet.photo_key, PHOTO_URL_TTL)
+                if pet.photo_key
+                else None
+            ),
         )

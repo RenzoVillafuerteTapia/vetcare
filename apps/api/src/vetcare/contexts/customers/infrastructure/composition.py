@@ -11,6 +11,7 @@ from vetcare.contexts.customers.infrastructure.repositories import (
 )
 from vetcare.platform.unit_of_work import SqlAlchemyUnitOfWork
 from vetcare.shared_kernel.clock import SystemClock
+from vetcare.shared_kernel.storage import FileStorage
 
 
 class SqlCustomersUnitOfWork(SqlAlchemyUnitOfWork):
@@ -32,7 +33,12 @@ def customers_uow_factory(
 
 
 def build_customers(
-    session_factory: async_sessionmaker[AsyncSession], inviter: AccountInviter
+    session_factory: async_sessionmaker[AsyncSession],
+    inviter: AccountInviter,
+    storage: FileStorage,
 ) -> tuple[CustomersService, PetAccess]:
     uow = customers_uow_factory(session_factory)
-    return CustomersService(uow_factory=uow, inviter=inviter, clock=SystemClock()), PetAccess(uow)
+    service = CustomersService(
+        uow_factory=uow, inviter=inviter, storage=storage, clock=SystemClock()
+    )
+    return service, PetAccess(uow)

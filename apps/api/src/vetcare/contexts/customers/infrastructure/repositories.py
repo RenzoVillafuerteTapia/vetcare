@@ -291,6 +291,7 @@ class SqlPetRepository:
                 allergies=r["allergies"],
                 notes=r["notes"],
                 status=PetStatus(r["status"]),
+                photo_key=r["photo_key"],
                 created_at=r["created_at"].replace(tzinfo=UTC),
                 guardianships=guardians.get(r["id"], []),
                 weights=weights.get(r["id"], []),
@@ -312,6 +313,7 @@ class SqlPetRepository:
             "allergies": p.allergies,
             "notes": p.notes,
             "status": p.status.value,
+            "photo_key": p.photo_key,
             "created_at": _naive(p.created_at),
             "version": p.version,
         }

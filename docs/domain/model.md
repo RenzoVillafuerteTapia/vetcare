@@ -36,12 +36,12 @@ Reglas de disponibilidad que usa la agenda (contrato público `ClinicCatalog`):
 
 ## Customers & Pets
 
-> Implementado (#22). Las fotos llegan con #23.
+> Implementado (#22), con fotos (#23).
 
 | Elemento | Tipo | Notas |
 |---|---|---|
 | `Client` | Agregado | nombre, `IdentityDocument` (DNI de 8 dígitos, CE o pasaporte; único), `PhoneNumber` (celular peruano o internacional, normalizado a +51…), `ContactEmail` opcional (único), dirección, notas, cuenta vinculada opcional |
-| `Pet` | Agregado | nombre, especie, sexo, raza, `BirthDate` exacta o aproximada (no futura), color, alergias, notas internas, estado (`active`, `deceased`, `transferred`), historial de pesos |
+| `Pet` | Agregado | nombre, especie, sexo, raza, `BirthDate` exacta o aproximada (no futura), color, alergias, notas internas, estado (`active`, `deceased`, `transferred`), historial de pesos, foto opcional (clave del archivo en `FileStorage`, nunca una URL) |
 | `WeightRecord` | Entidad de `Pet` | kg (0.01 a 200, dos decimales), momento, quién lo registró |
 | `Guardianship` | Entidad de `Pet` | cliente, tipo (`OWNER`, `AUTHORIZED`), permisos `can_pickup`, `can_book`, `can_view_clinical`, desde, revocada en (se conserva el historial) |
 

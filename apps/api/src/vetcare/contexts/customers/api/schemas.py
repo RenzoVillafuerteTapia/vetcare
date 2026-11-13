@@ -180,6 +180,10 @@ class PetResponse(BaseModel):
         description="Para el cliente, solo si su tutela permite ver información clínica."
     )
     notes: str | None = Field(description="Notas internas: solo para el personal.")
+    photo_url: str | None = Field(
+        description="URL firmada de la foto, válida 5 minutos. Para renovarla, vuelve a "
+        "pedir la mascota. No la guardes ni la registres."
+    )
     weights: list[WeightResponse]
     guardians: list[GuardianResponse]
 
@@ -199,6 +203,7 @@ class PetResponse(BaseModel):
             status=p.status,
             allergies=p.allergies if d.can_view_clinical else None,
             notes=p.notes if staff else None,
+            photo_url=d.photo_url,
             weights=[
                 WeightResponse(kilograms=w.kilograms, measured_at=w.measured_at) for w in p.weights
             ],

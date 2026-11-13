@@ -18,6 +18,7 @@ from vetcare.platform.db import create_engine, create_session_factory
 from vetcare.platform.errors import register_error_handlers
 from vetcare.platform.rate_limit import FixedWindowRateLimiter
 from vetcare.platform.settings import Settings, get_settings
+from vetcare.platform.storage import LocalFileStorage, build_file_storage
 
 API_PREFIX = "/api/v1"
 
@@ -60,8 +61,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     # El servicio de identidad se consulta al usarse: las pruebas pueden reemplazarlo.
     inviter = IdentityAccountInviter(lambda: app.state.identity)
+    app.state.file_storage = (
+        build_file_storage(settings) if app.state.session_factory is not None else None
+    )
     app.state.customers, app.state.pet_access = (
-        build_customers(app.state.session_factory, inviter)
+        build_customers(app.state.session_factory, inviter, app.state.file_storage)
         if app.state.session_factory is not None
         else (None, None)
     )
@@ -89,6 +93,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(customers.me_router, prefix=API_PREFIX)
     app.include_router(scheduling.router, prefix=API_PREFIX)
     app.include_router(scheduling.me_router, prefix=API_PREFIX)
+    if isinstance(app.state.file_storage, LocalFileStorage):
+        # Solo con almacenamiento en disco: en producción las URLs firmadas apuntan a S3.
+        app.include_router(app.state.file_storage.router(), prefix=API_PREFIX)
     openapi.install(app)
     return app
 

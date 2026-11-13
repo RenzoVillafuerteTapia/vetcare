@@ -41,6 +41,7 @@ export class SessionManager {
   private state: SessionState = { status: "loading" };
   private accessToken: string | null = null;
   private refreshing: Promise<boolean> | null = null;
+  private pushToken: string | null = null;
   private timer: ReturnType<typeof setTimeout> | undefined;
   private readonly listeners = new Set<Listener>();
 
@@ -104,9 +105,21 @@ export class SessionManager {
     await this.startSession(tokens.access_token, tokens.expires_in);
   }
 
+  /** Este teléfono recibe los avisos de la cuenta hasta que se cierre la sesión. */
+  async registerDevice(token: string, platform: "android" | "ios"): Promise<void> {
+    await unwrap(this.api.PUT("/api/v1/me/devices", { body: { token, platform } }));
+    this.pushToken = token;
+  }
+
   async logout(reason: "expired" | "logged_out" = "logged_out"): Promise<void> {
     const refreshToken = await this.store.get();
+    const pushToken = this.pushToken;
+    this.pushToken = null;
     try {
+      // Primero, mientras el access token sirve: quien use el teléfono después no recibe avisos.
+      if (pushToken && this.accessToken) {
+        await this.api.POST("/api/v1/me/devices/unregister", { body: { token: pushToken } });
+      }
       if (refreshToken) {
         await this.api.POST("/api/v1/auth/logout", { body: { refresh_token: refreshToken } });
       }

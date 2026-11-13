@@ -39,3 +39,23 @@ jest.mock("expo-image-picker", () => {
     launchImageLibraryAsync: jest.fn(async () => result),
   };
 });
+
+// Avisos push: sin módulo nativo en Jest. `__state` deja que cada prueba simule el permiso, el
+// token y el aviso con el que se abrió la app.
+jest.mock("expo-notifications", () => {
+  const state: { lastResponse: unknown } = { lastResponse: null };
+  return {
+    __state: state,
+    AndroidImportance: { HIGH: 4 },
+    setNotificationHandler: jest.fn(),
+    setNotificationChannelAsync: jest.fn(async () => null),
+    getPermissionsAsync: jest.fn(async () => ({ status: "granted" })),
+    requestPermissionsAsync: jest.fn(async () => ({ status: "granted" })),
+    getExpoPushTokenAsync: jest.fn(async () => ({ data: "ExponentPushToken[telefono-de-prueba]" })),
+    addNotificationReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+    useLastNotificationResponse: () => state.lastResponse,
+    clearLastNotificationResponse: jest.fn(() => {
+      state.lastResponse = null;
+    }),
+  };
+});

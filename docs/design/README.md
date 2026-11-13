@@ -69,8 +69,8 @@ Alturas táctiles: botones de 44 px por defecto (`h-11`), campos de 44 px.
 
 En `apps/web/src/components/ui` (shadcn/ui, estilo "new-york", adaptados a esta forma):
 `Button` (variantes `default`, `strong`, `secondary`, `outline`, `ghost`, `destructive`,
-`link`), `Input`, `Label`, `Card`, `Alert` (`default`, `destructive`, `success`) y `Badge`
-(`outline`, `soft`, `glass`).
+`link`), `Input`, `Select` (lista nativa), `Textarea`, `Label`, `Card`, `Dialog` (Radix),
+`Alert` (`default`, `destructive`, `success`) y `Badge` (`outline`, `soft`, `glass`).
 
 Componentes de la app: `Brand`, `FormField` (etiqueta, ayuda y error accesibles), `PageHeader`,
 `FullPageSpinner` y `AppShell`.
@@ -87,6 +87,8 @@ Componentes de la app: `Brand`, `FormField` (etiqueta, ayuda y error accesibles)
   derecha.
 - **Formularios:** mensajes en español junto al campo; los errores de la API (422) se muestran en
   el campo correspondiente y los demás en un `Alert`.
+- **Altas y ediciones:** en un `Dialog` sobre el listado; al guardar se cierra y el listado se
+  actualiza. Las secciones con varias pantallas usan pestañas tipo píldora bajo el título.
 - **Estados:** carga con `FullPageSpinner` o botón deshabilitado con spinner; vacío o "en
   preparación" con texto explicativo; error con `Alert destructive`.
 

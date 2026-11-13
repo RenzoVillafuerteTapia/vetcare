@@ -1,4 +1,4 @@
-import { createBrowserRouter, type RouteObject } from "react-router";
+import { createBrowserRouter, Navigate, type RouteObject } from "react-router";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { RedirectIfAuthenticated, RequireAuth, RequirePermission } from "@/features/auth/guards";
@@ -50,6 +50,42 @@ export const routes: RouteObject[] = [
                 lazy: async () => ({
                   Component: (await import("@/features/users/invite-user-page")).InviteUserPage,
                 }),
+              },
+            ],
+          },
+          {
+            element: <RequirePermission permission="clinic_setup:manage" />,
+            children: [
+              {
+                path: "/configuracion",
+                lazy: async () => ({
+                  Component: (await import("@/features/clinic-setup/clinic-setup-layout"))
+                    .ClinicSetupLayout,
+                }),
+                children: [
+                  { index: true, element: <Navigate to="servicios" replace /> },
+                  {
+                    path: "servicios",
+                    lazy: async () => ({
+                      Component: (await import("@/features/clinic-setup/service-types-page"))
+                        .ServiceTypesPage,
+                    }),
+                  },
+                  {
+                    path: "recursos",
+                    lazy: async () => ({
+                      Component: (await import("@/features/clinic-setup/resources-page"))
+                        .ResourcesPage,
+                    }),
+                  },
+                  {
+                    path: "horario",
+                    lazy: async () => ({
+                      Component: (await import("@/features/clinic-setup/calendar-page"))
+                        .CalendarPage,
+                    }),
+                  },
+                ],
               },
             ],
           },

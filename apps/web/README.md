@@ -2,9 +2,10 @@
 
 Web de administración de la veterinaria (React + TypeScript + Vite).
 
-> Estado: **base de la aplicación.** Tiene inicio de sesión, recuperación de contraseña,
-> activación de cuentas invitadas, layout adaptable con navegación por permisos e invitación de
-> usuarios. Los módulos operativos (agenda, mascotas, seguimiento) llegan en las fases 2 y 3.
+> Estado: **base de la aplicación y configuración de la clínica.** Tiene inicio de sesión,
+> recuperación de contraseña, activación de cuentas invitadas, layout adaptable con navegación
+> por permisos, invitación de usuarios y la sección Configuración (servicios, recursos, horario
+> y feriados). Clientes, mascotas y agenda llegan en la fase 2; el seguimiento, en la fase 3.
 
 ## Ejecutar
 
@@ -27,9 +28,10 @@ src/
 │   └── ui/           componentes de shadcn/ui adaptados al sistema de diseño (docs/design)
 ├── features/
 │   ├── auth/         sesión, guardias de rutas, login, recuperación y activación
+│   ├── clinic-setup/ servicios, recursos con horario y bloqueos, horario y feriados de la sede
 │   ├── home/         inicio, acceso denegado y página no encontrada
 │   └── users/        invitación de usuarios
-├── lib/              utilidades (errores de la API, entorno, clases CSS)
+├── lib/              utilidades (errores de la API y de formularios, entorno, clases CSS)
 └── test/             ayudas de pruebas (API simulada, render de la app)
 ```
 

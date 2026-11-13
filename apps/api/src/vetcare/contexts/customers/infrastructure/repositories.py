@@ -182,6 +182,33 @@ class SqlPetRepository:
         found = await self._load(query)
         return found[0] if found else None
 
+    async def search(
+        self, text: str | None, species: Species | None, page: int, page_size: int
+    ) -> Page[Pet]:
+        condition: Any = True
+        if text:
+            like = f"%{_escape_like(text)}%"
+            by_guardian = (
+                select(guardianships.c.pet_id)
+                .join(clients, clients.c.id == guardianships.c.client_id)
+                .where(
+                    guardianships.c.revoked_at.is_(None),
+                    clients.c.full_name.ilike(like, escape="\\"),
+                )
+            )
+            condition = or_(pets.c.name.ilike(like, escape="\\"), pets.c.id.in_(by_guardian))
+        if species is not None:
+            condition = and_(condition, pets.c.species == species.value)
+        total = await self._session.scalar(select(func.count()).select_from(pets).where(condition))
+        items = await self._load(
+            select(pets)
+            .where(condition)
+            .order_by(pets.c.name, pets.c.id)
+            .limit(page_size)
+            .offset((page - 1) * page_size)
+        )
+        return Page(items=items, total=int(total or 0), page=page, page_size=page_size)
+
     async def of_client(self, client_id: UUID) -> list[Pet]:
         active_for_client = select(guardianships.c.pet_id).where(
             guardianships.c.client_id == client_id, guardianships.c.revoked_at.is_(None)

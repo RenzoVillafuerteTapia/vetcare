@@ -252,3 +252,10 @@ class PetResponse(BaseModel):
                 for g in d.guardians
             ],
         )
+
+
+class PetPage(BaseModel):
+    items: list[PetResponse]
+    total: int
+    page: int
+    page_size: int

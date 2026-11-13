@@ -37,7 +37,7 @@ Al tocar un aviso se abre la cita. Para recibirlos hace falta:
 1. Un proyecto de EAS (`npx eas init`), que deja `extra.eas.projectId` en la configuración. Sin
    él la app no pide permiso ni registra nada.
 2. Las credenciales de FCM (Android) y APNs (iOS) cargadas en EAS (`npx eas credentials`).
-3. Una *development build* (`npx eas build --profile development`): desde el SDK 53, Expo Go
+3. Una _development build_ (`npx eas build --profile development`): desde el SDK 53, Expo Go
    no recibe avisos remotos en Android.
 4. La API con `VETCARE_PUSH_PROVIDER=expo` y el servicio `worker` corriendo.
 

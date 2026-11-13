@@ -51,6 +51,8 @@ const luna: Pet = {
   allergies: "Pollo",
   notes: "Nerviosa con el secador.",
   photo_url: null,
+  // El personal no la cambia desde aquí: es la vista del dueño en la app.
+  can_change_photo: false,
   weights: [
     { kilograms: "7.20", measured_at: "2026-05-02T16:00:00Z" },
     { kilograms: "7.85", measured_at: "2026-10-20T16:00:00Z" },

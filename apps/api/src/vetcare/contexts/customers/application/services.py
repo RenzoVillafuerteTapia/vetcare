@@ -53,6 +53,7 @@ from vetcare.shared_kernel.storage import FileStorage
 logger = logging.getLogger(__name__)
 
 PET_NOT_FOUND = "La mascota no existe."
+PROFILE_NOT_FOUND = "Tu cuenta no está vinculada a una ficha de cliente."
 PHOTO_URL_TTL = timedelta(minutes=5)
 
 
@@ -100,6 +101,8 @@ class PetDetails:
     guardians: list[GuardianSummary]
     audience: Audience
     can_view_clinical: bool
+    # Si quien mira puede cambiar la foto (el personal, o un dueño de la mascota).
+    can_change_photo: bool = False
     # URL firmada de corta duración. Solo existe aquí porque el acceso ya se verificó.
     photo_url: str | None = None
 
@@ -272,10 +275,11 @@ class CustomersService:
     async def set_pet_photo(
         self, actor: AuthenticatedUser, pet_id: UUID, content: bytes
     ) -> PetDetails:
-        _require(actor, Permission.PETS_MANAGE)
+        self._require_photo_access(actor)
         image_format = validate_photo(content)
         async with self._uow_factory() as uow:
             pet = await self._get_pet(uow, pet_id)
+            viewer = await self._photo_viewer(uow, actor, pet)
             key = photo_key(pet.id, new_id(), image_format)
             await self._storage.save(key, content, image_format.content_type)
             previous = pet.set_photo(key)
@@ -288,18 +292,19 @@ class CustomersService:
                 raise
             if previous is not None:
                 await self._discard(previous)
-            return await self._details(uow, pet, Audience.STAFF, can_view_clinical=True)
+            return await self._view(uow, pet, viewer)
 
     async def remove_pet_photo(self, actor: AuthenticatedUser, pet_id: UUID) -> PetDetails:
-        _require(actor, Permission.PETS_MANAGE)
+        self._require_photo_access(actor)
         async with self._uow_factory() as uow:
             pet = await self._get_pet(uow, pet_id)
+            viewer = await self._photo_viewer(uow, actor, pet)
             previous = pet.set_photo(None)
             if previous is not None:
                 await uow.pets.save(pet)
                 await uow.commit()
                 await self._discard(previous)
-            return await self._details(uow, pet, Audience.STAFF, can_view_clinical=True)
+            return await self._view(uow, pet, viewer)
 
     async def get_pet(self, actor: AuthenticatedUser, pet_id: UUID) -> PetDetails:
         async with self._uow_factory() as uow:
@@ -311,12 +316,7 @@ class CustomersService:
             client = await self._own_client(uow, actor)
             if client is None or not pet.allows(client.id, PetAction.VIEW):
                 raise NotFoundError(PET_NOT_FOUND)
-            return await self._details(
-                uow,
-                pet,
-                Audience.GUARDIAN,
-                can_view_clinical=pet.allows(client.id, PetAction.VIEW_CLINICAL),
-            )
+            return await self._view(uow, pet, client)
 
     async def pets_of_client(self, actor: AuthenticatedUser, client_id: UUID) -> list[PetDetails]:
         _require(actor, Permission.PETS_READ)
@@ -332,12 +332,30 @@ class CustomersService:
             if client is None:
                 return []
             pets = await uow.pets.of_client(client.id)
-            return [
-                await self._details(
-                    uow, p, Audience.GUARDIAN, p.allows(client.id, PetAction.VIEW_CLINICAL)
-                )
-                for p in pets
-            ]
+            return [await self._view(uow, p, client) for p in pets]
+
+    # --- Perfil propio ----------------------------------------------------------------------
+
+    async def my_profile(self, actor: AuthenticatedUser) -> Client:
+        _require(actor, Permission.OWN_PROFILE_MANAGE)
+        async with self._uow_factory() as uow:
+            client = await self._own_client(uow, actor)
+        if client is None:
+            raise NotFoundError(PROFILE_NOT_FOUND)
+        return client
+
+    async def update_my_profile(
+        self, actor: AuthenticatedUser, phone: PhoneNumber, address: str | None
+    ) -> Client:
+        _require(actor, Permission.OWN_PROFILE_MANAGE)
+        async with self._uow_factory() as uow:
+            client = await self._own_client(uow, actor)
+            if client is None:
+                raise NotFoundError(PROFILE_NOT_FOUND)
+            client.update_own_contact(phone=phone, address=address)
+            await uow.clients.save(client)
+            await uow.commit()
+            return client
 
     # --- Tutela -----------------------------------------------------------------------------
 
@@ -424,8 +442,47 @@ class CustomersService:
         except Exception:
             logger.exception("No se pudo borrar el archivo %s", key)
 
+    @staticmethod
+    def _require_photo_access(actor: AuthenticatedUser) -> None:
+        if not (
+            actor.has_permission(Permission.PETS_MANAGE)
+            or actor.has_permission(Permission.OWN_PETS_READ)
+        ):
+            raise PermissionDeniedError("No tienes permiso para realizar esta operación.")
+
+    async def _photo_viewer(
+        self, uow: CustomersUnitOfWork, actor: AuthenticatedUser, pet: Pet
+    ) -> Client | None:
+        """El personal (None) o el cliente dueño. A un responsable autorizado se le niega;
+        a quien no tiene tutela, la mascota no existe."""
+        if actor.has_permission(Permission.PETS_MANAGE):
+            return None
+        client = await self._own_client(uow, actor)
+        if client is None or not pet.allows(client.id, PetAction.VIEW):
+            raise NotFoundError(PET_NOT_FOUND)
+        if not pet.allows(client.id, PetAction.CHANGE_PHOTO):
+            raise PermissionDeniedError("Solo un dueño puede cambiar la foto de la mascota.")
+        return client
+
+    async def _view(self, uow: CustomersUnitOfWork, pet: Pet, client: Client | None) -> PetDetails:
+        """La mascota vista por el personal (client=None) o por uno de sus responsables."""
+        if client is None:
+            return await self._details(uow, pet, Audience.STAFF, can_view_clinical=True)
+        return await self._details(
+            uow,
+            pet,
+            Audience.GUARDIAN,
+            can_view_clinical=pet.allows(client.id, PetAction.VIEW_CLINICAL),
+            can_change_photo=pet.allows(client.id, PetAction.CHANGE_PHOTO),
+        )
+
     async def _details(
-        self, uow: CustomersUnitOfWork, pet: Pet, audience: Audience, can_view_clinical: bool
+        self,
+        uow: CustomersUnitOfWork,
+        pet: Pet,
+        audience: Audience,
+        can_view_clinical: bool,
+        can_change_photo: bool | None = None,
     ) -> PetDetails:
         active = pet.active_guardianships
         clients = await uow.clients.get_many({g.client_id for g in active})
@@ -438,6 +495,9 @@ class CustomersService:
             ],
             audience=audience,
             can_view_clinical=can_view_clinical,
+            can_change_photo=(
+                audience is Audience.STAFF if can_change_photo is None else can_change_photo
+            ),
             photo_url=(
                 await self._storage.signed_url(pet.photo_key, PHOTO_URL_TTL)
                 if pet.photo_key

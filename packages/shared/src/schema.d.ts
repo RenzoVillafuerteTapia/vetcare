@@ -106,6 +106,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cambiar la contraseña con la actual
+         * @description Cierra todas las sesiones abiertas y devuelve una nueva para quien hizo el cambio. Una contraseña actual errónea cuenta como intento fallido para el bloqueo de la cuenta.
+         */
+        post: operations["change_password_api_v1_auth_password_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/invitations/accept": {
         parameters: {
             query?: never;
@@ -525,7 +545,7 @@ export interface paths {
         get?: never;
         /**
          * Subir o reemplazar la foto de una mascota
-         * @description Imagen JPG, PNG o WebP de hasta 5 MB, en el campo `file` de un formulario `multipart/form-data`. El formato se comprueba con el contenido, no con el nombre.
+         * @description Imagen JPG, PNG o WebP de hasta 5 MB, en el campo `file` de un formulario `multipart/form-data`. El formato se comprueba con el contenido, no con el nombre. La sube el personal o, desde la app, un dueño de la mascota.
          */
         put: operations["set_pet_photo_api_v1_pets__pet_id__photo_put"];
         post?: never;
@@ -584,6 +604,30 @@ export interface paths {
          */
         get: operations["my_pets_api_v1_me_pets_get"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mis datos de contacto
+         * @description Ficha del cliente vinculada a la cuenta, sin las notas internas.
+         */
+        get: operations["my_profile_api_v1_me_profile_get"];
+        /**
+         * Actualizar mi teléfono y dirección
+         * @description El nombre y el documento los corrige la veterinaria; el correo es el de la cuenta.
+         */
+        put: operations["update_my_profile_api_v1_me_profile_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -906,6 +950,19 @@ export interface components {
             /** Reason */
             reason?: string | null;
         };
+        /** ChangePasswordRequest */
+        ChangePasswordRequest: {
+            /** Current Password */
+            current_password: string;
+            /** New Password */
+            new_password: string;
+            /**
+             * Client
+             * @description Dónde entregar la sesión nueva, igual que al iniciar sesión.
+             * @enum {string}
+             */
+            client: "web" | "mobile";
+        };
         /**
          * Channel
          * @enum {string}
@@ -1154,6 +1211,30 @@ export interface components {
             /** Refresh Token */
             refresh_token?: string | null;
         };
+        /** MyProfileRequest */
+        MyProfileRequest: {
+            /** Phone */
+            phone: string;
+            /** Address */
+            address?: string | null;
+        };
+        /**
+         * MyProfileResponse
+         * @description Los datos que el cliente ve de sí mismo. Las notas internas no se incluyen.
+         */
+        MyProfileResponse: {
+            /** Full Name */
+            full_name: string;
+            document_type: components["schemas"]["DocumentType"];
+            /** Document Number */
+            document_number: string;
+            /** Phone */
+            phone: string;
+            /** Email */
+            email: string | null;
+            /** Address */
+            address: string | null;
+        };
         /** OpeningHoursRequest */
         OpeningHoursRequest: {
             /** Opening Hours */
@@ -1175,7 +1256,7 @@ export interface components {
          * Permission
          * @enum {string}
          */
-        Permission: "users:manage" | "clinic_setup:manage" | "clients:manage" | "pets:read" | "pets:manage" | "guardianships:manage" | "appointments:read" | "appointments:manage" | "tracking:read" | "tracking:advance" | "tracking:publish_update" | "tracking:authorize_discharge" | "tracking:hand_over" | "audit:read" | "own:pets:read" | "own:guardianships:manage" | "own:appointments:manage" | "own:tracking:read";
+        Permission: "users:manage" | "clinic_setup:manage" | "clients:manage" | "pets:read" | "pets:manage" | "guardianships:manage" | "appointments:read" | "appointments:manage" | "tracking:read" | "tracking:advance" | "tracking:publish_update" | "tracking:authorize_discharge" | "tracking:hand_over" | "audit:read" | "own:profile:manage" | "own:pets:read" | "own:guardianships:manage" | "own:appointments:manage" | "own:tracking:read";
         /** PetRequest */
         PetRequest: {
             /** Name */
@@ -1240,6 +1321,11 @@ export interface components {
             weights: components["schemas"]["WeightResponse"][];
             /** Guardians */
             guardians: components["schemas"]["GuardianResponse"][];
+            /**
+             * Can Change Photo
+             * @description Si quien consulta puede subir o quitar la foto: el personal o un dueño.
+             */
+            can_change_photo: boolean;
         };
         /**
          * PetStatus
@@ -1745,6 +1831,57 @@ export interface operations {
             };
             /** @description No autenticado o credenciales inválidas */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    change_password_api_v1_auth_password_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TokenResponse"];
+                };
+            };
+            /** @description No autenticado o credenciales inválidas */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Datos inválidos */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Demasiadas solicitudes; reintenta después de Retry-After */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3930,6 +4067,122 @@ export interface operations {
             };
             /** @description No existe */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    my_profile_api_v1_me_profile_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyProfileResponse"];
+                };
+            };
+            /** @description No autenticado */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Sin acceso */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description No existe */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    update_my_profile_api_v1_me_profile_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MyProfileRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyProfileResponse"];
+                };
+            };
+            /** @description No autenticado */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Sin permiso */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description No existe */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflicto (duplicado, último dueño o modificación concurrente) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Datos inválidos */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

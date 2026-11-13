@@ -4,6 +4,8 @@ export type Pet = Schemas["PetResponse"];
 export type Appointment = Schemas["AppointmentResponse"];
 export type AppointmentStatus = Schemas["AppointmentStatus"];
 export type ServiceType = Schemas["ServiceTypeResponse"];
+export type Profile = Schemas["MyProfileResponse"];
+export type Calendar = Schemas["CalendarResponse"];
 
 export const SPECIES_LABELS: Record<Schemas["Species"], string> = {
   dog: "Perro",
@@ -61,4 +63,27 @@ export function clientCanChange(appointment: Appointment, now: number = Date.now
   if (appointment.status === "requested") return Date.parse(appointment.start) > now;
   if (appointment.status !== "confirmed") return false;
   return Date.parse(appointment.start) - now >= CLIENT_CHANGE_NOTICE_MS;
+}
+
+export const DOCUMENT_LABELS: Record<Schemas["DocumentType"], string> = {
+  dni: "DNI",
+  ce: "Carné de extranjería",
+  passport: "Pasaporte",
+};
+
+export const CATEGORY_LABELS: Record<Schemas["ServiceCategory"], string> = {
+  consultation: "Consultas",
+  vaccination: "Vacunación",
+  grooming: "Baño y peluquería",
+  surgery: "Cirugía",
+  hospitalization: "Hospitalización",
+  other: "Otros",
+};
+
+/** `30 min`, `1 h`, `1 h 30 min` */
+export function formatDuration(minutes: number): string {
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  if (hours === 0) return `${rest} min`;
+  return rest === 0 ? `${hours} h` : `${hours} h ${rest} min`;
 }

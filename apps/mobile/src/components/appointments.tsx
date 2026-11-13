@@ -1,8 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
-import type { ReactNode } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { useRef, type ReactNode } from "react";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  type ScrollViewInstance,
+} from "react-native";
 
 import { Body, Card, Notice } from "@/components/ui";
 import { errorMessage, unwrap } from "@/lib/api-error";
@@ -96,6 +104,55 @@ export function AppointmentCard({ appointment }: { appointment: Appointment }) {
 
 // --- Elegir entre opciones ---------------------------------------------------------------
 
+/**
+ * Los próximos 14 días en una franja horizontal: ocupa una sola fila. El día elegido se
+ * desplaza a la vista para que no quede cortado en el borde.
+ */
+export function DayStrip({ value, onChange }: { value: string; onChange: (day: string) => void }) {
+  const scroller = useRef<ScrollViewInstance>(null);
+  const offsets = useRef(new Map<string, number>());
+  const reveal = (day: string) => {
+    const x = offsets.current.get(day);
+    if (x !== undefined) scroller.current?.scrollTo({ x: Math.max(x - spacing(12), 0) });
+  };
+
+  return (
+    <View style={{ gap: spacing(2) }} accessibilityRole="radiogroup" accessibilityLabel="Día">
+      <Text style={styles.label}>Día</Text>
+      <ScrollView
+        ref={scroller}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ gap: spacing(2), paddingRight: spacing(2) }}
+      >
+        {upcomingDays(14).map(({ day, label }) => {
+          const selected = day === value;
+          return (
+            <Pressable
+              key={day}
+              accessibilityRole="radio"
+              accessibilityLabel={label}
+              accessibilityState={{ checked: selected }}
+              onLayout={(event) => {
+                offsets.current.set(day, event.nativeEvent.layout.x);
+                // Al volver a este paso, el día ya elegido aparece a la vista.
+                if (selected) reveal(day);
+              }}
+              onPress={() => {
+                onChange(day);
+                reveal(day);
+              }}
+              style={[styles.chip, selected && styles.chipSelected]}
+            >
+              <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{label}</Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+    </View>
+  );
+}
+
 export interface Choice {
   value: string;
   label: string;
@@ -108,12 +165,15 @@ export function ChoiceChips({
   value,
   onChange,
   error,
+  compact = false,
 }: {
   label: string;
   options: Choice[];
   value: string;
   onChange: (value: string) => void;
   error?: string | undefined;
+  /** Píldoras más bajas y en columnas parejas, para listas largas como las horas. */
+  compact?: boolean;
 }) {
   return (
     <View style={{ gap: spacing(2) }} accessibilityRole="radiogroup" accessibilityLabel={label}>
@@ -128,7 +188,7 @@ export function ChoiceChips({
               accessibilityLabel={option.label}
               accessibilityState={{ checked: selected }}
               onPress={() => onChange(option.value)}
-              style={[styles.chip, selected && styles.chipSelected]}
+              style={[styles.chip, compact && styles.chipCompact, selected && styles.chipSelected]}
             >
               <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
                 {option.label}
@@ -173,9 +233,7 @@ export function SlotPicker({
 
   return (
     <Card style={{ gap: spacing(4) }}>
-      <ChoiceChips
-        label="Día"
-        options={upcomingDays(14).map(({ day: value, label }) => ({ value, label }))}
+      <DayStrip
         value={day}
         onChange={(value) => {
           onDayChange(value);
@@ -194,6 +252,7 @@ export function SlotPicker({
         <ChoiceChips
           label="Hora"
           options={slots.data.map((slot) => ({ value: slot.start, label: limaTime(slot.start) }))}
+          compact
           value={start}
           onChange={onStartChange}
           error={error}
@@ -237,6 +296,12 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     backgroundColor: colors.card,
     paddingHorizontal: spacing(4),
+  },
+  chipCompact: {
+    minHeight: 36,
+    minWidth: "22%",
+    alignItems: "center",
+    paddingHorizontal: spacing(3),
   },
   chipSelected: { backgroundColor: colors.surfaceStrong, borderColor: colors.surfaceStrong },
   chipText: { fontFamily: fonts.bodySemibold, fontSize: 14, color: colors.foreground },

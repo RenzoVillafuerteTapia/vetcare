@@ -11,6 +11,7 @@ from vetcare.contexts.identity.api.dependencies import (
 )
 from vetcare.contexts.identity.api.schemas import (
     AcceptInvitationRequest,
+    ChangePasswordRequest,
     CurrentUserResponse,
     InviteUserRequest,
     LoginRequest,
@@ -116,6 +117,28 @@ async def logout(
 )
 async def me(user: CurrentUser) -> CurrentUserResponse:
     return CurrentUserResponse.from_domain(user)
+
+
+@auth.post(
+    "/password",
+    summary="Cambiar la contraseña con la actual",
+    description=(
+        "Cierra todas las sesiones abiertas y devuelve una nueva para quien hizo el cambio. Una "
+        "contraseña actual errónea cuenta como intento fallido para el bloqueo de la cuenta."
+    ),
+    responses=_ERRORS,
+    dependencies=[Depends(rate_limit("change_password", limit=10, window_seconds=60))],
+)
+async def change_password(
+    body: ChangePasswordRequest,
+    user: CurrentUser,
+    service: Identity,
+    ctx: Context,
+    request: Request,
+    response: Response,
+) -> TokenResponse:
+    tokens = await service.change_password(user, body.current_password, body.new_password, ctx)
+    return _respond_tokens(tokens, body.client, request, response)
 
 
 @auth.post(

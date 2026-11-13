@@ -57,7 +57,7 @@ export default function AppointmentScreen() {
 
   if (appointment.isPending) {
     return (
-      <Screen>
+      <Screen tabs>
         <BackLink />
         <Loading label="Cargando la cita…" />
       </Screen>
@@ -65,7 +65,7 @@ export default function AppointmentScreen() {
   }
   if (appointment.isError) {
     return (
-      <Screen>
+      <Screen tabs>
         <BackLink />
         <Notice tone="error">{errorMessage(appointment.error)}</Notice>
       </Screen>
@@ -78,7 +78,7 @@ export default function AppointmentScreen() {
   const notice = aviso ? NOTICES[aviso] : undefined;
 
   return (
-    <Screen>
+    <Screen tabs>
       <BackLink />
 
       {notice && !cancel.isSuccess ? <Notice tone="success">{notice}</Notice> : null}

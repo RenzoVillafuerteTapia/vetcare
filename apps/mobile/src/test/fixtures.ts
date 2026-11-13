@@ -1,4 +1,4 @@
-import type { Appointment, Pet, ServiceType } from "@/lib/labels";
+import type { Appointment, Calendar, Pet, Profile, ServiceType } from "@/lib/labels";
 
 import { json, tokens, user } from "./fake-api";
 import { REFRESH_KEY } from "./render-app";
@@ -26,6 +26,7 @@ export const luna: Pet = {
   allergies: "Pollo",
   notes: null,
   photo_url: null,
+  can_change_photo: true,
   weights: [{ kilograms: "7.85", measured_at: "2026-10-20T16:00:00Z" }],
   guardians: [
     {
@@ -92,4 +93,26 @@ export const anterior: Appointment = {
   start: "2026-10-12T15:00:00Z",
   end: "2026-10-12T15:15:00Z",
   status: "completed",
+};
+
+/** Lunes a viernes de 09:00 a 18:00 y sábado de 09:00 a 13:00 (la API cuenta desde el lunes). */
+export const calendario: Calendar = {
+  timezone: "America/Lima",
+  opening_hours: [
+    ...([0, 1, 2, 3, 4] as const).map((weekday) => ({ weekday, start: "09:00", end: "18:00" })),
+    { weekday: 5, start: "09:00", end: "13:00" },
+  ],
+  holidays: [
+    { day: "2026-01-01", name: "Año Nuevo" },
+    { day: "2026-12-08", name: "Inmaculada Concepción" },
+  ],
+};
+
+export const perfil: Profile = {
+  full_name: "Ana Pérez",
+  document_type: "dni",
+  document_number: "12345678",
+  phone: "+51987654321",
+  email: "ana@example.test",
+  address: null,
 };

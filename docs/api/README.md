@@ -26,6 +26,7 @@
 | `POST /api/v1/auth/invitations/accept` | Público, 10/min por IP | `token` y `password`: activa la cuenta invitada |
 | `POST /api/v1/auth/password-reset` | Público, 5 cada 5 min por IP | Envía un enlace de 30 min. Responde 202 exista o no la cuenta |
 | `POST /api/v1/auth/password-reset/confirm` | Público, 10/min por IP | `token` y `password`: cambia la contraseña y cierra todas las sesiones |
+| `POST /api/v1/auth/password` | Autenticado, 10/min por IP | `current_password`, `new_password` y `client`: cambia la contraseña, cierra todas las sesiones y devuelve una nueva como el login. Una actual errónea cuenta para el bloqueo |
 | `POST /api/v1/users` | `users:manage` | Invita a un empleado o cliente (`email`, `full_name`, `roles`). El enlace dura 7 días |
 | `POST /api/v1/users/{id}/invitation` | `users:manage` | Reenvía la invitación e invalida el enlace anterior |
 
@@ -69,9 +70,10 @@
 | `POST /api/v1/clients/{id}/pets` | `pets:manage` | Registrar una mascota con el cliente como dueño |
 | `GET /api/v1/pets/{id}` | Personal o tutela activa | Perfil; para el cliente sin notas internas y alergias según permiso. `photo_url` es una URL firmada que vence a los 5 minutos |
 | `PUT /api/v1/pets/{id}` · `PATCH …/status` · `POST …/weights` | `pets:manage` | Perfil, estado y peso |
-| `PUT /api/v1/pets/{id}/photo` · `DELETE …/photo` | `pets:manage` | Subir (campo `file` en `multipart/form-data`; JPG, PNG o WebP de hasta 5 MB), reemplazar o quitar la foto |
+| `PUT /api/v1/pets/{id}/photo` · `DELETE …/photo` | `pets:manage` o cliente dueño | Subir (campo `file` en `multipart/form-data`; JPG, PNG o WebP de hasta 5 MB), reemplazar o quitar la foto |
 | `POST /api/v1/pets/{id}/guardians` · `PUT`/`DELETE …/guardians/{client_id}` | `guardianships:manage` | Dueños y responsables autorizados |
-| `GET /api/v1/me/pets` | Cliente | Mascotas donde el cliente autenticado tiene tutela |
+| `GET /api/v1/me/pets` | Cliente | Mascotas donde el cliente autenticado tiene tutela. `can_change_photo` indica si puede cambiar la foto (solo un dueño) |
+| `GET /api/v1/me/profile` · `PUT` | `own:profile:manage` | Sus datos de contacto (sin notas internas). Solo cambia teléfono y dirección; el nombre y el documento los corrige la veterinaria |
 
 ## Agenda
 

@@ -82,6 +82,33 @@ class ClientResponse(BaseModel):
         )
 
 
+class MyProfileRequest(_Request):
+    phone: str = Field(min_length=6, max_length=20)
+    address: str | None = Field(default=None, max_length=200)
+
+
+class MyProfileResponse(BaseModel):
+    """Los datos que el cliente ve de sí mismo. Las notas internas no se incluyen."""
+
+    full_name: str
+    document_type: DocumentType
+    document_number: str
+    phone: str
+    email: str | None
+    address: str | None
+
+    @classmethod
+    def of(cls, c: Client) -> "MyProfileResponse":
+        return cls(
+            full_name=c.full_name,
+            document_type=c.document.type,
+            document_number=c.document.number,
+            phone=c.phone.value,
+            email=c.email.value if c.email else None,
+            address=c.address,
+        )
+
+
 class ClientPage(BaseModel):
     items: list[ClientResponse]
     total: int
@@ -186,6 +213,9 @@ class PetResponse(BaseModel):
     )
     weights: list[WeightResponse]
     guardians: list[GuardianResponse]
+    can_change_photo: bool = Field(
+        description="Si quien consulta puede subir o quitar la foto: el personal o un dueño."
+    )
 
     @classmethod
     def of(cls, d: PetDetails) -> "PetResponse":
@@ -204,6 +234,7 @@ class PetResponse(BaseModel):
             allergies=p.allergies if d.can_view_clinical else None,
             notes=p.notes if staff else None,
             photo_url=d.photo_url,
+            can_change_photo=d.can_change_photo,
             weights=[
                 WeightResponse(kilograms=w.kilograms, measured_at=w.measured_at) for w in p.weights
             ],

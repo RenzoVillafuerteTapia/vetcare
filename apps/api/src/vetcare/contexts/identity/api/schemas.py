@@ -61,6 +61,14 @@ class PasswordResetConfirmRequest(_Request):
     password: str = Field(min_length=1, max_length=128)
 
 
+class ChangePasswordRequest(_Request):
+    current_password: str = Field(min_length=1, max_length=128)
+    new_password: str = Field(min_length=1, max_length=128)
+    client: ClientKind = Field(
+        description="Dónde entregar la sesión nueva, igual que al iniciar sesión."
+    )
+
+
 class UserResponse(BaseModel):
     id: UUID
     email: str

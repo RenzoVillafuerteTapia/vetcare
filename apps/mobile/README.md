@@ -2,10 +2,11 @@
 
 App para dueños y responsables de mascotas (React Native + Expo + TypeScript, Android e iOS).
 
-> Estado: **mascotas y citas.** Además del inicio de sesión, la recuperación de sesión al abrir
-> la app y la recuperación de contraseña, muestra las mascotas vinculadas con su perfil y la
-> próxima cita, y permite ver, solicitar, reprogramar y cancelar citas. El seguimiento en vivo
-> llega en la fase 3.
+> Estado: **navegación por pestañas.** Una barra inferior con cinco destinos (Inicio, Mascotas,
+> Citas, Clínica y Cuenta). Mascotas con su perfil dividido en secciones y la foto que sube el
+> dueño (cámara o galería); citas próximas e historial, solicitud en tres pasos, reprogramación
+> y cancelación; horario y servicios de la sede; datos de contacto y cambio de contraseña. El
+> seguimiento en vivo llega en la fase 3.
 
 ## Ejecutar
 
@@ -21,6 +22,10 @@ simulador de iOS, `10.0.2.2` en el emulador de Android y la IP de tu computadora
 físico. En un teléfono, la API debe escuchar en la red local (docker compose publica el puerto
 8000 en todas las interfaces).
 
+En el emulador de Android conviene usar `http://localhost:8000` y redirigir el puerto con
+`adb reverse tcp:8000 tcp:8000`: así también cargan las fotos, cuyas URLs firmadas apuntan a
+`localhost` (el `VETCARE_PUBLIC_API_URL` de la API).
+
 Las cuentas de cliente se crean por invitación desde la web de administración. El enlace del
 correo abre la web, donde la persona elige su contraseña, y luego ingresa en la app.
 
@@ -31,10 +36,12 @@ app/                rutas de Expo Router
 ├── _layout.tsx     fuentes, proveedores y rutas protegidas según la sesión
 ├── login.tsx
 ├── recuperar-contrasena.tsx
-└── (app)/          rutas que requieren sesión
-    ├── index.tsx               inicio: próxima cita y mascotas
-    ├── mascotas/[petId].tsx    perfil de la mascota
-    └── citas/                  listado, detalle, nueva y reprogramar/[id]
+└── (app)/          rutas que requieren sesión, con la barra inferior (_layout.tsx)
+    ├── index.tsx               inicio: próxima cita, accesos rápidos y mascotas
+    ├── mascotas/               lista y perfil por secciones, con la foto
+    ├── citas/                  próximas e historial, detalle, nueva (3 pasos) y reprogramar
+    ├── clinica.tsx             horario de atención, feriados y servicios
+    └── cuenta/                 menú, datos de contacto y cambio de contraseña
 src/
 ├── components/     componentes del sistema de diseño (ui.tsx), citas y mascotas
 ├── session/        sesión, almacenamiento seguro del refresh token

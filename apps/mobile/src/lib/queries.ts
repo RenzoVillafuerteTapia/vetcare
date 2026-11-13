@@ -2,11 +2,13 @@
 export const ME = ["me"] as const;
 export const MY_PETS = [...ME, "pets"] as const;
 export const MY_APPOINTMENTS = [...ME, "appointments"] as const;
+export const MY_PROFILE = [...ME, "profile"] as const;
 
 export const petKey = (id: string) => [...ME, "pet", id] as const;
 export const appointmentKey = (id: string) => [...ME, "appointment", id] as const;
 
 export const SERVICE_TYPES = ["service-types"] as const;
+export const CALENDAR = ["clinic-calendar"] as const;
 export const availabilityKey = (serviceTypeId: string, day: string) =>
   ["availability", serviceTypeId, day] as const;
 

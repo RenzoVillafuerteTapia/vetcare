@@ -96,6 +96,8 @@ class PetAction(StrEnum):
     BOOK = "book"
     PICKUP = "pickup"
     VIEW_CLINICAL = "view_clinical"
+    # Cambiar la foto: solo un dueño (un responsable autorizado no edita el perfil).
+    CHANGE_PHOTO = "change_photo"
 
 
 @dataclass
@@ -252,6 +254,8 @@ class Pet(AggregateRoot):
             PetAction.BOOK: p.can_book and self.status is PetStatus.ACTIVE,
             PetAction.PICKUP: p.can_pickup,
             PetAction.VIEW_CLINICAL: p.can_view_clinical,
+            PetAction.CHANGE_PHOTO: guardianship.kind is GuardianKind.OWNER
+            and self.status is PetStatus.ACTIVE,
         }[action]
 
     def _require_guardian(self, client_id: UUID) -> Guardianship:

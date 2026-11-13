@@ -137,6 +137,12 @@ class Client(AggregateRoot):
         self.address = optional_text(address, "address", max_length=200)
         self.notes = optional_text(notes, "notes", max_length=1000)
 
+    def update_own_contact(self, *, phone: PhoneNumber, address: str | None) -> None:
+        """Lo que el propio cliente cambia desde la app. El nombre y el documento identifican al
+        cliente y los corrige la veterinaria; el correo, desde la cuenta."""
+        self.phone = phone
+        self.address = optional_text(address, "address", max_length=200)
+
     def link_account(self, user_id: UUID) -> None:
         if self.user_id is not None:
             raise ConflictError("El cliente ya tiene una cuenta.", code="account_already_linked")

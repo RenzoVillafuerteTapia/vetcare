@@ -160,6 +160,45 @@ async def test_disponibilidad_segun_horarios_almuerzo_y_citas(
     assert r.json() == []
 
 
+async def test_una_sede_abierta_las_24_horas(api: Api, escenario: dict[str, Any]) -> None:
+    e = escenario
+    admin = auth(await api.usuario_admin())
+    todo_el_dia = [{"weekday": d, "start": "00:00", "end": "00:00"} for d in range(7)]
+
+    r = await api.client.put(
+        "/api/v1/clinic/calendar/opening-hours",
+        json={"opening_hours": todo_el_dia},
+        headers=admin,
+    )
+    assert r.status_code == 200, r.text
+    # 00:00 como fin se devuelve tal cual: significa medianoche.
+    assert r.json()["opening_hours"][0] == {"weekday": 0, "start": "00:00:00", "end": "00:00:00"}
+    for recurso in (await api.client.get("/api/v1/clinic/resources", headers=admin)).json():
+        r = await api.client.put(
+            f"/api/v1/clinic/resources/{recurso['id']}",
+            json={"name": recurso["name"], "schedule": todo_el_dia, "active": True},
+            headers=admin,
+        )
+        assert r.status_code == 200, r.text
+
+    params = {"service_type_id": e["bano"], "date": LUNES.isoformat()}
+    r = await api.client.get("/api/v1/scheduling/availability", params=params, headers=e["rec"])
+    inicios = [
+        datetime.fromisoformat(s["start"]).astimezone(CLINIC_TZ).strftime("%H:%M") for s in r.json()
+    ]
+    # Baño de 60 min, cada 15 min: desde la medianoche hasta terminar justo a las 24:00.
+    assert inicios[0] == "00:00" and inicios[-1] == "23:00"
+    assert "23:15" not in inicios
+
+    r = await api.client.post("/api/v1/appointments", json=reserva(e, 23), headers=e["rec"])
+    assert r.status_code == 201, r.text
+    # No se puede cruzar al día siguiente.
+    r = await api.client.post(
+        "/api/v1/appointments", json=reserva(e, 23, 30, pet_id=e["toby"]), headers=e["rec"]
+    )
+    assert r.status_code == 409 and r.json()["code"] == "slot_unavailable"
+
+
 # --- Conflictos y concurrencia -------------------------------------------------------------
 
 

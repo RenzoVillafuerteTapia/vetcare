@@ -3,6 +3,10 @@
 Los horarios semanales se expresan en hora local porque así los define la veterinaria
 ("de lunes a viernes de 9:00 a 19:00"). Los instantes concretos (citas, bloqueos) se guardan en
 UTC y se convierten a hora local solo para compararlos con el horario.
+
+Una franja que termina a las 00:00 termina a la medianoche (24:00): así se expresa un día
+abierto hasta el final, o las 24 horas con una franja de 00:00 a 00:00. Una franja no cruza la
+medianoche, así que 00:00 nunca puede ser un fin "temprano".
 """
 
 from collections.abc import Iterable, Mapping
@@ -17,6 +21,12 @@ from vetcare.shared_kernel.errors import FieldError, ValidationFailedError
 CLINIC_TZ = ZoneInfo("America/Lima")
 
 GRID_MINUTES = 5
+MIDNIGHT = time(0)
+DAY_SECONDS = 24 * 60 * 60
+
+
+def seconds_of(value: time) -> int:
+    return value.hour * 3600 + value.minute * 60 + value.second
 
 
 class Weekday(IntEnum):
@@ -46,13 +56,26 @@ def _on_grid(value: time) -> bool:
 
 @dataclass(frozen=True, order=True)
 class TimeRange:
-    """Franja horaria dentro de un mismo día, en hora local. El fin es exclusivo."""
+    """Franja horaria dentro de un mismo día, en hora local. El fin es exclusivo y 00:00 como fin
+    significa medianoche (24:00)."""
 
     start: time
     end: time
 
+    @property
+    def start_seconds(self) -> int:
+        return seconds_of(self.start)
+
+    @property
+    def end_seconds(self) -> int:
+        return DAY_SECONDS if self.end == MIDNIGHT else seconds_of(self.end)
+
+    @property
+    def until_midnight(self) -> bool:
+        return self.end == MIDNIGHT
+
     def __post_init__(self) -> None:
-        if self.start >= self.end:
+        if self.start_seconds >= self.end_seconds:
             raise ValidationFailedError(
                 "La hora de inicio debe ser anterior a la de fin.",
                 [FieldError("end", "Debe ser posterior a la hora de inicio.")],
@@ -64,13 +87,15 @@ class TimeRange:
             )
 
     def overlaps(self, other: "TimeRange") -> bool:
-        return self.start < other.end and other.start < self.end
+        return self.start_seconds < other.end_seconds and other.start_seconds < self.end_seconds
 
-    def contains(self, start: time, end: time) -> bool:
-        return self.start <= start and end <= self.end
+    def contains(self, start_seconds: int, end_seconds: int) -> bool:
+        """¿El intervalo [start, end), en segundos desde la medianoche, cabe en la franja?"""
+        return self.start_seconds <= start_seconds and end_seconds <= self.end_seconds
 
     def __str__(self) -> str:
-        return f"{self.start:%H:%M} a {self.end:%H:%M}"
+        end = "24:00" if self.until_midnight else f"{self.end:%H:%M}"
+        return f"{self.start:%H:%M} a {end}"
 
 
 @dataclass(frozen=True)
@@ -115,15 +140,19 @@ class WeeklySchedule:
     def covers(self, start: datetime, end: datetime) -> bool:
         """¿El intervalo [start, end) cae completo dentro de una franja del mismo día local?
 
-        Las franjas no cruzan la medianoche, así que un intervalo que cambia de día no cabe.
+        Las franjas no cruzan la medianoche: un intervalo puede terminar justo a las 24:00 (si la
+        franja llega hasta ahí), pero no seguir en el día siguiente.
         """
         local_start, local_end = to_local(start), to_local(end)
-        if local_end.date() != local_start.date():
+        day = local_start.date()
+        if local_end.date() == day:
+            end_seconds = seconds_of(local_end.time())
+        elif local_end.date() == day + timedelta(days=1) and seconds_of(local_end.time()) == 0:
+            end_seconds = DAY_SECONDS
+        else:
             return False
-        return any(
-            r.contains(local_start.time(), local_end.time())
-            for r in self.ranges_on(local_start.date())
-        )
+        start_seconds = seconds_of(local_start.time())
+        return any(r.contains(start_seconds, end_seconds) for r in self.ranges_on(day))
 
 
 def to_local(moment: datetime) -> datetime:

@@ -24,6 +24,12 @@ export default defineConfig({
           if (pkg === "react" || pkg === "react-dom" || pkg === "scheduler") return "react";
           if (pkg === "zod" || pkg === "react-hook-form" || pkg?.startsWith("@hookform/"))
             return "forms";
+          if (
+            pkg?.startsWith("@fullcalendar/") ||
+            pkg?.startsWith("@full-ui/") ||
+            pkg === "temporal-polyfill"
+          )
+            return "calendar";
           if (pkg === "radix-ui" || pkg?.startsWith("@radix-ui/") || pkg === "lucide-react")
             return "ui";
           return "vendor";
@@ -33,6 +39,8 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
+    // Los recorridos de e2e/ los ejecuta Playwright, no Vitest.
+    include: ["src/**/*.test.{ts,tsx}"],
     setupFiles: ["./src/test/setup.ts"],
     css: false,
     restoreMocks: true,

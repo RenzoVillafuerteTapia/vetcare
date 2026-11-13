@@ -1521,7 +1521,7 @@ export interface components {
             /**
              * End
              * Format: time
-             * @description Hora local de fin, exclusiva.
+             * @description Hora local de fin, exclusiva. `00:00` significa medianoche (24:00): una franja de `00:00` a `00:00` abre el día completo.
              */
             end: string;
         };

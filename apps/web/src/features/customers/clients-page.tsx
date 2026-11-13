@@ -1,11 +1,11 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
+import { CatalogCard, CatalogGrid } from "@/components/catalog-card";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState, ErrorState, LoadingState } from "@/components/query-state";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -17,8 +17,8 @@ import { ClientFormDialog } from "./client-form-dialog";
 import { DOCUMENT_LABELS } from "./labels";
 import { CLIENTS } from "./queries";
 
-// Dos columnas de 8 filas caben en una pantalla de laptop sin desplazarse.
-const PAGE_SIZE = 16;
+// Dos filas de seis tarjetas: caben en una pantalla de laptop sin desplazarse.
+const PAGE_SIZE = 12;
 
 export function ClientsPage() {
   const { api } = useSessionManager();
@@ -95,34 +95,29 @@ export function ClientsPage() {
         )
       ) : (
         <>
-          <ul className="grid gap-2 xl:grid-cols-2" aria-label="Clientes">
+          <CatalogGrid label="Clientes">
             {clients.data.items.map((client) => (
               <li key={client.id}>
-                <Link
+                <CatalogCard
                   to={`/clientes/${client.id}`}
-                  className="grid gap-0.5 rounded-2xl border border-border/70 bg-card px-4 py-2.5 transition-colors outline-none hover:bg-accent/40 focus-visible:ring-[3px] focus-visible:ring-ring/50 sm:grid-cols-[1fr_auto] sm:items-center"
-                >
-                  <span className="grid min-w-0 gap-0.5">
-                    <span className="flex flex-wrap items-center gap-2">
-                      <span className="font-display text-base font-medium">{client.full_name}</span>
-                      {client.has_account ? (
-                        <Badge variant="soft">Con cuenta en la app</Badge>
-                      ) : null}
-                    </span>
-                    <span className="truncate text-sm text-muted-foreground">
-                      {DOCUMENT_LABELS[client.document_type]} {client.document_number} ·{" "}
-                      {client.phone}
-                      {client.email ? ` · ${client.email}` : ""}
-                    </span>
-                  </span>
-                  <ChevronRight
-                    className="hidden size-5 text-muted-foreground sm:block"
-                    aria-hidden
-                  />
-                </Link>
+                  media={<Initials name={client.full_name} />}
+                  corner={client.has_account ? { label: "Usa la app", tone: "green" } : null}
+                  chips={[
+                    {
+                      label: `${DOCUMENT_LABELS[client.document_type]} ${client.document_number}`,
+                      tone: "blue",
+                    },
+                    ...(client.email ? [{ label: "Con correo", tone: "green" as const }] : []),
+                    ...(client.has_account ? [] : [{ label: "Sin app", tone: "gray" as const }]),
+                  ]}
+                  title={client.full_name}
+                  highlight={client.phone}
+                  footer={client.email ?? client.address ?? "Sin correo registrado"}
+                  footerTone={client.email ? "ok" : "muted"}
+                />
               </li>
             ))}
-          </ul>
+          </CatalogGrid>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
             <span role="status">
               {clients.data.total === 1 ? "1 cliente" : `${clients.data.total} clientes`}
@@ -164,5 +159,29 @@ export function ClientsPage() {
         ) : null}
       </Dialog>
     </div>
+  );
+}
+
+const AVATAR_TONES = [
+  "bg-sky-100 text-sky-800",
+  "bg-emerald-100 text-emerald-800",
+  "bg-amber-100 text-amber-800",
+  "bg-pink-100 text-pink-800",
+  "bg-violet-100 text-violet-800",
+];
+
+/** Iniciales grandes en un círculo de color estable por persona. */
+function Initials({ name }: { name: string }) {
+  const parts = name.trim().split(/\s+/);
+  const initials = `${parts[0]?.[0] ?? ""}${parts[1]?.[0] ?? ""}`.toUpperCase();
+  const tone =
+    AVATAR_TONES[[...name].reduce((n, ch) => n + ch.charCodeAt(0), 0) % AVATAR_TONES.length];
+  return (
+    <span
+      aria-hidden
+      className={`flex size-16 items-center justify-center rounded-full font-display text-xl font-medium ${tone}`}
+    >
+      {initials}
+    </span>
   );
 }

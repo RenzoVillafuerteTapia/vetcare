@@ -480,6 +480,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/pets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Buscar mascotas */
+        get: operations["search_pets_api_v1_pets_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/pets/{pet_id}": {
         parameters: {
             query?: never;
@@ -1811,6 +1828,17 @@ export interface components {
          * @enum {string}
          */
         Permission: "users:manage" | "clinic_setup:manage" | "clients:manage" | "pets:read" | "pets:manage" | "guardianships:manage" | "appointments:read" | "appointments:manage" | "tracking:read" | "tracking:advance" | "tracking:publish_update" | "tracking:authorize_discharge" | "tracking:hand_over" | "audit:read" | "inventory:read" | "inventory:manage" | "charges:manage" | "reports:read" | "own:profile:manage" | "own:pets:read" | "own:guardianships:manage" | "own:appointments:manage" | "own:tracking:read" | "own:notifications:manage";
+        /** PetPage */
+        PetPage: {
+            /** Items */
+            items: components["schemas"]["PetResponse"][];
+            /** Total */
+            total: number;
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+        };
         /** PetRequest */
         PetRequest: {
             /** Name */
@@ -4195,6 +4223,68 @@ export interface operations {
             };
             /** @description Conflicto (duplicado, último dueño o modificación concurrente) */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Datos inválidos */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    search_pets_api_v1_pets_get: {
+        parameters: {
+            query?: {
+                /** @description Nombre de la mascota o de un responsable. */
+                q?: string | null;
+                species?: components["schemas"]["Species"] | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PetPage"];
+                };
+            };
+            /** @description No autenticado */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Sin acceso */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description No existe */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

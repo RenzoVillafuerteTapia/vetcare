@@ -113,6 +113,12 @@ export const routes: RouteObject[] = [
                 }),
               },
               {
+                path: "/mascotas",
+                lazy: async () => ({
+                  Component: (await import("@/features/customers/pets-page")).PetsPage,
+                }),
+              },
+              {
                 path: "/mascotas/:petId",
                 lazy: async () => ({
                   Component: (await import("@/features/customers/pet-page")).PetPage,

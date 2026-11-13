@@ -10,6 +10,7 @@ from vetcare.contexts.customers.api.schemas import (
     GuardianRequest,
     MyProfileRequest,
     MyProfileResponse,
+    PetPage,
     PetRequest,
     PetResponse,
     PetStatusRequest,
@@ -18,6 +19,7 @@ from vetcare.contexts.customers.api.schemas import (
 )
 from vetcare.contexts.customers.application.services import CustomersService
 from vetcare.contexts.customers.domain.client import PhoneNumber
+from vetcare.contexts.customers.domain.pet import Species
 from vetcare.contexts.customers.domain.photo import MAX_PHOTO_BYTES
 from vetcare.contexts.identity.public.http import CurrentUser
 from vetcare.platform.errors import problem_responses
@@ -120,6 +122,27 @@ async def register_pet(
 
 
 # --- Mascotas -------------------------------------------------------------------------------
+
+
+@pets_router.get("", summary="Buscar mascotas", responses=_READ)
+async def search_pets(
+    user: CurrentUser,
+    service: Customers,
+    q: Annotated[
+        str | None,
+        Query(max_length=100, description="Nombre de la mascota o de un responsable."),
+    ] = None,
+    species: Species | None = None,
+    page: Annotated[int, Query(ge=1)] = 1,
+    page_size: Annotated[int, Query(ge=1, le=100)] = 24,
+) -> PetPage:
+    result = await service.search_pets(user, q, species, page, page_size)
+    return PetPage(
+        items=[PetResponse.of(d) for d in result.items],
+        total=result.total,
+        page=result.page,
+        page_size=result.page_size,
+    )
 
 
 @pets_router.get(

@@ -318,6 +318,23 @@ class CustomersService:
                 raise NotFoundError(PET_NOT_FOUND)
             return await self._view(uow, pet, client)
 
+    async def search_pets(
+        self,
+        actor: AuthenticatedUser,
+        text: str | None,
+        species: Species | None,
+        page: int,
+        page_size: int,
+    ) -> Page[PetDetails]:
+        """Todas las mascotas para el personal: por nombre o por el de un responsable."""
+        _require(actor, Permission.PETS_READ)
+        async with self._uow_factory() as uow:
+            found = await uow.pets.search(
+                text.strip() if text and text.strip() else None, species, page, page_size
+            )
+            items = [await self._details(uow, p, Audience.STAFF, True) for p in found.items]
+        return Page(items=items, total=found.total, page=found.page, page_size=found.page_size)
+
     async def pets_of_client(self, actor: AuthenticatedUser, client_id: UUID) -> list[PetDetails]:
         _require(actor, Permission.PETS_READ)
         async with self._uow_factory() as uow:

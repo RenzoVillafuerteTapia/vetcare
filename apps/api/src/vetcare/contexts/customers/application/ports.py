@@ -3,7 +3,7 @@ from typing import Protocol
 from uuid import UUID
 
 from vetcare.contexts.customers.domain.client import Client, ContactEmail, IdentityDocument
-from vetcare.contexts.customers.domain.pet import Pet
+from vetcare.contexts.customers.domain.pet import Pet, Species
 from vetcare.contexts.identity.public import AuthenticatedUser
 from vetcare.shared_kernel.application import UnitOfWork
 
@@ -38,6 +38,12 @@ class ClientRepository(Protocol):
 
 class PetRepository(Protocol):
     async def get(self, pet_id: UUID, *, for_update: bool = False) -> Pet | None: ...
+
+    async def search(
+        self, text: str | None, species: Species | None, page: int, page_size: int
+    ) -> Page[Pet]:
+        """Por nombre de la mascota o de un responsable activo, ordenadas por nombre."""
+        ...
 
     async def of_client(self, client_id: UUID) -> list[Pet]:
         """Mascotas donde el cliente tiene una tutela activa."""

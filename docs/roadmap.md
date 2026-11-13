@@ -77,6 +77,10 @@ Ajustes respecto del plan inicial:
 | `feature/mobile-tracking` | Pantalla de seguimiento con línea de tiempo en vivo |
 | `feature/web-dashboard` | Panel con datos reales de citas y servicios |
 
+Avance: `feature/service-tracking` reúne en una sola entrega el agregado, las plantillas de baño
+y de cirugía (con el alta por el veterinario), el tablero web y la pantalla móvil con refresco
+cada 10 s; `feature/notifications-core` ya está hecha. Quedan `tracking-sse` y `web-dashboard`.
+
 Cada PR se vincula a su Issue (`Closes #N`) con criterios de aceptación verificables.
 
 ## Decisiones pendientes

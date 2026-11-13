@@ -66,3 +66,39 @@ def appointment_push(
             data,
         )
     return None
+
+
+TRACKING_STARTED = "tracking.started"
+TRACKING_STAGE_CHANGED = "tracking.stage_changed"
+TRACKING_UPDATE_PUBLISHED = "tracking.update_published"
+
+
+def tracking_push(
+    event_type: str, tracked_id: str, payload: Mapping[str, Any]
+) -> PushContent | None:
+    """Aviso del seguimiento: inicio, listo para recoger (o alta) y avances publicados. Las
+    etapas intermedias no avisan, para no saturar; se ven en vivo dentro de la app."""
+    pet = str(payload.get("pet_name") or "tu mascota")
+    surgery = payload.get("template") == "surgery"
+    data = {"url": f"/citas/seguimiento/{tracked_id}", "tracked_service_id": tracked_id}
+    if event_type == TRACKING_STARTED:
+        return PushContent(
+            f"Comenzó la atención de {pet}",
+            "Sigue cada etapa en vivo desde la app.",
+            data,
+        )
+    if event_type == TRACKING_STAGE_CHANGED and payload.get("is_last"):
+        if surgery:
+            return PushContent(
+                f"{pet} tiene el alta",
+                "El veterinario autorizó el alta. Ya puedes pasar a recogerla.",
+                data,
+            )
+        return PushContent(
+            f"{pet} está lista para recoger", "Te esperamos en la veterinaria.", data
+        )
+    if event_type == TRACKING_UPDATE_PUBLISHED:
+        return PushContent(
+            f"Novedades de {pet}", "La veterinaria publicó un avance. Ábrelo en la app.", data
+        )
+    return None

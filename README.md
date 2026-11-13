@@ -15,10 +15,15 @@ responsables autorizados de las mascotas, conectadas a una **API común**.
 | Módulo | Estado | Fase |
 |---|---|---|
 | Autenticación, roles y permisos | API, web y app móvil implementadas | 1 |
+| Configuración de la clínica (servicios, recursos, horarios) | API y web implementadas | 2 |
+| Clientes, mascotas y responsables autorizados | API, web y app móvil implementadas | 2 |
+| Agenda y citas sin conflictos | API, web y app móvil implementadas | 2 |
+| Seguimiento de baños y peluquería | API, web y app móvil implementadas | 3 |
+| Seguimiento de cirugías (alta por el veterinario) | API, web y app móvil implementadas | 3 |
+| Seguimiento en tiempo real y notificaciones push | Push y refresco cada 10 s implementados; SSE pendiente | 3 |
 | Configuración de la clínica (servicios, recursos, horarios) | API implementada; web pendiente | 2 |
 | Clientes, mascotas y responsables autorizados | API y app móvil implementadas (web en el PR de #24) | 2 |
 | Agenda y citas sin conflictos | API y app móvil implementadas (web en el PR de #26) | 2 |
-| Configuración de la clínica (servicios, recursos, horarios) | API y web implementadas | 2 |
 | Clientes, mascotas y responsables autorizados | API y web implementadas; móvil pendiente | 2 |
 | Agenda y citas sin conflictos | API y web implementadas; móvil pendiente | 2 |
 | Seguimiento de baños y peluquería | Planificado | 3 |

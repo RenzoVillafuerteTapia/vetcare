@@ -3,6 +3,11 @@ export const ME = ["me"] as const;
 export const MY_PETS = [...ME, "pets"] as const;
 export const MY_APPOINTMENTS = [...ME, "appointments"] as const;
 export const MY_PROFILE = [...ME, "profile"] as const;
+/** Seguimiento en vivo: la lista, el detalle y el de una cita se refrescan cada pocos segundos. */
+export const MY_TRACKING = [...ME, "tracking"] as const;
+export const trackingKey = (id: string) => [...ME, "tracked", id] as const;
+export const appointmentTrackingKey = (appointmentId: string) =>
+  [...ME, "appointment-tracking", appointmentId] as const;
 
 export const petKey = (id: string) => [...ME, "pet", id] as const;
 export const appointmentKey = (id: string) => [...ME, "appointment", id] as const;

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { CalendarClock, X } from "lucide-react-native";
+import { CalendarClock, Radio, X } from "lucide-react-native";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
@@ -8,7 +8,7 @@ import { BackLink, Loading, StatusBadge, useProfessionalOf } from "@/components/
 import { Body, Button, Card, Heading, Notice, Screen, TextField } from "@/components/ui";
 import { errorMessage, unwrap } from "@/lib/api-error";
 import { clientCanChange } from "@/lib/labels";
-import { appointmentKey, ME } from "@/lib/queries";
+import { appointmentKey, appointmentTrackingKey, ME } from "@/lib/queries";
 import { formatSlot } from "@/lib/time";
 import { useSessionManager } from "@/session/context";
 import { colors, fonts, spacing } from "@/theme/tokens";
@@ -41,6 +41,20 @@ export default function AppointmentScreen() {
   });
 
   const professional = useProfessionalOf({ resource_ids: appointment.data?.resource_ids ?? [] });
+  // Desde la llegada puede haber un seguimiento en vivo (baño, cirugía…).
+  const arrived =
+    appointment.data?.status === "checked_in" || appointment.data?.status === "completed";
+  const tracking = useQuery({
+    queryKey: appointmentTrackingKey(appointmentId),
+    queryFn: () =>
+      unwrap(
+        api.GET("/api/v1/appointments/{appointment_id}/tracking", {
+          params: { path: { appointment_id: appointmentId } },
+        }),
+      ),
+    enabled: arrived,
+    retry: false,
+  });
 
   const cancel = useMutation({
     mutationFn: () =>
@@ -93,6 +107,20 @@ export default function AppointmentScreen() {
         </Heading>
         <Body muted>{formatSlot(data.start, data.end)}</Body>
       </View>
+
+      {tracking.data ? (
+        <Button
+          label={
+            tracking.data.status === "in_progress"
+              ? "Ver el avance en vivo"
+              : tracking.data.status === "ready"
+                ? "Lista para recoger: ver detalle"
+                : "Ver cómo fue la atención"
+          }
+          icon={Radio}
+          onPress={() => router.push(`/citas/seguimiento/${tracking.data.id}`)}
+        />
+      ) : null}
 
       <Card>
         {professional ? (

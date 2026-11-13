@@ -97,6 +97,24 @@ con 0 = lunes). `00:00` como fin significa medianoche (24:00): `{"start": "00:00
 abre el día completo. Una franja no cruza la medianoche, y una cita tampoco. Los instantes (bloqueos y, más adelante, citas) viajan en ISO 8601 con zona y se
 devuelven en UTC.
 
+## Seguimiento de servicios
+
+| Endpoint | Acceso | Uso |
+|---|---|---|
+| `POST /api/v1/appointments/{id}/tracking` | `tracking:advance` o `appointments:manage` | Inicia el seguimiento de una cita con la llegada registrada (409 `appointment_not_checked_in` si no). Idempotente |
+| `GET /api/v1/appointments/{id}/tracking` | Personal o tutela activa | El seguimiento de esa cita, o 404 si no tiene |
+| `GET /api/v1/tracked-services` | `tracking:read` | Tablero: en curso y listos, más lo entregado en las últimas 12 h |
+| `GET /api/v1/tracked-services/{id}` | Personal o tutela activa | Etapas (`done`, `current`, `pending` con su hora) y avances; el cliente ve los textos solo con `can_view_clinical` (`updates_hidden`) |
+| `POST /api/v1/tracked-services/{id}/advance` | `tracking:advance` (+ `tracking:authorize_discharge` para el alta) | Pasa a la etapa siguiente; `from_stage` es la etapa que ve quien avanza (409 `stage_changed` si ya cambió) |
+| `POST /api/v1/tracked-services/{id}/updates` | `tracking:publish_update` | Publica un avance para el dueño (hasta 500 caracteres) |
+| `POST /api/v1/tracked-services/{id}/hand-over` | `tracking:hand_over` | Entrega la mascota lista (409 `tracking_not_ready` si no) |
+| `GET /api/v1/me/tracked-services` | `own:tracking:read` | Seguimientos de la última semana de sus mascotas |
+
+Plantillas de etapas según la categoría del servicio: baño y peluquería (Recibido, Baño, Secado,
+Corte y peinado, Listo para recoger), cirugía u hospitalización (Ingreso, Preparación, En
+cirugía, Recuperación, Alta autorizada) y el resto (En atención, Listo para recoger). Las etapas
+se copian al iniciar.
+
 ## Avisos push
 
 | Endpoint | Acceso | Uso |
@@ -105,7 +123,8 @@ devuelven en UTC.
 | `POST /api/v1/me/devices/unregister` | `own:notifications:manage` | Lo da de baja al cerrar sesión. Responde 204 aunque el token no exista o sea de otra cuenta |
 
 Los avisos los envía el worker (`python -m vetcare.worker`) a partir del outbox: cita confirmada
-(también la reservada por recepción), reprogramada o cancelada por la clínica. No se avisa lo que
+(también la reservada por recepción), reprogramada o cancelada por la clínica; y del
+seguimiento, el inicio, "lista para recoger" o el alta y cada avance publicado (sin su texto). No se avisa lo que
 hizo el propio cliente ni un evento de más de 12 horas. El aviso lleva `data.url`
 (`/citas/{id}`) para abrir la cita en la app.
 

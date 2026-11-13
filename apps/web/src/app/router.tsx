@@ -65,6 +65,17 @@ export const routes: RouteObject[] = [
             ],
           },
           {
+            element: <RequirePermission permission="tracking:read" />,
+            children: [
+              {
+                path: "/seguimiento",
+                lazy: async () => ({
+                  Component: (await import("@/features/tracking/tracking-page")).TrackingPage,
+                }),
+              },
+            ],
+          },
+          {
             element: <RequirePermission permission="pets:read" />,
             children: [
               {

@@ -4,6 +4,7 @@ import {
   House,
   LogOut,
   Menu,
+  Radio,
   Settings,
   UserPlus,
   Users,
@@ -32,6 +33,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { to: "/", label: "Inicio", icon: House },
   { to: "/agenda", label: "Agenda", icon: CalendarDays, permission: "appointments:read" },
+  { to: "/seguimiento", label: "Seguimiento", icon: Radio, permission: "tracking:read" },
   { to: "/clientes", label: "Clientes", icon: Users, permission: "pets:read", nested: true },
   { to: "/usuarios/invitar", label: "Invitar usuario", icon: UserPlus, permission: "users:manage" },
   {

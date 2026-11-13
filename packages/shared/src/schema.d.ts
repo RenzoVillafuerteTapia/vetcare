@@ -1004,6 +1004,167 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/sales/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Productos con su stock */
+        get: operations["list_products_api_v1_sales_products_get"];
+        put?: never;
+        /** Crear un producto */
+        post: operations["create_product_api_v1_sales_products_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sales/products/{product_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Editar un producto */
+        put: operations["update_product_api_v1_sales_products__product_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sales/products/{product_id}/receive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Entrada de mercadería */
+        post: operations["receive_api_v1_sales_products__product_id__receive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sales/products/{product_id}/use": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Uso interno */
+        post: operations["use_internally_api_v1_sales_products__product_id__use_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sales/products/{product_id}/count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ajuste por conteo */
+        post: operations["count_api_v1_sales_products__product_id__count_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sales/products/{product_id}/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Movimientos de stock, del más reciente */
+        get: operations["movements_api_v1_sales_products__product_id__movements_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sales/charges": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Cobros de un periodo */
+        get: operations["list_charges_api_v1_sales_charges_get"];
+        put?: never;
+        /**
+         * Registrar un cobro
+         * @description Solo registra lo cobrado; no procesa pagos. Descuenta el stock de los productos vendidos.
+         */
+        post: operations["register_charge_api_v1_sales_charges_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sales/charges/{charge_id}/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Anular un cobro
+         * @description Con motivo. Los productos vuelven al stock.
+         */
+        post: operations["void_charge_api_v1_sales_charges__charge_id__void_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sales/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ingresos, costo y ganancia de un periodo */
+        get: operations["summary_api_v1_sales_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1165,6 +1326,68 @@ export interface components {
          * @enum {string}
          */
         Channel: "staff" | "client";
+        /** ChargeLineResponse */
+        ChargeLineResponse: {
+            kind: components["schemas"]["LineKind"];
+            /** Description */
+            description: string;
+            /** Quantity */
+            quantity: string;
+            /** Unit Price */
+            unit_price: string;
+            /** Total */
+            total: string;
+            /** Product Id */
+            product_id: string | null;
+        };
+        /** ChargeRequestBody */
+        ChargeRequestBody: {
+            /** Lines */
+            lines: components["schemas"]["LineRequestBody"][];
+            method: components["schemas"]["PaymentMethod"];
+            /** Customer Name */
+            customer_name?: string | null;
+            /** Pet Name */
+            pet_name?: string | null;
+            /** Client Id */
+            client_id?: string | null;
+            /** Appointment Id */
+            appointment_id?: string | null;
+            /** Notes */
+            notes?: string | null;
+        };
+        /** ChargeResponse */
+        ChargeResponse: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            method: components["schemas"]["PaymentMethod"];
+            status: components["schemas"]["ChargeStatus"];
+            /** Total */
+            total: string;
+            /** Lines */
+            lines: components["schemas"]["ChargeLineResponse"][];
+            /** Customer Name */
+            customer_name: string | null;
+            /** Pet Name */
+            pet_name: string | null;
+            /** Notes */
+            notes: string | null;
+            /** Void Reason */
+            void_reason: string | null;
+        };
+        /**
+         * ChargeStatus
+         * @enum {string}
+         */
+        ChargeStatus: "registered" | "voided";
         /** ClientPage */
         ClientPage: {
             /** Items */
@@ -1223,6 +1446,40 @@ export interface components {
              */
             created_at: string;
         };
+        /** CountRequest */
+        CountRequest: {
+            /** Counted */
+            counted: number | string;
+            /** Note */
+            note?: string | null;
+        };
+        /** CreateProductRequest */
+        CreateProductRequest: {
+            /** Name */
+            name: string;
+            category: components["schemas"]["ProductCategory"];
+            /**
+             * Unit
+             * @description Tableta, frasco, bolsa, ml…
+             */
+            unit: string;
+            /** Cost Price */
+            cost_price: number | string;
+            /** Sale Price */
+            sale_price: number | string;
+            /**
+             * Min Stock
+             * @default 0
+             */
+            min_stock: number | string;
+            /** Sku */
+            sku?: string | null;
+            /**
+             * Initial Stock
+             * @default 0
+             */
+            initial_stock: number | string;
+        };
         /** CreateResourceRequest */
         CreateResourceRequest: {
             kind: components["schemas"]["ResourceKind"];
@@ -1274,6 +1531,16 @@ export interface components {
             status: components["schemas"]["UserStatus"];
             /** Permissions */
             permissions: components["schemas"]["Permission"][];
+        };
+        /** DayTotal */
+        DayTotal: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Total */
+            total: string;
         };
         /**
          * DevicePlatform
@@ -1409,6 +1676,37 @@ export interface components {
             /** Roles */
             roles: components["schemas"]["Role"][];
         };
+        /** KindTotal */
+        KindTotal: {
+            kind: components["schemas"]["LineKind"];
+            /** Total */
+            total: string;
+        };
+        /**
+         * LineKind
+         * @enum {string}
+         */
+        LineKind: "service" | "product" | "other";
+        /** LineRequestBody */
+        LineRequestBody: {
+            kind: components["schemas"]["LineKind"];
+            /**
+             * Quantity
+             * @default 1
+             */
+            quantity: number | string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Unit Price
+             * @description Para productos, opcional: por defecto el precio de venta.
+             */
+            unit_price?: number | string | null;
+            /** Product Id */
+            product_id?: string | null;
+            /** Service Type Id */
+            service_type_id?: string | null;
+        };
         /** LoginRequest */
         LoginRequest: {
             /** Email */
@@ -1426,6 +1724,41 @@ export interface components {
         LogoutRequest: {
             /** Refresh Token */
             refresh_token?: string | null;
+        };
+        /** MethodTotal */
+        MethodTotal: {
+            method: components["schemas"]["PaymentMethod"];
+            /** Total */
+            total: string;
+        };
+        /**
+         * MovementKind
+         * @enum {string}
+         */
+        MovementKind: "purchase" | "sale" | "internal_use" | "adjustment" | "return";
+        /** MovementResponse */
+        MovementResponse: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            kind: components["schemas"]["MovementKind"];
+            /** Quantity */
+            quantity: string;
+            /** Stock After */
+            stock_after: string;
+            /** Unit Cost */
+            unit_cost: string | null;
+            /** Note */
+            note: string | null;
+            /** Charge Id */
+            charge_id: string | null;
         };
         /** MyProfileRequest */
         MyProfileRequest: {
@@ -1469,10 +1802,15 @@ export interface components {
             email: string;
         };
         /**
+         * PaymentMethod
+         * @enum {string}
+         */
+        PaymentMethod: "cash" | "card" | "yape" | "plin" | "transfer";
+        /**
          * Permission
          * @enum {string}
          */
-        Permission: "users:manage" | "clinic_setup:manage" | "clients:manage" | "pets:read" | "pets:manage" | "guardianships:manage" | "appointments:read" | "appointments:manage" | "tracking:read" | "tracking:advance" | "tracking:publish_update" | "tracking:authorize_discharge" | "tracking:hand_over" | "audit:read" | "own:profile:manage" | "own:pets:read" | "own:guardianships:manage" | "own:appointments:manage" | "own:tracking:read" | "own:notifications:manage";
+        Permission: "users:manage" | "clinic_setup:manage" | "clients:manage" | "pets:read" | "pets:manage" | "guardianships:manage" | "appointments:read" | "appointments:manage" | "tracking:read" | "tracking:advance" | "tracking:publish_update" | "tracking:authorize_discharge" | "tracking:hand_over" | "audit:read" | "inventory:read" | "inventory:manage" | "charges:manage" | "reports:read" | "own:profile:manage" | "own:pets:read" | "own:guardianships:manage" | "own:appointments:manage" | "own:tracking:read" | "own:notifications:manage";
         /** PetRequest */
         PetRequest: {
             /** Name */
@@ -1580,6 +1918,38 @@ export interface components {
             errors?: components["schemas"]["FieldProblem"][] | null;
         };
         /**
+         * ProductCategory
+         * @enum {string}
+         */
+        ProductCategory: "medicine" | "food" | "accessory" | "hygiene" | "supply" | "other";
+        /** ProductResponse */
+        ProductResponse: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Sku */
+            sku: string | null;
+            category: components["schemas"]["ProductCategory"];
+            /** Unit */
+            unit: string;
+            /** Cost Price */
+            cost_price: string;
+            /** Sale Price */
+            sale_price: string;
+            /** Stock */
+            stock: string;
+            /** Min Stock */
+            min_stock: string;
+            /** Low Stock */
+            low_stock: boolean;
+            /** Active */
+            active: boolean;
+        };
+        /**
          * ProfessionalResponse
          * @description Un veterinario o groomer, sin su horario: para elegirlo y para mostrar quién atiende.
          */
@@ -1592,6 +1962,18 @@ export interface components {
             /** Name */
             name: string;
             kind: components["schemas"]["ResourceKind"];
+        };
+        /** ReceiveRequest */
+        ReceiveRequest: {
+            /** Quantity */
+            quantity: number | string;
+            /**
+             * Unit Cost
+             * @description Costo unitario pagado; si se indica, pasa a ser el costo.
+             */
+            unit_cost?: number | string | null;
+            /** Note */
+            note?: string | null;
         };
         /** RefreshRequest */
         RefreshRequest: {
@@ -1759,6 +2141,36 @@ export interface components {
             /** Reached At */
             reached_at: string | null;
         };
+        /** SummaryResponse */
+        SummaryResponse: {
+            /**
+             * Revenue
+             * @description Total cobrado, sin los cobros anulados.
+             */
+            revenue: string;
+            /**
+             * Product Cost
+             * @description Costo de los productos vendidos.
+             */
+            product_cost: string;
+            /**
+             * Profit
+             * @description Ganancia bruta: ingresos menos costo de productos.
+             */
+            profit: string;
+            /** Count */
+            count: number;
+            /** Voided */
+            voided: number;
+            /** By Method */
+            by_method: components["schemas"]["MethodTotal"][];
+            /** By Kind */
+            by_kind: components["schemas"]["KindTotal"][];
+            /** By Day */
+            by_day: components["schemas"]["DayTotal"][];
+            /** Top Products */
+            top_products: components["schemas"]["TopProduct"][];
+        };
         /**
          * Template
          * @enum {string}
@@ -1822,6 +2234,15 @@ export interface components {
              * @description Solo para `mobile`. Guárdalo en almacenamiento seguro.
              */
             refresh_token?: string | null;
+        };
+        /** TopProduct */
+        TopProduct: {
+            /** Name */
+            name: string;
+            /** Quantity */
+            quantity: string;
+            /** Total */
+            total: string;
         };
         /** TrackedServiceResponse */
         TrackedServiceResponse: {
@@ -1893,6 +2314,33 @@ export interface components {
             kind: components["schemas"]["GuardianKind"];
             permissions: components["schemas"]["GuardianPermissionsSchema"];
         };
+        /** UpdateProductRequest */
+        UpdateProductRequest: {
+            /** Name */
+            name: string;
+            category: components["schemas"]["ProductCategory"];
+            /**
+             * Unit
+             * @description Tableta, frasco, bolsa, ml…
+             */
+            unit: string;
+            /** Cost Price */
+            cost_price: number | string;
+            /** Sale Price */
+            sale_price: number | string;
+            /**
+             * Min Stock
+             * @default 0
+             */
+            min_stock: number | string;
+            /** Sku */
+            sku?: string | null;
+            /**
+             * Active
+             * @default true
+             */
+            active: boolean;
+        };
         /** UpdateRequest */
         UpdateRequest: {
             /** Text */
@@ -1924,6 +2372,13 @@ export interface components {
             /** Text */
             text: string;
         };
+        /** UseRequest */
+        UseRequest: {
+            /** Quantity */
+            quantity: number | string;
+            /** Note */
+            note?: string | null;
+        };
         /** UserResponse */
         UserResponse: {
             /**
@@ -1944,6 +2399,11 @@ export interface components {
          * @enum {string}
          */
         UserStatus: "invited" | "active" | "disabled";
+        /** VoidRequest */
+        VoidRequest: {
+            /** Reason */
+            reason: string;
+        };
         /**
          * Weekday
          * @enum {integer}
@@ -5880,6 +6340,739 @@ export interface operations {
             };
             /** @description No existe */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    list_products_api_v1_sales_products_get: {
+        parameters: {
+            query?: {
+                /** @description Nombre o código. */
+                q?: string | null;
+                include_inactive?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductResponse"][];
+                };
+            };
+            /** @description No autenticado */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Sin permiso */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description No existe */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Datos inválidos */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    create_product_api_v1_sales_products_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateProductRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductResponse"];
+                };
+            };
+            /** @description No autenticado */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Sin permiso */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description No existe */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Stock insuficiente, cobro ya anulado o modificación concurrente */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Datos inválidos */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    update_product_api_v1_sales_products__product_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                product_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProductRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductResponse"];
+                };
+            };
+            /** @description No autenticado */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Sin permiso */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description No existe */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Stock insuficiente, cobro ya anulado o modificación concurrente */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Datos inválidos */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    receive_api_v1_sales_products__product_id__receive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                product_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReceiveRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductResponse"];
+                };
+            };
+            /** @description No autenticado */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Sin permiso */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description No existe */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Stock insuficiente, cobro ya anulado o modificación concurrente */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Datos inválidos */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    use_internally_api_v1_sales_products__product_id__use_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                product_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UseRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductResponse"];
+                };
+            };
+            /** @description No autenticado */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Sin permiso */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description No existe */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Stock insuficiente, cobro ya anulado o modificación concurrente */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Datos inválidos */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    count_api_v1_sales_products__product_id__count_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                product_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CountRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductResponse"];
+                };
+            };
+            /** @description No autenticado */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Sin permiso */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description No existe */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Stock insuficiente, cobro ya anulado o modificación concurrente */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Datos inválidos */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    movements_api_v1_sales_products__product_id__movements_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                product_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovementResponse"][];
+                };
+            };
+            /** @description No autenticado */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Sin permiso */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description No existe */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Datos inválidos */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    list_charges_api_v1_sales_charges_get: {
+        parameters: {
+            query: {
+                /** @description Día local, AAAA-MM-DD. */
+                from: string;
+                /** @description Día local, inclusive. */
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChargeResponse"][];
+                };
+            };
+            /** @description No autenticado */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Sin permiso */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description No existe */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Datos inválidos */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    register_charge_api_v1_sales_charges_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChargeRequestBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChargeResponse"];
+                };
+            };
+            /** @description No autenticado */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Sin permiso */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description No existe */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Stock insuficiente, cobro ya anulado o modificación concurrente */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Datos inválidos */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    void_charge_api_v1_sales_charges__charge_id__void_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                charge_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VoidRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChargeResponse"];
+                };
+            };
+            /** @description No autenticado */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Sin permiso */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description No existe */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Stock insuficiente, cobro ya anulado o modificación concurrente */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Datos inválidos */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    summary_api_v1_sales_summary_get: {
+        parameters: {
+            query: {
+                /** @description Día local, AAAA-MM-DD. */
+                from: string;
+                /** @description Día local, inclusive. */
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SummaryResponse"];
+                };
+            };
+            /** @description No autenticado */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Sin permiso */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description No existe */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Datos inválidos */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

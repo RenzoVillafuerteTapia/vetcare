@@ -108,7 +108,7 @@ const cita: Appointment = {
   ],
 };
 
-const slot = (start: string, end: string): Slot => ({ start, end });
+const slot = (start: string, end: string): Slot => ({ start, end, status: "free" });
 
 function agendaRoutes(
   appointments: () => Appointment[],

@@ -278,7 +278,7 @@ export function Card({ children, style }: { children: ReactNode; style?: StylePr
 export function Brand({ inverted = false }: { inverted?: boolean }) {
   return (
     <View style={styles.brand}>
-      <View style={[styles.brandIcon, inverted && { backgroundColor: "rgba(255,255,255,0.15)" }]}>
+      <View style={[styles.brandIcon, inverted && { backgroundColor: "rgba(255,255,255,0.25)" }]}>
         <PawPrint size={20} color={inverted ? "#fff" : colors.primaryForeground} />
       </View>
       <Text style={[styles.brandText, inverted && { color: "#fff" }]}>VetCare</Text>
@@ -431,31 +431,19 @@ const styles = StyleSheet.create({
     color: colors.foreground,
     letterSpacing: -0.3,
   },
-  segmented: {
-    flexDirection: "row",
-    backgroundColor: colors.muted,
-    borderRadius: radius.pill,
-    padding: spacing(1),
-    gap: spacing(1),
-  },
+  segmented: { flexDirection: "row", gap: spacing(2) },
   segment: {
     flex: 1,
-    minHeight: 40,
+    minHeight: 42,
     borderRadius: radius.pill,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: spacing(2),
-  },
-  segmentSelected: {
     backgroundColor: colors.card,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
-    elevation: 1,
   },
-  segmentText: { fontFamily: fonts.bodySemibold, fontSize: 14, color: colors.mutedForeground },
-  segmentTextSelected: { fontFamily: fonts.bodyBold, color: colors.foreground },
+  segmentSelected: { backgroundColor: colors.primary },
+  segmentText: { fontFamily: fonts.bodySemibold, fontSize: 14, color: colors.foreground },
+  segmentTextSelected: { fontFamily: fonts.bodyBold, color: colors.primaryForeground },
   row: {
     flexDirection: "row",
     alignItems: "center",

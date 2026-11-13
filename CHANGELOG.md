@@ -36,6 +36,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ### Cambiado
 
+- App móvil rediseñada: fondo gris azulado, tarjetas muy redondeadas, barra inferior flotante con la pestaña activa en amarillo, chips oscuros para lo activo, perfil de la mascota con portada (foto, nombre, especie y raza, edad y sexo) y tarjetas de peso con su evolución y de próxima cita.
 - Los eventos de cita pasan a la versión 2 del esquema: agregan `pet_name` y, al reprogramar, `by_client`.
 - Las conexiones a MySQL usan aislamiento READ COMMITTED (ver `docs/architecture/overview.md`).
 - `identity.public` expone solo tipos del dominio; las dependencias HTTP pasan a `identity.public.http`.

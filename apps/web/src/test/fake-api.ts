@@ -64,5 +64,5 @@ export const admin = () =>
     email: "admin@example.test",
     full_name: "Admin Inicial",
     roles: ["admin"],
-    permissions: ["users:manage", "clients:manage", "pets:read"],
+    permissions: ["users:manage", "clinic_setup:manage", "clients:manage", "pets:read"],
   });

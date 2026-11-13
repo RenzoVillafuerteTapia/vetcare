@@ -1,5 +1,5 @@
 import type { Permission } from "@vetcare/shared";
-import { House, LogOut, Menu, UserPlus, X, type LucideIcon } from "lucide-react";
+import { House, LogOut, Menu, Settings, UserPlus, X, type LucideIcon } from "lucide-react";
 import { Dialog } from "radix-ui";
 import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router";
@@ -14,12 +14,21 @@ interface NavItem {
   label: string;
   icon: LucideIcon;
   permission?: Permission;
+  /** Secciones con subrutas: el ítem sigue activo dentro de ellas. */
+  nested?: boolean;
 }
 
 /** Solo secciones que existen. Cada fase agrega las suyas. */
 const NAV_ITEMS: NavItem[] = [
   { to: "/", label: "Inicio", icon: House },
   { to: "/usuarios/invitar", label: "Invitar usuario", icon: UserPlus, permission: "users:manage" },
+  {
+    to: "/configuracion",
+    label: "Configuración",
+    icon: Settings,
+    permission: "clinic_setup:manage",
+    nested: true,
+  },
 ];
 
 const ROLE_LABELS: Record<string, string> = {
@@ -46,11 +55,11 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <nav aria-label="Principal" className="grid gap-1.5">
-      {items.map(({ to, label, icon: Icon }) => (
+      {items.map(({ to, label, icon: Icon, nested }) => (
         <NavLink
           key={to}
           to={to}
-          end
+          end={!nested}
           onClick={onNavigate}
           className={({ isActive }) =>
             cn(

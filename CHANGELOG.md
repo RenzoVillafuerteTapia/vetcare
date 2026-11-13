@@ -19,6 +19,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 - Identity: `invite_client`, para que la recepción invite clientes sin `users:manage`.
 - Agenda: disponibilidad por servicio y día, reservas sin superposición con bloqueo por recurso, asignación automática o elegida de recursos, `Idempotency-Key`, solicitudes del cliente con confirmación de la clínica, reprogramación y cancelación con antelación mínima, llegada, atención completada e inasistencia, con historial y eventos en el outbox.
 - Web: carrusel de fotos en el panel de acceso, que se pausa al pasar el mouse o al enfocarlo y respeta la preferencia de movimiento reducido.
+- Web: sección Configuración (solo con `clinic_setup:manage`) con el catálogo de servicios (alta, edición, activar y desactivar), los recursos de la agenda con su horario semanal y sus bloqueos, y el horario de atención y los feriados de la sede; los errores de la API se muestran junto al campo.
 
 ### Cambiado
 

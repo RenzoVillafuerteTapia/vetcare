@@ -1,5 +1,15 @@
 import type { Permission } from "@vetcare/shared";
-import { House, LogOut, Menu, Settings, UserPlus, Users, X, type LucideIcon } from "lucide-react";
+import {
+  CalendarDays,
+  House,
+  LogOut,
+  Menu,
+  Settings,
+  UserPlus,
+  Users,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 import { Dialog } from "radix-ui";
 import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router";
@@ -21,6 +31,7 @@ interface NavItem {
 /** Solo secciones que existen. Cada fase agrega las suyas. */
 const NAV_ITEMS: NavItem[] = [
   { to: "/", label: "Inicio", icon: House },
+  { to: "/agenda", label: "Agenda", icon: CalendarDays, permission: "appointments:read" },
   { to: "/clientes", label: "Clientes", icon: Users, permission: "pets:read", nested: true },
   { to: "/usuarios/invitar", label: "Invitar usuario", icon: UserPlus, permission: "users:manage" },
   {
@@ -169,7 +180,7 @@ export function AppShell() {
           <div className="hidden md:block" />
           <UserMenu />
         </header>
-        <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-background px-4 py-8 md:rounded-[2rem] md:px-10 md:py-10">
+        <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-background px-4 py-5 md:rounded-[2rem] md:px-8 md:py-6">
           <Outlet />
         </main>
       </div>

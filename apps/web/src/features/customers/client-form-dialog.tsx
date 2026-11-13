@@ -205,7 +205,7 @@ export function ClientFormDialog({ editing, onSaved, onClose }: ClientFormDialog
             ) : null}
           </div>
         </div>
-        <DialogFooter className="mt-8">
+        <DialogFooter className="mt-6">
           <Button type="button" variant="outline" onClick={onClose}>
             Cancelar
           </Button>

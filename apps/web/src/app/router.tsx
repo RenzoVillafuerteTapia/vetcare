@@ -54,6 +54,17 @@ export const routes: RouteObject[] = [
             ],
           },
           {
+            element: <RequirePermission permission="appointments:read" />,
+            children: [
+              {
+                path: "/agenda",
+                lazy: async () => ({
+                  Component: (await import("@/features/agenda/agenda-page")).AgendaPage,
+                }),
+              },
+            ],
+          },
+          {
             element: <RequirePermission permission="pets:read" />,
             children: [
               {

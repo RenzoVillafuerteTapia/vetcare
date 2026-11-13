@@ -21,7 +21,10 @@ class _Request(BaseModel):
 class ScheduleEntry(BaseModel):
     weekday: Weekday = Field(description="0 = lunes … 6 = domingo")
     start: time = Field(description="Hora local de inicio (America/Lima), p. ej. `09:00`.")
-    end: time = Field(description="Hora local de fin, exclusiva.")
+    end: time = Field(
+        description="Hora local de fin, exclusiva. `00:00` significa medianoche (24:00): una "
+        "franja de `00:00` a `00:00` abre el día completo."
+    )
 
 
 def schedule_from(entries: list[ScheduleEntry]) -> WeeklySchedule:

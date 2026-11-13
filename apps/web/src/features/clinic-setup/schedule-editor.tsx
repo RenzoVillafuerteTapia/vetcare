@@ -21,7 +21,7 @@ export function ScheduleEditor({ value, onChange, error, emptyLabel }: ScheduleE
   return (
     <fieldset className="grid gap-3" aria-describedby={error ? "schedule-error" : undefined}>
       <legend className="sr-only">Horario semanal</legend>
-      <ul className="grid gap-2">
+      <ul className="grid gap-1">
         {WEEKDAYS.map((day, weekday) => {
           const ranges = value
             .map((entry, index) => ({ entry, index }))
@@ -29,12 +29,12 @@ export function ScheduleEditor({ value, onChange, error, emptyLabel }: ScheduleE
           return (
             <li
               key={day}
-              className="grid gap-2 rounded-2xl bg-sidebar p-3 sm:grid-cols-[6.5rem_1fr_auto] sm:items-start"
+              className="grid gap-1.5 rounded-2xl bg-sidebar px-3 py-1.5 sm:grid-cols-[6rem_1fr_auto] sm:items-start"
             >
-              <span className="pt-2.5 text-sm font-semibold">{day}</span>
+              <span className="pt-2 text-sm font-semibold">{day}</span>
               <div className="grid gap-2">
                 {ranges.length === 0 ? (
-                  <span className="pt-2.5 text-sm text-muted-foreground">{emptyLabel}</span>
+                  <span className="pt-2 text-sm text-muted-foreground">{emptyLabel}</span>
                 ) : null}
                 {ranges.map(({ entry, index }, position) => (
                   <div key={index} className="flex items-center gap-2">
@@ -44,7 +44,7 @@ export function ScheduleEditor({ value, onChange, error, emptyLabel }: ScheduleE
                       aria-label={`${day}, franja ${position + 1}, inicio`}
                       value={entry.start}
                       onChange={(event) => update(index, { start: event.target.value })}
-                      className="w-32"
+                      className="h-9 w-28"
                     />
                     <span aria-hidden className="text-muted-foreground">
                       a
@@ -55,8 +55,11 @@ export function ScheduleEditor({ value, onChange, error, emptyLabel }: ScheduleE
                       aria-label={`${day}, franja ${position + 1}, fin`}
                       value={entry.end}
                       onChange={(event) => update(index, { end: event.target.value })}
-                      className="w-32"
+                      className="h-9 w-28"
                     />
+                    {entry.end === "00:00" ? (
+                      <span className="text-xs text-muted-foreground">(medianoche)</span>
+                    ) : null}
                     <Button
                       type="button"
                       variant="ghost"
@@ -69,29 +72,53 @@ export function ScheduleEditor({ value, onChange, error, emptyLabel }: ScheduleE
                   </div>
                 ))}
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                aria-label={`Agregar franja el ${day.toLowerCase()}`}
-                onClick={() =>
-                  onChange([
-                    ...value,
-                    {
-                      weekday: weekday as ScheduleEntry["weekday"],
-                      start: ranges.at(-1)?.entry.end || "09:00",
-                      end: "",
-                    },
-                  ])
-                }
-              >
-                <Plus aria-hidden />
-                Franja
-              </Button>
+              <div className="flex flex-wrap gap-1.5">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  aria-label={`Abrir el ${day.toLowerCase()} las 24 horas`}
+                  title="De 00:00 a 00:00 (medianoche)"
+                  onClick={() =>
+                    onChange([
+                      ...value.filter((entry) => entry.weekday !== weekday),
+                      {
+                        weekday: weekday as ScheduleEntry["weekday"],
+                        start: "00:00",
+                        end: "00:00",
+                      },
+                    ])
+                  }
+                >
+                  24 h
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  aria-label={`Agregar franja el ${day.toLowerCase()}`}
+                  onClick={() =>
+                    onChange([
+                      ...value,
+                      {
+                        weekday: weekday as ScheduleEntry["weekday"],
+                        start: ranges.at(-1)?.entry.end || "09:00",
+                        end: "",
+                      },
+                    ])
+                  }
+                >
+                  <Plus aria-hidden />
+                  Franja
+                </Button>
+              </div>
             </li>
           );
         })}
       </ul>
+      <p className="text-xs text-muted-foreground">
+        Usa 00:00 como hora de fin para atender hasta la medianoche.
+      </p>
       {error ? (
         <p id="schedule-error" role="alert" className="text-sm text-destructive">
           {error}

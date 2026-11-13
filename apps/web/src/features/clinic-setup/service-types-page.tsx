@@ -263,7 +263,7 @@ function ServiceTypeDialog({
             ) : null}
           </div>
         </div>
-        <DialogFooter className="mt-8">
+        <DialogFooter className="mt-6">
           <Button type="button" variant="outline" onClick={onClose}>
             Cancelar
           </Button>
@@ -300,9 +300,9 @@ export function ServiceTypesPage() {
   });
 
   return (
-    <section aria-labelledby="servicios" className="grid gap-5">
+    <section aria-labelledby="servicios" className="grid gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="servicios" className="text-2xl font-medium">
+        <h2 id="servicios" className="text-xl font-medium">
           Catálogo de servicios
         </h2>
         <Button onClick={() => setDialog("new")}>
@@ -324,18 +324,18 @@ export function ServiceTypesPage() {
           </p>
         </EmptyState>
       ) : (
-        <ul className="grid gap-3">
+        <ul className="grid gap-3 lg:grid-cols-2">
           {serviceTypes.data.map((service) => (
             <li
               key={service.id}
               className={cn(
-                "grid gap-4 rounded-3xl border border-border/70 bg-card p-5 sm:grid-cols-[1fr_auto] sm:items-center",
+                "grid gap-3 rounded-3xl border border-border/70 bg-card p-4 sm:grid-cols-[1fr_auto] sm:items-center",
                 !service.active && "bg-sidebar",
               )}
             >
-              <div className="grid gap-2">
+              <div className="grid gap-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-lg font-medium">{service.name}</h3>
+                  <h3 className="text-base font-medium">{service.name}</h3>
                   <Badge variant="soft">{CATEGORY_LABELS[service.category]}</Badge>
                   {service.active ? null : <Badge>Inactivo</Badge>}
                   {service.bookable_by_client ? null : <Badge>Solo personal</Badge>}

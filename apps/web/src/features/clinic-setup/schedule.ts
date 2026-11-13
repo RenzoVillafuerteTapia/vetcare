@@ -10,6 +10,15 @@ export function normalizeSchedule(entries: readonly ScheduleEntry[]): ScheduleEn
 const onGrid = (time: string) => Number(time.slice(3, 5)) % 5 === 0;
 
 /**
+ * Una franja que termina a las 00:00 termina a la medianoche (24:00), como en la API. Para
+ * comparar horas se usa "24:00", que ordena después de cualquier otra.
+ */
+export const endOfRange = (end: string) => (end === "00:00" ? "24:00" : end);
+
+/** Una franja de 00:00 a 00:00 abre el día completo. */
+export const isAllDay = (start: string, end: string) => start === "00:00" && end === "00:00";
+
+/**
  * Primer problema de un horario semanal, o `null` si es válido. Son las mismas reglas que
  * aplica la API (franjas completas, en múltiplos de 5 minutos y sin superponerse); validarlas
  * aquí evita un viaje al servidor para errores evidentes.
@@ -20,7 +29,7 @@ export function scheduleProblem(entries: readonly ScheduleEntry[]): string | nul
     if (!start || !end) {
       return `Completa las horas del ${day}.`;
     }
-    if (start >= end) {
+    if (start >= endOfRange(end)) {
       return `El ${day}, la hora de fin debe ser posterior a la de inicio.`;
     }
     if (!onGrid(start) || !onGrid(end)) {
@@ -31,7 +40,7 @@ export function scheduleProblem(entries: readonly ScheduleEntry[]): string | nul
   for (let i = 1; i < sorted.length; i++) {
     const previous = sorted[i - 1]!;
     const current = sorted[i]!;
-    if (previous.weekday === current.weekday && current.start < previous.end) {
+    if (previous.weekday === current.weekday && current.start < endOfRange(previous.end)) {
       return `El ${WEEKDAYS[current.weekday].toLowerCase()} tiene franjas superpuestas.`;
     }
   }
@@ -45,7 +54,10 @@ export function scheduleProblem(entries: readonly ScheduleEntry[]): string | nul
 export function scheduleSummary(entries: readonly ScheduleEntry[]): string[] {
   const byDay = new Map<number, string[]>();
   for (const entry of normalizeSchedule(entries)) {
-    byDay.set(entry.weekday, [...(byDay.get(entry.weekday) ?? []), `${entry.start}–${entry.end}`]);
+    const label = isAllDay(entry.start, entry.end)
+      ? "24 horas"
+      : `${entry.start}–${endOfRange(entry.end)}`;
+    byDay.set(entry.weekday, [...(byDay.get(entry.weekday) ?? []), label]);
   }
   const groups: { first: number; last: number; ranges: string }[] = [];
   for (const [weekday, ranges] of byDay) {

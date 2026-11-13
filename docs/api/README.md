@@ -95,6 +95,18 @@ Los horarios semanales usan hora local de Lima (`{"weekday": 0, "start": "09:00"
 con 0 = lunes). Los instantes (bloqueos y, más adelante, citas) viajan en ISO 8601 con zona y se
 devuelven en UTC.
 
+## Avisos push
+
+| Endpoint | Acceso | Uso |
+|---|---|---|
+| `PUT /api/v1/me/devices` | `own:notifications:manage` | Registra el teléfono (`{"token": "ExponentPushToken[…]", "platform": "android"}`). Idempotente; si el token estaba en otra cuenta, pasa a esta |
+| `POST /api/v1/me/devices/unregister` | `own:notifications:manage` | Lo da de baja al cerrar sesión. Responde 204 aunque el token no exista o sea de otra cuenta |
+
+Los avisos los envía el worker (`python -m vetcare.worker`) a partir del outbox: cita confirmada
+(también la reservada por recepción), reprogramada o cancelada por la clínica. No se avisa lo que
+hizo el propio cliente ni un evento de más de 12 horas. El aviso lleva `data.url`
+(`/citas/{id}`) para abrir la cita en la app.
+
 ## Errores
 
 Formato [RFC 9457 (problem+json)](https://www.rfc-editor.org/rfc/rfc9457):

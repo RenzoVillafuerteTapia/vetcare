@@ -24,9 +24,11 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 - App móvil: las citas se actualizan solas cada 30 s con la app abierta (y al volver a ella), y se puede deslizar hacia abajo para actualizar en Inicio y Citas: el cliente ve al momento cuando la veterinaria confirma, reprograma o cancela.
 - API: `GET`/`PUT /me/profile` (teléfono y dirección del cliente, permiso `own:profile:manage`), `POST /auth/password` (cambio con la actual; cierra las demás sesiones) y foto de la mascota por su dueño (`can_change_photo` en la respuesta).
 - App móvil: inicio con la próxima cita y las mascotas vinculadas (con estados vacíos útiles), perfil de la mascota con la información compartida, y citas: próximas y anteriores, detalle, solicitud entre los horarios libres (con `Idempotency-Key`), reprogramación y cancelación con la antelación mínima. Las horas se muestran siempre en la hora de la sede.
+- Avisos push: cuando la clínica confirma, reprograma o cancela una cita, el dueño recibe un aviso en su teléfono y al tocarlo se abre la cita. El worker del outbox (`python -m vetcare.worker`) entrega cada evento una sola vez por manejador, reintenta con espera exponencial y deja en `failed` lo que no pudo enviar. Incluye `PUT /me/devices` y `POST /me/devices/unregister` (permiso `own:notifications:manage`), emisor de Expo y emisor de consola para desarrollo. Recibirlos en un teléfono requiere el proyecto de EAS y las credenciales de FCM/APNs.
 
 ### Cambiado
 
+- Los eventos de cita pasan a la versión 2 del esquema: agregan `pet_name` y, al reprogramar, `by_client`.
 - Las conexiones a MySQL usan aislamiento READ COMMITTED (ver `docs/architecture/overview.md`).
 - `identity.public` expone solo tipos del dominio; las dependencias HTTP pasan a `identity.public.http`.
 

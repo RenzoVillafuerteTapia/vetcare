@@ -42,6 +42,7 @@ que tiene una tutela activa (lo verifica el contexto dueño del dato):
 | `own:guardianships:manage` | Agregar o revocar responsables autorizados, solo si es `OWNER` |
 | `own:appointments:manage` | Consultar, solicitar, reprogramar y cancelar sus citas |
 | `own:tracking:read` | Seguimiento de sus servicios, solo lo publicado para el cliente |
+| `own:notifications:manage` | Registrar y dar de baja los teléfonos donde recibe avisos push |
 
 - El administrador **no** tiene permisos clínicos (por ejemplo, autorizar un alta).
 - Una cuenta no puede combinar el rol cliente con roles del personal.
@@ -97,6 +98,15 @@ contraseña, con actor, objetivo, IP y momento. Nunca guarda contraseñas, token
 
 Push y correos usan textos genéricos. Nunca incluyen diagnósticos, procedimientos ni enlaces
 directos a documentos; el detalle se ve en la app después de autenticarse.
+
+- Un aviso de cita solo lleva el nombre de la mascota y la fecha: ni el servicio ni el motivo.
+- El token de Expo identifica al teléfono, no a la persona. Si otra cuenta inicia sesión en el
+  mismo teléfono, el token pasa a esa cuenta; al cerrar sesión, la app lo da de baja antes de
+  revocar la sesión. Los tokens que Expo marca como no registrados se borran.
+- Al tocar un aviso, la app solo abre rutas conocidas (`/citas/{id}`), y la pantalla vuelve a
+  pedir los datos con la sesión del usuario.
+- `VETCARE_EXPO_ACCESS_TOKEN` (opcional) es un secreto y vive fuera del repositorio. Las
+  credenciales de FCM y APNs se cargan en EAS, nunca en el repositorio.
 
 ## Secretos
 

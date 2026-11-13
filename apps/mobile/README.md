@@ -106,10 +106,19 @@ src/
 
 ## Diseño
 
-Sigue [docs/design/README.md](../../docs/design/README.md): Fredoka y Nunito
-(`@expo-google-fonts`, empaquetadas con la app), botones y etiquetas tipo píldora, esquinas
-amplias, panel de marca verde azulado y tarjeta destacada oscura. Los colores son los mismos tokens
-de la web convertidos a hex (`src/theme/tokens.ts`).
+Usa las fuentes y las formas de [docs/design/README.md](../../docs/design/README.md) (Fredoka
+y Nunito, píldoras y esquinas amplias), con una paleta propia de la app de clientes en
+`src/theme/tokens.ts`:
+
+- fondo gris azulado y tinta oscura para lo principal (botones, chips activos);
+- amarillo (`accent`) para lo activo: la pestaña de la barra y los accesos del inicio;
+- celeste (`sky`) para la marca y las portadas, y tarjetas pastel (`mint`, `aqua`) para datos;
+- barra inferior flotante en forma de píldora, solo con íconos (los nombres los anuncian los
+  lectores de pantalla);
+- perfil de la mascota con portada (foto a todo el ancho, nombre y etiquetas) y tarjetas de
+  peso y próxima cita.
+
+La web mantiene su paleta verde azulado.
 
 ## Comandos
 

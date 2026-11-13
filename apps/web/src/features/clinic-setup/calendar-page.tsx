@@ -14,7 +14,7 @@ import { ApiError, errorMessage, unwrap } from "@/lib/api-error";
 import { applyFieldErrors } from "@/lib/form-errors";
 
 import { formatDay, type Calendar, type ScheduleEntry } from "./labels";
-import { ErrorState, LoadingState } from "./query-state";
+import { ErrorState, LoadingState } from "@/components/query-state";
 import { normalizeSchedule, scheduleProblem } from "./schedule";
 import { ScheduleEditor } from "./schedule-editor";
 

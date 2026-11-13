@@ -31,6 +31,10 @@ Matriz de las fases 1 a 3, definida en
 | `tracking:authorize_discharge` | — | ✓ | — | — |
 | `tracking:hand_over` | ✓ | ✓ | ✓ | ✓ |
 | `audit:read` | ✓ | — | — | — |
+| `inventory:read` | ✓ | ✓ | ✓ | ✓ |
+| `inventory:manage` | ✓ | — | — | — |
+| `charges:manage` | ✓ | ✓ | — | ✓ |
+| `reports:read` | ✓ | — | — | — |
 
 El rol **cliente** solo tiene permisos `own:*`, que valen únicamente sobre las mascotas con las
 que tiene una tutela activa (lo verifica el contexto dueño del dato):

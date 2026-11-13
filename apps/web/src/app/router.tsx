@@ -76,6 +76,28 @@ export const routes: RouteObject[] = [
             ],
           },
           {
+            element: <RequirePermission permission="inventory:read" />,
+            children: [
+              {
+                path: "/inventario",
+                lazy: async () => ({
+                  Component: (await import("@/features/sales/inventory-page")).InventoryPage,
+                }),
+              },
+            ],
+          },
+          {
+            element: <RequirePermission permission="charges:manage" />,
+            children: [
+              {
+                path: "/cobros",
+                lazy: async () => ({
+                  Component: (await import("@/features/sales/charges-page")).ChargesPage,
+                }),
+              },
+            ],
+          },
+          {
             element: <RequirePermission permission="pets:read" />,
             children: [
               {

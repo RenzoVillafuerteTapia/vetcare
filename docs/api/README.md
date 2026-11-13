@@ -115,6 +115,25 @@ Corte y peinado, Listo para recoger), cirugía u hospitalización (Ingreso, Prep
 cirugía, Recuperación, Alta autorizada) y el resto (En atención, Listo para recoger). Las etapas
 se copian al iniciar.
 
+## Ventas: inventario y cobros
+
+Solo se **registra** lo cobrado; la API no procesa pagos. Montos y cantidades viajan como texto
+decimal (`"35.00"`).
+
+| Endpoint | Acceso | Uso |
+|---|---|---|
+| `GET /api/v1/sales/products?q=&include_inactive=` | `inventory:read` | Productos con stock, costo, venta y `low_stock` (stock ≤ mínimo) |
+| `POST /api/v1/sales/products` · `PUT /{id}` | `inventory:manage` | Crear (con `initial_stock`) y editar o desactivar |
+| `POST /api/v1/sales/products/{id}/receive` · `/use` · `/count` | `inventory:manage` | Entrada de mercadería (con `unit_cost`, pasa a ser el costo), uso interno y ajuste por conteo |
+| `GET /api/v1/sales/products/{id}/movements` | `inventory:read` | Los últimos 50 movimientos |
+| `POST /api/v1/sales/charges` | `charges:manage` | Registra un cobro: líneas `service`, `product` (precio de venta por defecto; descuenta stock) u `other`, y `method` (`cash`, `card`, `yape`, `plin`, `transfer`). 409 `insufficient_stock` sin registrar nada |
+| `POST /api/v1/sales/charges/{id}/void` | `charges:manage` | Anula con motivo; los productos vuelven al stock |
+| `GET /api/v1/sales/charges?from=&to=` | `charges:manage` | Cobros de un periodo (días de Lima, `to` inclusive) |
+| `GET /api/v1/sales/summary?from=&to=` | `reports:read` | Ingresos, costo de productos y ganancia bruta, por medio de pago, tipo y día, y los productos más vendidos |
+
+La ganancia es bruta: ingresos menos el costo de los productos vendidos, con el costo del
+momento de cada venta. No descuenta sueldos, alquiler ni otros gastos.
+
 ## Avisos push
 
 | Endpoint | Acceso | Uso |

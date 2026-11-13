@@ -18,6 +18,7 @@ from vetcare.contexts.clinic.infrastructure import tables as _clinic_tables  # n
 from vetcare.contexts.customers.infrastructure import tables as _customers_tables  # noqa: F401
 from vetcare.contexts.identity.infrastructure import tables as _identity_tables  # noqa: F401
 from vetcare.contexts.notifications.infrastructure import tables as _ntf_tables  # noqa: F401
+from vetcare.contexts.sales.infrastructure import tables as _sales_tables  # noqa: F401
 from vetcare.contexts.scheduling.infrastructure import tables as _scheduling_tables  # noqa: F401
 from vetcare.contexts.tracking.infrastructure import tables as _tracking_tables  # noqa: F401
 from vetcare.platform import outbox as _outbox  # noqa: F401

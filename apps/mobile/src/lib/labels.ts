@@ -6,6 +6,7 @@ export type AppointmentStatus = Schemas["AppointmentStatus"];
 export type ServiceType = Schemas["ServiceTypeResponse"];
 export type Profile = Schemas["MyProfileResponse"];
 export type Calendar = Schemas["CalendarResponse"];
+export type TrackedService = Schemas["TrackedServiceResponse"];
 
 export const SPECIES_LABELS: Record<Schemas["Species"], string> = {
   dog: "Perro",

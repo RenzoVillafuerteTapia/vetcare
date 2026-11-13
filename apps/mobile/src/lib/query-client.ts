@@ -14,6 +14,9 @@ import { ME } from "./queries";
  */
 export const APPOINTMENTS_REFRESH_MS = 30_000;
 
+/** El seguimiento de un baño o una cirugía se ve "en vivo": se vuelve a pedir cada 10 s. */
+export const TRACKING_REFRESH_MS = 10_000;
+
 /** Un 401 en cualquier consulta intenta renovar la sesión; los errores 4xx no se reintentan. */
 export function createQueryClient(session: SessionManager): QueryClient {
   const onError = (error: unknown) => {
@@ -39,6 +42,13 @@ export function createQueryClient(session: SessionManager): QueryClient {
     [...ME, "appointment"],
   ]) {
     client.setQueryDefaults(key, { refetchInterval: APPOINTMENTS_REFRESH_MS });
+  }
+  for (const key of [
+    [...ME, "tracking"],
+    [...ME, "tracked"],
+    [...ME, "appointment-tracking"],
+  ]) {
+    client.setQueryDefaults(key, { refetchInterval: TRACKING_REFRESH_MS });
   }
   return client;
 }

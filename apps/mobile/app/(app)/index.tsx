@@ -5,10 +5,11 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { AppointmentCard, Loading, SectionTitle } from "@/components/appointments";
 import { PetAvatar } from "@/components/pets";
+import { TrackingCard } from "@/components/tracking";
 import { Badge, Body, Brand, Button, Card, Notice, Screen } from "@/components/ui";
 import { errorMessage, unwrap } from "@/lib/api-error";
 import { upcoming } from "@/lib/labels";
-import { MY_APPOINTMENTS, MY_PETS } from "@/lib/queries";
+import { MY_APPOINTMENTS, MY_PETS, MY_TRACKING } from "@/lib/queries";
 import { useSession, useSessionManager } from "@/session/context";
 import { colors, fonts, radius, spacing } from "@/theme/tokens";
 
@@ -37,6 +38,11 @@ export default function HomeScreen() {
     queryKey: MY_APPOINTMENTS,
     queryFn: () => unwrap(api.GET("/api/v1/me/appointments")),
   });
+  // Baños y cirugías en curso: se refresca solo cada pocos segundos.
+  const tracking = useQuery({
+    queryKey: MY_TRACKING,
+    queryFn: () => unwrap(api.GET("/api/v1/me/tracked-services")),
+  });
 
   if (session.status !== "authenticated") {
     return null;
@@ -46,9 +52,13 @@ export default function HomeScreen() {
   const pending = appointments.data ? upcoming(appointments.data) : [];
   const next = pending[0];
   const hasPets = (pets.data?.length ?? 0) > 0;
+  const active = (tracking.data ?? []).filter((t) => t.status !== "handed_over");
 
   return (
-    <Screen tabs onRefresh={() => Promise.all([pets.refetch(), appointments.refetch()])}>
+    <Screen
+      tabs
+      onRefresh={() => Promise.all([pets.refetch(), appointments.refetch(), tracking.refetch()])}
+    >
       <View style={styles.topBar}>
         <Brand />
         <Pressable
@@ -67,6 +77,16 @@ export default function HomeScreen() {
         </Text>
         <Body muted>Aquí verás el cuidado de tus mascotas.</Body>
       </View>
+
+      {/* En la veterinaria ahora */}
+      {active.length > 0 ? (
+        <View style={{ gap: spacing(2.5) }}>
+          <SectionTitle>En la veterinaria</SectionTitle>
+          {active.map((service) => (
+            <TrackingCard key={service.id} service={service} />
+          ))}
+        </View>
+      ) : null}
 
       {/* Próxima cita */}
       <View style={{ gap: spacing(2.5) }}>
@@ -154,12 +174,14 @@ export default function HomeScreen() {
         )}
       </View>
 
-      <View style={styles.soon}>
-        <Scissors size={18} color={colors.primary} />
-        <Body muted style={{ flex: 1, fontSize: 13, lineHeight: 18 }}>
-          Muy pronto: el avance del baño o la cirugía de tu mascota, en vivo.
-        </Body>
-      </View>
+      {active.length === 0 ? (
+        <View style={styles.soon}>
+          <Scissors size={18} color={colors.primary} />
+          <Body muted style={{ flex: 1, fontSize: 13, lineHeight: 18 }}>
+            Cuando dejes a tu mascota para un baño o una cirugía, aquí verás su avance en vivo.
+          </Body>
+        </View>
+      ) : null}
     </Screen>
   );
 }

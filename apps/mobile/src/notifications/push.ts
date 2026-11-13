@@ -56,7 +56,7 @@ export async function getPushToken(): Promise<string | null> {
 }
 
 // Solo se abren pantallas conocidas: el contenido del aviso no decide a dónde navegar.
-const APPOINTMENT_URL = /^\/citas\/[0-9a-f-]{36}$/i;
+const APPOINTMENT_URL = /^\/citas\/(seguimiento\/)?[0-9a-f-]{36}$/i;
 
 export function appointmentUrlOf(data: unknown): string | null {
   const url = (data as { url?: unknown } | null | undefined)?.url;

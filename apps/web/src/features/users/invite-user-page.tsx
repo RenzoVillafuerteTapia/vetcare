@@ -93,10 +93,10 @@ export function InviteUserPage() {
       : null;
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-3xl">
       <PageHeader
         title="Invitar usuario"
-        description="La persona recibirá un correo para activar su cuenta y elegir su contraseña. El enlace vence en 7 días."
+        description="Recibirá un correo para activar su cuenta y elegir su contraseña (vence en 7 días)."
       />
 
       {invited ? (
@@ -131,19 +131,21 @@ export function InviteUserPage() {
                 <AlertDescription>{generalError}</AlertDescription>
               </Alert>
             ) : null}
-            <FormField
-              label="Correo"
-              type="email"
-              autoComplete="off"
-              error={errors.email?.message}
-              {...register("email")}
-            />
-            <FormField
-              label="Nombre completo"
-              autoComplete="off"
-              error={errors.full_name?.message}
-              {...register("full_name")}
-            />
+            <div className="grid gap-5 sm:grid-cols-2">
+              <FormField
+                label="Correo"
+                type="email"
+                autoComplete="off"
+                error={errors.email?.message}
+                {...register("email")}
+              />
+              <FormField
+                label="Nombre completo"
+                autoComplete="off"
+                error={errors.full_name?.message}
+                {...register("full_name")}
+              />
+            </div>
             <Controller
               control={control}
               name="roles"
@@ -193,7 +195,7 @@ export function InviteUserPage() {
               )}
             />
           </CardContent>
-          <CardFooter className="mt-6 justify-end">
+          <CardFooter className="mt-2 justify-end">
             <Button type="submit" disabled={invite.isPending}>
               {invite.isPending ? <LoaderCircle className="animate-spin" aria-hidden /> : null}
               Enviar invitación

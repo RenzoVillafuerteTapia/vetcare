@@ -37,6 +37,7 @@ class Permission(StrEnum):
     OWN_GUARDIANSHIPS_MANAGE = "own:guardianships:manage"
     OWN_APPOINTMENTS_MANAGE = "own:appointments:manage"
     OWN_TRACKING_READ = "own:tracking:read"
+    OWN_NOTIFICATIONS_MANAGE = "own:notifications:manage"
 
 
 P = Permission
@@ -102,6 +103,7 @@ ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
             P.OWN_GUARDIANSHIPS_MANAGE,
             P.OWN_APPOINTMENTS_MANAGE,
             P.OWN_TRACKING_READ,
+            P.OWN_NOTIFICATIONS_MANAGE,
         }
     ),
 }

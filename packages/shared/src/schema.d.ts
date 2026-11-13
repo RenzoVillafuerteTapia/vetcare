@@ -815,6 +815,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Recibir avisos en este teléfono
+         * @description Registra el teléfono para los avisos push (cita confirmada, reprogramada o cancelada por la veterinaria). Es idempotente; si el teléfono estaba en otra cuenta, pasa a esta.
+         */
+        put: operations["register_device_api_v1_me_devices_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/devices/unregister": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Dejar de recibir avisos en este teléfono
+         * @description Se usa al cerrar sesión. Responde igual aunque el token no exista.
+         */
+        post: operations["unregister_device_api_v1_me_devices_unregister_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1079,6 +1119,25 @@ export interface components {
             permissions: components["schemas"]["Permission"][];
         };
         /**
+         * DevicePlatform
+         * @enum {string}
+         */
+        DevicePlatform: "android" | "ios";
+        /** DeviceRequest */
+        DeviceRequest: {
+            /**
+             * Token
+             * @description Token de Expo del teléfono (ExponentPushToken[…]).
+             */
+            token: string;
+            platform: components["schemas"]["DevicePlatform"];
+        };
+        /** DeviceTokenRequest */
+        DeviceTokenRequest: {
+            /** Token */
+            token: string;
+        };
+        /**
          * DocumentType
          * @enum {string}
          */
@@ -1256,7 +1315,7 @@ export interface components {
          * Permission
          * @enum {string}
          */
-        Permission: "users:manage" | "clinic_setup:manage" | "clients:manage" | "pets:read" | "pets:manage" | "guardianships:manage" | "appointments:read" | "appointments:manage" | "tracking:read" | "tracking:advance" | "tracking:publish_update" | "tracking:authorize_discharge" | "tracking:hand_over" | "audit:read" | "own:profile:manage" | "own:pets:read" | "own:guardianships:manage" | "own:appointments:manage" | "own:tracking:read";
+        Permission: "users:manage" | "clinic_setup:manage" | "clients:manage" | "pets:read" | "pets:manage" | "guardianships:manage" | "appointments:read" | "appointments:manage" | "tracking:read" | "tracking:advance" | "tracking:publish_update" | "tracking:authorize_discharge" | "tracking:hand_over" | "audit:read" | "own:profile:manage" | "own:pets:read" | "own:guardianships:manage" | "own:appointments:manage" | "own:tracking:read" | "own:notifications:manage";
         /** PetRequest */
         PetRequest: {
             /** Name */
@@ -4890,6 +4949,104 @@ export interface operations {
             };
             /** @description No existe */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    register_device_api_v1_me_devices_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeviceRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No autenticado */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Solo para clientes */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Token inválido */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    unregister_device_api_v1_me_devices_unregister_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeviceTokenRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No autenticado */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Solo para clientes */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Token inválido */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

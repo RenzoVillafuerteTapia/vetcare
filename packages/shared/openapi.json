@@ -4391,6 +4391,126 @@
           }
         ]
       }
+    },
+    "/api/v1/me/devices": {
+      "put": {
+        "tags": [
+          "Mi cuenta"
+        ],
+        "summary": "Recibir avisos en este teléfono",
+        "description": "Registra el teléfono para los avisos push (cita confirmada, reprogramada o cancelada por la veterinaria). Es idempotente; si el teléfono estaba en otra cuenta, pasa a esta.",
+        "operationId": "register_device_api_v1_me_devices_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Solo para clientes",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Token inválido",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/me/devices/unregister": {
+      "post": {
+        "tags": [
+          "Mi cuenta"
+        ],
+        "summary": "Dejar de recibir avisos en este teléfono",
+        "description": "Se usa al cerrar sesión. Responde igual aunque el token no exista.",
+        "operationId": "unregister_device_api_v1_me_devices_unregister_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceTokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Solo para clientes",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Token inválido",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -5063,6 +5183,51 @@
         ],
         "title": "CurrentUserResponse"
       },
+      "DevicePlatform": {
+        "type": "string",
+        "enum": [
+          "android",
+          "ios"
+        ],
+        "title": "DevicePlatform"
+      },
+      "DeviceRequest": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 10,
+            "title": "Token",
+            "description": "Token de Expo del teléfono (ExponentPushToken[…])."
+          },
+          "platform": {
+            "$ref": "#/components/schemas/DevicePlatform"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "token",
+          "platform"
+        ],
+        "title": "DeviceRequest"
+      },
+      "DeviceTokenRequest": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 10,
+            "title": "Token"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "DeviceTokenRequest"
+      },
       "DocumentType": {
         "type": "string",
         "enum": [
@@ -5527,7 +5692,8 @@
           "own:pets:read",
           "own:guardianships:manage",
           "own:appointments:manage",
-          "own:tracking:read"
+          "own:tracking:read",
+          "own:notifications:manage"
         ],
         "title": "Permission"
       },

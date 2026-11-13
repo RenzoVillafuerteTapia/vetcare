@@ -18,6 +18,12 @@ class StorageBackend(StrEnum):
     S3 = "s3"
 
 
+class PushProvider(StrEnum):
+    # Escribe los avisos en el registro: desarrollo y pruebas, sin cuenta de Expo.
+    CONSOLE = "console"
+    EXPO = "expo"
+
+
 class Settings(BaseSettings):
     """Configuración leída de variables de entorno con prefijo ``VETCARE_``."""
 
@@ -43,6 +49,13 @@ class Settings(BaseSettings):
     storage_s3_region: str | None = None
     # Base de las URLs firmadas del almacenamiento en disco (las sirve esta misma API).
     public_api_url: str = "http://localhost:8000"
+
+    # Avisos push (ADR 0004). El token de acceso de Expo es opcional: solo hace falta si el
+    # proyecto de Expo exige envíos autenticados.
+    push_provider: PushProvider = PushProvider.CONSOLE
+    expo_access_token: SecretStr | None = None
+    # Cada cuántos segundos el worker revisa el outbox.
+    worker_poll_seconds: float = Field(default=2.0, gt=0, le=60)
 
     @property
     def secure_cookies(self) -> bool:

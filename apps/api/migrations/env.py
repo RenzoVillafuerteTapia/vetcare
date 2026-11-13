@@ -6,8 +6,12 @@ from sqlalchemy.engine import Connection
 from vetcare.contexts.clinic.infrastructure import tables as clinic_tables  # noqa: F401
 from vetcare.contexts.customers.infrastructure import tables as customers_tables  # noqa: F401
 from vetcare.contexts.identity.infrastructure import tables as identity_tables  # noqa: F401
+from vetcare.contexts.notifications.infrastructure import tables as notifications_tables  # noqa: F401
 from vetcare.contexts.scheduling.infrastructure import tables as scheduling_tables  # noqa: F401
-from vetcare.platform import outbox  # noqa: F401  registra las tablas del outbox en metadata
+from vetcare.platform import (
+    outbox,  # noqa: F401  registra las tablas del outbox en metadata
+    outbox_dispatcher,  # noqa: F401  cursores y entregas del worker
+)
 from vetcare.platform.db import create_engine, metadata
 from vetcare.platform.settings import Settings
 

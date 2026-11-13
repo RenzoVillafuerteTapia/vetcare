@@ -95,7 +95,11 @@ class SchedulingPolicy:
 
 @dataclass(frozen=True, kw_only=True)
 class AppointmentEvent(DomainEvent):
+    # v2: agrega ``pet_name`` (y ``by_client`` en la reprogramación) para los avisos push.
+    schema_version: ClassVar[int] = 2
+
     pet_id: UUID
+    pet_name: str
     client_id: UUID
     start: datetime
     end: datetime
@@ -115,6 +119,7 @@ class AppointmentConfirmed(AppointmentEvent):
 class AppointmentRescheduled(AppointmentEvent):
     event_type: ClassVar[str] = "scheduling.appointment_rescheduled"
     previous_start: datetime
+    by_client: bool
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -143,6 +148,7 @@ class _EventFields(TypedDict):
     aggregate_id: UUID
     occurred_at: datetime
     pet_id: UUID
+    pet_name: str
     client_id: UUID
     start: datetime
     end: datetime
@@ -273,7 +279,9 @@ class Appointment(AggregateRoot):
             self.status = AppointmentStatus.REQUESTED
         self._log(HistoryAction.RESCHEDULED, by, now, note=f"Antes: {previous.start.isoformat()}")
         self.record(
-            AppointmentRescheduled(**self._event_fields(now), previous_start=previous.start)
+            AppointmentRescheduled(
+                **self._event_fields(now), previous_start=previous.start, by_client=by_client
+            )
         )
 
     def cancel(
@@ -348,6 +356,7 @@ class Appointment(AggregateRoot):
             "aggregate_id": self.id,
             "occurred_at": now,
             "pet_id": self.pet_id,
+            "pet_name": self.pet_name,
             "client_id": self.client_id,
             "start": self.slot.start,
             "end": self.slot.end,

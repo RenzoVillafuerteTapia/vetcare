@@ -74,6 +74,8 @@ const luna: Pet = {
   allergies: null,
   notes: null,
   photo_url: null,
+  // El personal no la cambia desde aquí: es la vista del dueño en la app.
+  can_change_photo: false,
   weights: [],
   guardians: [],
 };

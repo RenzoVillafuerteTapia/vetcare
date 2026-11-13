@@ -9,8 +9,10 @@ export const appointmentKey = (id: string) => [...ME, "appointment", id] as cons
 
 export const SERVICE_TYPES = ["service-types"] as const;
 export const CALENDAR = ["clinic-calendar"] as const;
-export const availabilityKey = (serviceTypeId: string, day: string) =>
-  ["availability", serviceTypeId, day] as const;
+export const availabilityKey = (serviceTypeId: string, day: string, professionalId = "") =>
+  ["availability", serviceTypeId, day, professionalId] as const;
+/** Veterinarios y groomers: de un servicio, o todos (`""`) para mostrar quién atiende. */
+export const professionalsKey = (serviceTypeId = "") => ["professionals", serviceTypeId] as const;
 
 /**
  * Clave de idempotencia para una solicitud de cita: la misma en cada reintento del mismo

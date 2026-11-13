@@ -3,6 +3,7 @@ from uuid import UUID
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
+from vetcare.contexts.clinic.public import ResourceKind, ResourceView
 from vetcare.contexts.scheduling.application.services import BookingRequest
 from vetcare.contexts.scheduling.domain.appointment import (
     Appointment,
@@ -26,6 +27,18 @@ class SlotResponse(BaseModel):
         return cls(start=option.slot.start, end=option.slot.end)
 
 
+class ProfessionalResponse(BaseModel):
+    """Un veterinario o groomer, sin su horario: para elegirlo y para mostrar quién atiende."""
+
+    id: UUID
+    name: str
+    kind: ResourceKind
+
+    @classmethod
+    def of(cls, resource: ResourceView) -> "ProfessionalResponse":
+        return cls(id=resource.id, name=resource.name, kind=resource.kind)
+
+
 class BookAppointmentRequest(_Request):
     pet_id: UUID
     service_type_id: UUID
@@ -33,7 +46,10 @@ class BookAppointmentRequest(_Request):
     resource_ids: list[UUID] = Field(
         default_factory=list,
         max_length=5,
-        description="Solo personal: fijar un recurso por tipo (p. ej. una veterinaria concreta).",
+        description=(
+            "Fijar un recurso por tipo (p. ej. una veterinaria concreta). El cliente solo puede "
+            "fijar al profesional (veterinario o groomer)."
+        ),
     )
     client_id: UUID | None = Field(
         default=None,

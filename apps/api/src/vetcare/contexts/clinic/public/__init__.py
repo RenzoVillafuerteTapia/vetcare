@@ -6,11 +6,12 @@ from vetcare.contexts.clinic.application.queries import (
     ResourceView,
     ServiceTypeView,
 )
-from vetcare.contexts.clinic.domain.model import ResourceKind, ServiceCategory
+from vetcare.contexts.clinic.domain.model import PROFESSIONAL_KINDS, ResourceKind, ServiceCategory
 from vetcare.contexts.clinic.domain.schedule import CLINIC_TZ
 
 __all__ = [
     "CLINIC_TZ",
+    "PROFESSIONAL_KINDS",
     "ClinicCatalog",
     "OpeningRules",
     "ResourceKind",

@@ -79,7 +79,8 @@
 
 | Endpoint | Acceso | Uso |
 |---|---|---|
-| `GET /api/v1/scheduling/availability?service_type_id=&date=` | Personal o cliente | Horarios libres de un servicio en un día (el cliente, solo servicios reservables) |
+| `GET /api/v1/scheduling/availability?service_type_id=&date=&professional_id=` | Personal o cliente | Horarios libres de un servicio en un día (el cliente, solo servicios reservables y desde 30 min después de ahora; el personal, desde ya). Con `professional_id`, solo los de ese profesional |
+| `GET /api/v1/scheduling/professionals?service_type_id=` | Personal o cliente | Veterinarios y groomers activos, por nombre y sin horarios; con `service_type_id`, solo los que prestan ese servicio. El cliente fija a uno con `resource_ids` al solicitar o reprogramar (no puede fijar salas ni equipos) |
 | `POST /api/v1/appointments` | `appointments:manage` o cliente con tutela `book` | Personal: cita confirmada. Cliente: solicitud. Acepta `Idempotency-Key` |
 | `GET /api/v1/appointments?from=&to=&resource_id=&status=` | Personal | Agenda de un periodo (hasta 62 días) |
 | `GET /api/v1/appointments/{id}` | Personal o tutela activa | Detalle; para el cliente sin notas internas ni historial |

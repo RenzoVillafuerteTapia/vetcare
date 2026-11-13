@@ -103,6 +103,7 @@ it("solicita una cita entre los horarios libres y reintenta con la misma clave",
     service_type_id: consulta.id,
     start: "2026-11-13T16:00:00Z",
     reason: "Tose de noche",
+    resource_ids: [], // "Cualquiera": la veterinaria asigna a quien esté libre.
   });
   await waitFor(() => expect(api.calls("GET /api/v1/me/appointments").length).toBeGreaterThan(0));
 });

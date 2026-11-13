@@ -85,6 +85,10 @@ src/
 - Al solicitar o reprogramar solo se ofrecen los horarios libres que informa la API, para los
   próximos 14 días. Si el horario se ocupa mientras se elige, la API responde 409 y se vuelven a
   pedir los libres. Cada solicitud lleva una `Idempotency-Key`: reintentar no la duplica.
+- Al solicitar o reprogramar, el cliente elige a su profesional de confianza o "Cualquiera". Se
+  propone el que atendió a la mascota la última vez (o el de la cita, al reprogramar) y solo se
+  muestran sus horarios libres. Las citas y el detalle dicen quién atiende.
+- Hoy solo se ofrecen horarios desde 30 minutos después de la hora actual (lo decide la API).
 - Una cita confirmada se reprograma o cancela con al menos 2 horas de anticipación; una
   reprogramación vuelve a quedar por confirmar. La app oculta las acciones fuera de plazo, pero
   la API decide: si rechaza algo (por ejemplo, una tutela sin permiso para reservar), se muestra

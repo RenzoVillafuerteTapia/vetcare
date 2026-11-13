@@ -19,6 +19,7 @@ from uuid import UUID
 
 from vetcare.contexts.clinic.public import (
     CLINIC_TZ,
+    PROFESSIONAL_KINDS,
     ClinicCatalog,
     OpeningRules,
     ResourceView,
@@ -105,14 +106,39 @@ class SchedulingService:
 
     # --- Disponibilidad ---------------------------------------------------------------------
 
+    async def professionals(
+        self, actor: AuthenticatedUser, service_type_id: UUID | None = None
+    ) -> list[ResourceView]:
+        """Veterinarios y groomers activos, por nombre. Con un servicio, solo los que lo prestan.
+
+        El cliente los usa para elegir a su profesional de confianza y para ver quién lo atiende;
+        no recibe sus horarios ni bloqueos.
+        """
+        viewer = await self._viewer(actor)
+        kinds = PROFESSIONAL_KINDS
+        if service_type_id is not None:
+            kinds = (await self._service(service_type_id, viewer)).required_resources & kinds
+        resources = await self._catalog.active_resources(frozenset(kinds))
+        return sorted(resources, key=lambda r: r.name.casefold())
+
     async def availability(
-        self, actor: AuthenticatedUser, service_type_id: UUID, day: date
+        self,
+        actor: AuthenticatedUser,
+        service_type_id: UUID,
+        day: date,
+        professional_id: UUID | None = None,
     ) -> list[SlotOption]:
         viewer = await self._viewer(actor)
         service = await self._service(service_type_id, viewer)
         if not service.active:
             return []
         candidates = await self._candidates(service)
+        preferred = self._preferred(
+            frozenset({professional_id}) if professional_id else frozenset(),
+            candidates,
+            viewer,
+            field="professional_id",
+        )
         rules = await self._catalog.opening_rules()
         day_start = datetime.combine(day, time(0), CLINIC_TZ)
         day_end = day_start + timedelta(days=1)
@@ -126,6 +152,7 @@ class SchedulingService:
             duration_minutes=service.duration_minutes,
             step_minutes=self._policy.slot_step_minutes,
             not_before=not_before,
+            preferred=preferred,
         )
 
     # --- Reserva ----------------------------------------------------------------------------
@@ -152,7 +179,7 @@ class SchedulingService:
             raise ConflictError("El servicio no está disponible.", code="service_inactive")
         slot = self._slot(request.start, service, viewer, now)
         candidates = await self._candidates(service)
-        preferred = self._preferred(request.resource_ids, candidates)
+        preferred = self._preferred(request.resource_ids, candidates, viewer)
         rules = await self._catalog.opening_rules()
 
         async with self._uow_factory() as uow:
@@ -205,7 +232,7 @@ class SchedulingService:
         service = await self._service(service_type_id, viewer)
         slot = self._slot(start, service, viewer, now)
         candidates = await self._candidates(service)
-        preferred = self._preferred(resource_ids, candidates)
+        preferred = self._preferred(resource_ids, candidates, viewer)
         rules = await self._catalog.opening_rules()
 
         async with self._uow_factory() as uow:
@@ -365,16 +392,23 @@ class SchedulingService:
 
     @staticmethod
     def _preferred(
-        resource_ids: frozenset[UUID], candidates: dict[str, list[ResourceView]]
+        resource_ids: frozenset[UUID],
+        candidates: dict[str, list[ResourceView]],
+        viewer: _Viewer,
+        *,
+        field: str = "resource_ids",
     ) -> dict[str, UUID]:
+        """Recursos fijados por quien reserva. El cliente solo elige al profesional (veterinario o
+        groomer); la sala o el equipo los asigna la agenda."""
         by_id = {r.id: kind for kind, rs in candidates.items() for r in rs}
+        professional = {k.value for k in PROFESSIONAL_KINDS}
         preferred: dict[str, UUID] = {}
         for resource_id in resource_ids:
             kind = by_id.get(resource_id)
-            if kind is None:
-                raise _invalid("resource_ids", "Ese recurso no presta este servicio.")
+            if kind is None or (not viewer.staff and kind not in professional):
+                raise _invalid(field, "Ese profesional no presta este servicio.")
             if kind in preferred:
-                raise _invalid("resource_ids", "Elige un solo recurso de cada tipo.")
+                raise _invalid(field, "Elige un solo recurso de cada tipo.")
             preferred[kind] = resource_id
         return preferred
 

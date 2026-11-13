@@ -13,6 +13,7 @@ from vetcare.contexts.scheduling.api.schemas import (
     AppointmentResponse,
     BookAppointmentRequest,
     CancelRequest,
+    ProfessionalResponse,
     RescheduleRequest,
     SlotResponse,
 )
@@ -59,8 +60,28 @@ async def availability(
     service: Scheduling,
     service_type_id: UUID,
     day: Annotated[date, Query(alias="date", description="Día en hora de Lima, AAAA-MM-DD.")],
+    professional_id: Annotated[
+        UUID | None,
+        Query(
+            description="Solo los horarios de este profesional (de `/scheduling/professionals`)."
+        ),
+    ] = None,
 ) -> list[SlotResponse]:
-    return [SlotResponse.of(o) for o in await service.availability(user, service_type_id, day)]
+    options = await service.availability(user, service_type_id, day, professional_id)
+    return [SlotResponse.of(o) for o in options]
+
+
+@router.get(
+    "/scheduling/professionals",
+    summary="Veterinarios y groomers",
+    description="Profesionales activos, por nombre. Con `service_type_id`, solo los que prestan "
+    "ese servicio (para el cliente, solo servicios reservables). No incluye sus horarios.",
+    responses=_READ,
+)
+async def professionals(
+    user: CurrentUser, service: Scheduling, service_type_id: UUID | None = None
+) -> list[ProfessionalResponse]:
+    return [ProfessionalResponse.of(r) for r in await service.professionals(user, service_type_id)]
 
 
 @router.post(

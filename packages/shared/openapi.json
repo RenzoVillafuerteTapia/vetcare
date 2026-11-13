@@ -3412,6 +3412,25 @@
               "title": "Date"
             },
             "description": "Día en hora de Lima, AAAA-MM-DD."
+          },
+          {
+            "name": "professional_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Solo los horarios de este profesional (de `/scheduling/professionals`).",
+              "title": "Professional Id"
+            },
+            "description": "Solo los horarios de este profesional (de `/scheduling/professionals`)."
           }
         ],
         "responses": {
@@ -3425,6 +3444,96 @@
                     "$ref": "#/components/schemas/SlotResponse"
                   },
                   "title": "Response Availability Api V1 Scheduling Availability Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autenticado",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sin acceso",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No existe",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Datos inválidos",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scheduling/professionals": {
+      "get": {
+        "tags": [
+          "Agenda"
+        ],
+        "summary": "Veterinarios y groomers",
+        "description": "Profesionales activos, por nombre. Con `service_type_id`, solo los que prestan ese servicio (para el cliente, solo servicios reservables). No incluye sus horarios.",
+        "operationId": "professionals_api_v1_scheduling_professionals_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "service_type_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Service Type Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProfessionalResponse"
+                  },
+                  "title": "Response Professionals Api V1 Scheduling Professionals Get"
                 }
               }
             }
@@ -4720,7 +4829,7 @@
             "type": "array",
             "maxItems": 5,
             "title": "Resource Ids",
-            "description": "Solo personal: fijar un recurso por tipo (p. ej. una veterinaria concreta)."
+            "description": "Fijar un recurso por tipo (p. ej. una veterinaria concreta). El cliente solo puede fijar al profesional (veterinario o groomer)."
           },
           "client_id": {
             "anyOf": [
@@ -5999,6 +6108,30 @@
         ],
         "title": "ProblemDetails",
         "description": "Cuerpo de todas las respuestas de error (RFC 9457, ``application/problem+json``)."
+      },
+      "ProfessionalResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ResourceKind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "kind"
+        ],
+        "title": "ProfessionalResponse",
+        "description": "Un veterinario o groomer, sin su horario: para elegirlo y para mostrar quién atiende."
       },
       "RefreshRequest": {
         "properties": {

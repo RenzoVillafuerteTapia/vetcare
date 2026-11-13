@@ -4,7 +4,14 @@ import { CalendarClock } from "lucide-react-native";
 import { useState } from "react";
 import { View } from "react-native";
 
-import { BackLink, Loading, SlotPicker } from "@/components/appointments";
+import {
+  ANY_PROFESSIONAL,
+  BackLink,
+  Loading,
+  ProfessionalPicker,
+  SlotPicker,
+  useProfessionals,
+} from "@/components/appointments";
 import { Body, Button, Heading, Notice, Screen } from "@/components/ui";
 import { ApiError, errorMessage, unwrap } from "@/lib/api-error";
 import { appointmentKey, ME } from "@/lib/queries";
@@ -20,6 +27,8 @@ export default function RescheduleScreen() {
   const [day, setDay] = useState(() => limaDay(Date.now()));
   const [start, setStart] = useState("");
   const [missing, setMissing] = useState(false);
+  // `null`: se mantiene el profesional de la cita.
+  const [professional, setProfessional] = useState<string | null>(null);
 
   const appointment = useQuery({
     queryKey: appointmentKey(appointmentId),
@@ -31,12 +40,21 @@ export default function RescheduleScreen() {
       ),
   });
 
+  const professionals = useProfessionals(appointment.data?.service_type_id ?? null);
+  const current = appointment.data?.resource_ids.find((id) =>
+    professionals.data?.some((p) => p.id === id),
+  );
+  const chosenProfessional = professional ?? current ?? ANY_PROFESSIONAL;
+
   const reschedule = useMutation({
     mutationFn: () =>
       unwrap(
         api.POST("/api/v1/appointments/{appointment_id}/reschedule", {
           params: { path: { appointment_id: appointmentId } },
-          body: { start, resource_ids: [] },
+          body: {
+            start,
+            resource_ids: chosenProfessional === ANY_PROFESSIONAL ? [] : [chosenProfessional],
+          },
         }),
       ),
     onSuccess: async (updated) => {
@@ -77,8 +95,17 @@ export default function RescheduleScreen() {
           <Body muted>
             El nuevo horario queda por confirmar hasta que la veterinaria lo acepte.
           </Body>
+          <ProfessionalPicker
+            serviceTypeId={appointment.data.service_type_id}
+            value={chosenProfessional}
+            onChange={(value) => {
+              setProfessional(value);
+              setStart("");
+            }}
+          />
           <SlotPicker
             serviceTypeId={appointment.data.service_type_id}
+            professionalId={chosenProfessional}
             day={day}
             start={start}
             onDayChange={setDay}

@@ -36,6 +36,17 @@ docker compose run --rm api alembic check               # falla si falta una mig
 docker compose run --rm api alembic revision --autogenerate -m "descripcion"
 ```
 
+### Worker del outbox
+
+`docker compose up -d` también levanta el servicio `worker` (`python -m vetcare.worker`), que
+entrega los eventos del outbox a sus manejadores (hoy, los avisos push de citas) con reintentos y
+deduplicación. Debe correr **uno solo a la vez**.
+
+Con `VETCARE_PUSH_PROVIDER=console` (por defecto) los avisos solo se escriben en el registro del
+worker: `docker compose logs -f worker`. Con `expo` se envían por el servicio de Expo
+(`VETCARE_EXPO_ACCESS_TOKEN` es opcional). Las entregas que agotaron los reintentos quedan en la
+tabla `outbox_deliveries` con `status = 'failed'` y el último error.
+
 Al crear tablas de un contexto nuevo, importa su módulo de tablas en `migrations/env.py` para que
 Alembic las detecte.
 

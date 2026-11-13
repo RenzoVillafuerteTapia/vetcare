@@ -29,6 +29,20 @@ En el emulador de Android conviene usar `http://localhost:8000` y redirigir el p
 Las cuentas de cliente se crean por invitación desde la web de administración. El enlace del
 correo abre la web, donde la persona elige su contraseña, y luego ingresa en la app.
 
+## Avisos push
+
+La app registra el teléfono al iniciar sesión (`PUT /me/devices`) y lo da de baja al cerrarla.
+Al tocar un aviso se abre la cita. Para recibirlos hace falta:
+
+1. Un proyecto de EAS (`npx eas init`), que deja `extra.eas.projectId` en la configuración. Sin
+   él la app no pide permiso ni registra nada.
+2. Las credenciales de FCM (Android) y APNs (iOS) cargadas en EAS (`npx eas credentials`).
+3. Una _development build_ (`npx eas build --profile development`): desde el SDK 53, Expo Go
+   no recibe avisos remotos en Android.
+4. La API con `VETCARE_PUSH_PROVIDER=expo` y el servicio `worker` corriendo.
+
+Mientras tanto, con la app abierta las citas se actualizan solas cada 30 s.
+
 ## Estructura
 
 ```

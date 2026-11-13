@@ -10,6 +10,8 @@ from vetcare.contexts.customers.api import router as customers
 from vetcare.contexts.customers.infrastructure.composition import build_customers
 from vetcare.contexts.identity.api import router as identity
 from vetcare.contexts.identity.infrastructure.composition import build_identity_service
+from vetcare.contexts.notifications.api import router as notifications
+from vetcare.contexts.notifications.infrastructure.composition import build_devices
 from vetcare.contexts.scheduling.api import router as scheduling
 from vetcare.contexts.scheduling.infrastructure.composition import build_scheduling
 from vetcare.integrations import IdentityAccountInviter
@@ -74,6 +76,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if app.state.session_factory is not None
         else None
     )
+    app.state.devices = (
+        build_devices(app.state.session_factory) if app.state.session_factory is not None else None
+    )
 
     if settings.cors_origins:
         app.add_middleware(
@@ -93,6 +98,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(customers.me_router, prefix=API_PREFIX)
     app.include_router(scheduling.router, prefix=API_PREFIX)
     app.include_router(scheduling.me_router, prefix=API_PREFIX)
+    app.include_router(notifications.me_router, prefix=API_PREFIX)
     if isinstance(app.state.file_storage, LocalFileStorage):
         # Solo con almacenamiento en disco: en producción las URLs firmadas apuntan a S3.
         app.include_router(app.state.file_storage.router(), prefix=API_PREFIX)

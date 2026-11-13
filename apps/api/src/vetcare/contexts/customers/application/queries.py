@@ -32,6 +32,12 @@ class PetAccess:
             client = await uow.clients.get_by_user(user_id)
         return client.id if client else None
 
+    async def user_id_of_client(self, client_id: UUID) -> UUID | None:
+        """Cuenta de la app vinculada a un cliente, si la tiene."""
+        async with self._uow_factory() as uow:
+            client = await uow.clients.get(client_id)
+        return client.user_id if client else None
+
     async def allows(self, client_id: UUID, pet_id: UUID, action: PetAction) -> bool:
         async with self._uow_factory() as uow:
             pet = await uow.pets.get(pet_id)

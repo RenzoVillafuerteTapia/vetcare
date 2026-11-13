@@ -4,7 +4,9 @@ import {
   House,
   LogOut,
   Menu,
+  Package,
   Radio,
+  Receipt,
   Settings,
   UserPlus,
   Users,
@@ -34,6 +36,8 @@ const NAV_ITEMS: NavItem[] = [
   { to: "/", label: "Inicio", icon: House },
   { to: "/agenda", label: "Agenda", icon: CalendarDays, permission: "appointments:read" },
   { to: "/seguimiento", label: "Seguimiento", icon: Radio, permission: "tracking:read" },
+  { to: "/cobros", label: "Cobros", icon: Receipt, permission: "charges:manage" },
+  { to: "/inventario", label: "Inventario", icon: Package, permission: "inventory:read" },
   { to: "/clientes", label: "Clientes", icon: Users, permission: "pets:read", nested: true },
   { to: "/usuarios/invitar", label: "Invitar usuario", icon: UserPlus, permission: "users:manage" },
   {

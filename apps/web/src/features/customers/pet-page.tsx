@@ -1,9 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { LoaderCircle, Pencil, Plus, UserMinus } from "lucide-react";
+import { ArrowLeft, LoaderCircle, Pencil, Plus, UserMinus } from "lucide-react";
 import { useId, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import { z } from "zod";
 
 import { FormField } from "@/components/form-field";
@@ -18,6 +18,7 @@ import { usePermission, useSessionManager } from "@/features/auth/session-contex
 import { unwrap } from "@/lib/api-error";
 import { applyFieldErrors } from "@/lib/form-errors";
 
+import { AllergiesCard } from "./allergies-card";
 import { GuardianDialog } from "./guardian-dialog";
 import {
   formatAge,
@@ -309,6 +310,18 @@ export function PetPage() {
   const { api } = useSessionManager();
   const canManage = usePermission("pets:manage");
   const [editing, setEditing] = useState(false);
+  const navigate = useNavigate();
+  // Vuelve a donde estaba (la ficha del cliente, Mascotas…); si entró directo, a Mascotas.
+  const back = (
+    <button
+      type="button"
+      onClick={() => (window.history.length > 1 ? void navigate(-1) : void navigate("/mascotas"))}
+      className="flex w-fit items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
+    >
+      <ArrowLeft className="size-4" aria-hidden />
+      Volver
+    </button>
+  );
 
   const pet = useQuery({
     queryKey: petKey(petId),
@@ -317,15 +330,26 @@ export function PetPage() {
   });
 
   if (pet.isPending) {
-    return <LoadingState label="Cargando el perfil de la mascota…" />;
+    return (
+      <div className="grid gap-5">
+        {back}
+        <LoadingState label="Cargando el perfil de la mascota…" />
+      </div>
+    );
   }
   if (pet.isError) {
-    return <ErrorState error={pet.error} onRetry={() => void pet.refetch()} />;
+    return (
+      <div className="grid gap-5">
+        {back}
+        <ErrorState error={pet.error} onRetry={() => void pet.refetch()} />
+      </div>
+    );
   }
   const data = pet.data;
 
   return (
     <div className="grid max-w-6xl gap-5">
+      {back}
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="grid gap-4">
           <div className="grid gap-1.5">
@@ -351,6 +375,8 @@ export function PetPage() {
         ) : null}
       </header>
 
+      <AllergiesCard pet={data} />
+
       <div className="grid gap-6 lg:grid-cols-[3fr_2fr]">
         <Card>
           <CardHeader>
@@ -360,7 +386,6 @@ export function PetPage() {
             <dl className="grid gap-4 sm:grid-cols-2">
               <Fact label="Nacimiento" value={birthText(data)} />
               <Fact label="Color" value={data.color} />
-              <Fact label="Alergias" value={data.allergies} />
               <Fact label="Notas internas" value={data.notes} />
             </dl>
           </CardContent>

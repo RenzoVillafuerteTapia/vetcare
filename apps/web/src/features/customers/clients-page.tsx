@@ -17,8 +17,8 @@ import { ClientFormDialog } from "./client-form-dialog";
 import { DOCUMENT_LABELS } from "./labels";
 import { CLIENTS } from "./queries";
 
-// Dos filas de seis tarjetas: caben en una pantalla de laptop sin desplazarse.
-const PAGE_SIZE = 12;
+// Solo la rejilla se desplaza; el título y el buscador quedan fijos.
+const PAGE_SIZE = 24;
 
 export function ClientsPage() {
   const { api } = useSessionManager();
@@ -43,7 +43,7 @@ export function ClientsPage() {
   const pages = clients.data ? Math.max(1, Math.ceil(clients.data.total / PAGE_SIZE)) : 1;
 
   return (
-    <div className="max-w-6xl">
+    <div className="flex h-full min-h-0 flex-col">
       <PageHeader
         title="Clientes"
         description="Dueños y responsables de las mascotas. Desde la ficha se registran sus mascotas."
@@ -95,29 +95,31 @@ export function ClientsPage() {
         )
       ) : (
         <>
-          <CatalogGrid label="Clientes">
-            {clients.data.items.map((client) => (
-              <li key={client.id}>
-                <CatalogCard
-                  to={`/clientes/${client.id}`}
-                  media={<Initials name={client.full_name} />}
-                  corner={client.has_account ? { label: "Usa la app", tone: "green" } : null}
-                  chips={[
-                    {
-                      label: `${DOCUMENT_LABELS[client.document_type]} ${client.document_number}`,
-                      tone: "blue",
-                    },
-                    ...(client.email ? [{ label: "Con correo", tone: "green" as const }] : []),
-                    ...(client.has_account ? [] : [{ label: "Sin app", tone: "gray" as const }]),
-                  ]}
-                  title={client.full_name}
-                  highlight={client.phone}
-                  footer={client.email ?? client.address ?? "Sin correo registrado"}
-                  footerTone={client.email ? "ok" : "muted"}
-                />
-              </li>
-            ))}
-          </CatalogGrid>
+          <div className="-mx-1 min-h-0 flex-1 overflow-y-auto px-1 pb-1">
+            <CatalogGrid label="Clientes">
+              {clients.data.items.map((client) => (
+                <li key={client.id}>
+                  <CatalogCard
+                    to={`/clientes/${client.id}`}
+                    media={<Initials name={client.full_name} />}
+                    corner={client.has_account ? { label: "Usa la app", tone: "green" } : null}
+                    chips={[
+                      {
+                        label: `${DOCUMENT_LABELS[client.document_type]} ${client.document_number}`,
+                        tone: "blue",
+                      },
+                      ...(client.email ? [{ label: "Con correo", tone: "green" as const }] : []),
+                      ...(client.has_account ? [] : [{ label: "Sin app", tone: "gray" as const }]),
+                    ]}
+                    title={client.full_name}
+                    highlight={client.phone}
+                    footer={client.email ?? client.address ?? "Sin correo registrado"}
+                    footerTone={client.email ? "ok" : "muted"}
+                  />
+                </li>
+              ))}
+            </CatalogGrid>
+          </div>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
             <span role="status">
               {clients.data.total === 1 ? "1 cliente" : `${clients.data.total} clientes`}

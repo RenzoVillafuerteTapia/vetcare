@@ -129,12 +129,12 @@ describe("listado de clientes", () => {
       ...signedIn(),
       "GET /api/v1/clients": (request) =>
         new URL(request.url).searchParams.get("page") === "2"
-          ? page([luis], 21, 2)
-          : page([rosa], 21, 1),
+          ? page([luis], 30, 2)
+          : page([rosa], 30, 1),
     });
     renderApp("/clientes", api.fetch);
 
-    expect(await screen.findByText("21 clientes · página 1 de 2")).toBeInTheDocument();
+    expect(await screen.findByText("30 clientes · página 1 de 2")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Anterior" })).toBeDisabled();
     await userEvent.click(screen.getByRole("button", { name: "Siguiente" }));
 

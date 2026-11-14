@@ -12,6 +12,7 @@ import {
   Pill,
   Plus,
   Search,
+  SlidersHorizontal,
   Syringe,
   Tag,
   type LucideIcon,
@@ -71,8 +72,8 @@ const CATEGORY_TONES: Record<ProductCategory, string> = {
   other: "bg-muted text-muted-foreground",
 };
 
-// Dos filas de seis tarjetas: caben en una pantalla de laptop sin desplazarse.
-const PAGE_SIZE = 12;
+// Solo la rejilla se desplaza; el encabezado, los indicadores y el buscador quedan fijos.
+const PAGE_SIZE = 24;
 
 type StockAction = "receive" | "use" | "count";
 
@@ -106,7 +107,7 @@ export function InventoryPage() {
   const value = all.reduce((sum, p) => sum + Number(p.stock) * Number(p.cost_price), 0);
 
   return (
-    <>
+    <div className="flex h-full min-h-0 flex-col">
       <PageHeader
         title="Inventario"
         description="Medicamentos, alimentos y accesorios con su stock y precios."
@@ -178,88 +179,92 @@ export function InventoryPage() {
           ) : null}
         </EmptyState>
       ) : (
-        <CatalogGrid label="Productos">
-          {pageItems.map((p) => {
-            const margin = Number(p.sale_price) - Number(p.cost_price);
-            const marginPct =
-              Number(p.cost_price) > 0 ? Math.round((margin / Number(p.cost_price)) * 100) : null;
-            const Icon = CATEGORY_ICONS[p.category];
-            return (
-              <li key={p.id}>
-                <CatalogCard
-                  className={cn(!p.active && "opacity-60")}
-                  media={
-                    <span
-                      className={cn(
-                        "flex size-16 items-center justify-center rounded-2xl",
-                        CATEGORY_TONES[p.category],
-                      )}
-                    >
-                      <Icon className="size-8" aria-hidden />
-                    </span>
-                  }
-                  corner={
-                    !p.active
-                      ? { label: "Desactivado", tone: "dark" }
-                      : p.low_stock
-                        ? { label: "Stock bajo", tone: "red" }
-                        : marginPct !== null
-                          ? { label: `+${marginPct}%`, tone: "green" }
-                          : null
-                  }
-                  chips={[
-                    { label: CATEGORY_LABELS[p.category], tone: "green" },
-                    { label: p.unit, tone: "blue" },
-                    ...(p.sku ? [{ label: p.sku, tone: "pink" as const }] : []),
-                  ]}
-                  title={p.name}
-                  highlight={money(p.sale_price)}
-                  secondary={`Costo ${money(p.cost_price)}`}
-                  footer={`Stock: ${qty(p.stock)} ${p.unit} · mínimo ${qty(p.min_stock)}`}
-                  footerTone={p.low_stock ? "warn" : "ok"}
-                  actions={
-                    <>
-                      {canManage ? (
-                        <>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setStock({ product: p, action: "receive" })}
-                          >
-                            <PackagePlus aria-hidden /> Entrada
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setStock({ product: p, action: "count" })}
-                          >
-                            Ajustar
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            aria-label={`Editar ${p.name}`}
-                            onClick={() => setEditing(p)}
-                          >
-                            <Pencil aria-hidden />
-                          </Button>
-                        </>
-                      ) : null}
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        aria-label={`Movimientos de ${p.name}`}
-                        onClick={() => setHistory(p)}
+        <div className="-mx-1 min-h-0 flex-1 overflow-y-auto px-1 pb-1">
+          <CatalogGrid label="Productos">
+            {pageItems.map((p) => {
+              const margin = Number(p.sale_price) - Number(p.cost_price);
+              const marginPct =
+                Number(p.cost_price) > 0 ? Math.round((margin / Number(p.cost_price)) * 100) : null;
+              const Icon = CATEGORY_ICONS[p.category];
+              return (
+                <li key={p.id}>
+                  <CatalogCard
+                    className={cn(!p.active && "opacity-60")}
+                    media={
+                      <span
+                        className={cn(
+                          "flex size-16 items-center justify-center rounded-2xl",
+                          CATEGORY_TONES[p.category],
+                        )}
                       >
-                        <History aria-hidden />
-                      </Button>
-                    </>
-                  }
-                />
-              </li>
-            );
-          })}
-        </CatalogGrid>
+                        <Icon className="size-8" aria-hidden />
+                      </span>
+                    }
+                    corner={
+                      !p.active
+                        ? { label: "Desactivado", tone: "dark" }
+                        : p.low_stock
+                          ? { label: "Stock bajo", tone: "red" }
+                          : marginPct !== null
+                            ? { label: `+${marginPct}%`, tone: "green" }
+                            : null
+                    }
+                    chips={[
+                      { label: CATEGORY_LABELS[p.category], tone: "green" },
+                      { label: p.unit, tone: "blue" },
+                      ...(p.sku ? [{ label: p.sku, tone: "pink" as const }] : []),
+                    ]}
+                    title={p.name}
+                    highlight={money(p.sale_price)}
+                    secondary={`Costo ${money(p.cost_price)}`}
+                    footer={`Stock: ${qty(p.stock)} ${p.unit} · mínimo ${qty(p.min_stock)}`}
+                    footerTone={p.low_stock ? "warn" : "ok"}
+                    actions={
+                      <>
+                        {canManage ? (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setStock({ product: p, action: "receive" })}
+                            >
+                              <PackagePlus aria-hidden /> Entrada
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              aria-label={`Ajustar el stock de ${p.name}`}
+                              title="Ajustar por conteo"
+                              onClick={() => setStock({ product: p, action: "count" })}
+                            >
+                              <SlidersHorizontal aria-hidden />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              aria-label={`Editar ${p.name}`}
+                              onClick={() => setEditing(p)}
+                            >
+                              <Pencil aria-hidden />
+                            </Button>
+                          </>
+                        ) : null}
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          aria-label={`Movimientos de ${p.name}`}
+                          onClick={() => setHistory(p)}
+                        >
+                          <History aria-hidden />
+                        </Button>
+                      </>
+                    }
+                  />
+                </li>
+              );
+            })}
+          </CatalogGrid>
+        </div>
       )}
       {shown.length > 0 ? (
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
@@ -304,7 +309,7 @@ export function InventoryPage() {
       <Dialog open={history !== null} onOpenChange={(open) => !open && setHistory(null)}>
         {history ? <HistoryDialog product={history} /> : null}
       </Dialog>
-    </>
+    </div>
   );
 }
 

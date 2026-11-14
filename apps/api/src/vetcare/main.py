@@ -43,7 +43,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app = FastAPI(
         title="VetCare API",
-        version="0.1.0",
+        version="0.2.0",
         docs_url="/api/docs" if settings.docs_enabled else None,
         redoc_url=None,
         openapi_url="/api/openapi.json" if settings.docs_enabled else None,

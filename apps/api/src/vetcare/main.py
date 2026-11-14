@@ -4,13 +4,30 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from vetcare.contexts.clinic.api import router as clinic
+from vetcare.contexts.clinic.infrastructure.composition import build_clinic_setup
+from vetcare.contexts.customers.api import router as customers
+from vetcare.contexts.customers.infrastructure.composition import build_customers
 from vetcare.contexts.identity.api import router as identity
 from vetcare.contexts.identity.infrastructure.composition import build_identity_service
+from vetcare.contexts.notifications.api import router as notifications
+from vetcare.contexts.notifications.infrastructure.composition import build_devices
+from vetcare.contexts.sales.api import router as sales
+from vetcare.contexts.sales.infrastructure.composition import build_sales
+from vetcare.contexts.scheduling.api import router as scheduling
+from vetcare.contexts.scheduling.infrastructure.composition import (
+    build_appointment_directory,
+    build_scheduling,
+)
+from vetcare.contexts.tracking.api import router as tracking
+from vetcare.contexts.tracking.infrastructure.composition import build_tracking
+from vetcare.integrations import IdentityAccountInviter
 from vetcare.platform import health, openapi
 from vetcare.platform.db import create_engine, create_session_factory
 from vetcare.platform.errors import register_error_handlers
 from vetcare.platform.rate_limit import FixedWindowRateLimiter
 from vetcare.platform.settings import Settings, get_settings
+from vetcare.platform.storage import LocalFileStorage, build_file_storage
 
 API_PREFIX = "/api/v1"
 
@@ -26,7 +43,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app = FastAPI(
         title="VetCare API",
-        version="0.1.0",
+        version="0.2.0",
         docs_url="/api/docs" if settings.docs_enabled else None,
         redoc_url=None,
         openapi_url="/api/openapi.json" if settings.docs_enabled else None,
@@ -41,10 +58,46 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.state.settings = settings
     app.state.rate_limiter = FixedWindowRateLimiter()
+    app.state.clinic_setup, app.state.clinic_catalog = (
+        build_clinic_setup(app.state.session_factory)
+        if app.state.session_factory is not None
+        else (None, None)
+    )
     app.state.identity = (
         build_identity_service(settings, app.state.session_factory)
         if app.state.session_factory is not None and settings.jwt_secret is not None
         else None
+    )
+    # El servicio de identidad se consulta al usarse: las pruebas pueden reemplazarlo.
+    inviter = IdentityAccountInviter(lambda: app.state.identity)
+    app.state.file_storage = (
+        build_file_storage(settings) if app.state.session_factory is not None else None
+    )
+    app.state.customers, app.state.pet_access = (
+        build_customers(app.state.session_factory, inviter, app.state.file_storage)
+        if app.state.session_factory is not None
+        else (None, None)
+    )
+    app.state.scheduling = (
+        build_scheduling(app.state.session_factory, app.state.clinic_catalog, app.state.pet_access)
+        if app.state.session_factory is not None
+        else None
+    )
+    app.state.tracking = (
+        build_tracking(
+            app.state.session_factory,
+            appointments=build_appointment_directory(app.state.session_factory),
+            catalog=app.state.clinic_catalog,
+            pets=app.state.pet_access,
+        )
+        if app.state.session_factory is not None
+        else None
+    )
+    app.state.sales = (
+        build_sales(app.state.session_factory) if app.state.session_factory is not None else None
+    )
+    app.state.devices = (
+        build_devices(app.state.session_factory) if app.state.session_factory is not None else None
     )
 
     if settings.cors_origins:
@@ -59,6 +112,19 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(health.router, prefix=API_PREFIX)
     app.include_router(identity.auth, prefix=API_PREFIX)
     app.include_router(identity.users, prefix=API_PREFIX)
+    app.include_router(clinic.router, prefix=API_PREFIX)
+    app.include_router(customers.clients_router, prefix=API_PREFIX)
+    app.include_router(customers.pets_router, prefix=API_PREFIX)
+    app.include_router(customers.me_router, prefix=API_PREFIX)
+    app.include_router(scheduling.router, prefix=API_PREFIX)
+    app.include_router(scheduling.me_router, prefix=API_PREFIX)
+    app.include_router(notifications.me_router, prefix=API_PREFIX)
+    app.include_router(tracking.router, prefix=API_PREFIX)
+    app.include_router(tracking.me_router, prefix=API_PREFIX)
+    app.include_router(sales.router, prefix=API_PREFIX)
+    if isinstance(app.state.file_storage, LocalFileStorage):
+        # Solo con almacenamiento en disco: en producción las URLs firmadas apuntan a S3.
+        app.include_router(app.state.file_storage.router(), prefix=API_PREFIX)
     openapi.install(app)
     return app
 

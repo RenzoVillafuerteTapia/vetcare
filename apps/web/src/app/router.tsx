@@ -1,4 +1,4 @@
-import { createBrowserRouter, type RouteObject } from "react-router";
+import { createBrowserRouter, Navigate, type RouteObject } from "react-router";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { RedirectIfAuthenticated, RequireAuth, RequirePermission } from "@/features/auth/guards";
@@ -50,6 +50,115 @@ export const routes: RouteObject[] = [
                 lazy: async () => ({
                   Component: (await import("@/features/users/invite-user-page")).InviteUserPage,
                 }),
+              },
+            ],
+          },
+          {
+            element: <RequirePermission permission="appointments:read" />,
+            children: [
+              {
+                path: "/agenda",
+                lazy: async () => ({
+                  Component: (await import("@/features/agenda/agenda-page")).AgendaPage,
+                }),
+              },
+            ],
+          },
+          {
+            element: <RequirePermission permission="tracking:read" />,
+            children: [
+              {
+                path: "/seguimiento",
+                lazy: async () => ({
+                  Component: (await import("@/features/tracking/tracking-page")).TrackingPage,
+                }),
+              },
+            ],
+          },
+          {
+            element: <RequirePermission permission="inventory:read" />,
+            children: [
+              {
+                path: "/inventario",
+                lazy: async () => ({
+                  Component: (await import("@/features/sales/inventory-page")).InventoryPage,
+                }),
+              },
+            ],
+          },
+          {
+            element: <RequirePermission permission="charges:manage" />,
+            children: [
+              {
+                path: "/cobros",
+                lazy: async () => ({
+                  Component: (await import("@/features/sales/charges-page")).ChargesPage,
+                }),
+              },
+            ],
+          },
+          {
+            element: <RequirePermission permission="pets:read" />,
+            children: [
+              {
+                path: "/clientes",
+                lazy: async () => ({
+                  Component: (await import("@/features/customers/clients-page")).ClientsPage,
+                }),
+              },
+              {
+                path: "/clientes/:clientId",
+                lazy: async () => ({
+                  Component: (await import("@/features/customers/client-page")).ClientPage,
+                }),
+              },
+              {
+                path: "/mascotas",
+                lazy: async () => ({
+                  Component: (await import("@/features/customers/pets-page")).PetsPage,
+                }),
+              },
+              {
+                path: "/mascotas/:petId",
+                lazy: async () => ({
+                  Component: (await import("@/features/customers/pet-page")).PetPage,
+                }),
+              },
+            ],
+          },
+          {
+            element: <RequirePermission permission="clinic_setup:manage" />,
+            children: [
+              {
+                path: "/configuracion",
+                lazy: async () => ({
+                  Component: (await import("@/features/clinic-setup/clinic-setup-layout"))
+                    .ClinicSetupLayout,
+                }),
+                children: [
+                  { index: true, element: <Navigate to="servicios" replace /> },
+                  {
+                    path: "servicios",
+                    lazy: async () => ({
+                      Component: (await import("@/features/clinic-setup/service-types-page"))
+                        .ServiceTypesPage,
+                    }),
+                  },
+                  {
+                    path: "recursos",
+                    lazy: async () => ({
+                      Component: (await import("@/features/clinic-setup/resources-page"))
+                        .ResourcesPage,
+                    }),
+                  },
+                  {
+                    path: "horario",
+                    lazy: async () => ({
+                      Component: (await import("@/features/clinic-setup/calendar-page"))
+                        .CalendarPage,
+                    }),
+                  },
+                ],
               },
             ],
           },

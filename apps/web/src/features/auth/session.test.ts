@@ -144,3 +144,35 @@ describe("SessionManager", () => {
     vi.useRealTimers();
   });
 });
+
+describe("SessionManager: solo personal", () => {
+  it("rechaza una cuenta de cliente y revoca la sesión que abrió", async () => {
+    const api = createFakeApi({
+      "POST /api/v1/auth/login": () => tokens(),
+      "GET /api/v1/auth/me": () =>
+        Response.json(user({ roles: ["client"], permissions: ["own:pets:read"] })),
+      "POST /api/v1/auth/logout": () => empty(),
+    });
+    const session = manager(api.fetch);
+
+    await expect(session.login("cliente@example.test", "x")).rejects.toMatchObject({
+      message: expect.stringContaining("Los dueños de mascotas usan la app móvil"),
+    });
+    expect(api.calls("POST /api/v1/auth/logout")).toHaveLength(1);
+    expect(session.getSnapshot().status).toBe("anonymous");
+  });
+
+  it("no recupera la sesión de una cuenta de cliente al recargar", async () => {
+    const api = createFakeApi({
+      "POST /api/v1/auth/refresh": () => tokens(),
+      "GET /api/v1/auth/me": () =>
+        Response.json(user({ roles: ["client"], permissions: ["own:pets:read"] })),
+      "POST /api/v1/auth/logout": () => empty(),
+    });
+    const session = manager(api.fetch);
+
+    await session.restore();
+
+    expect(session.getSnapshot().status).toBe("anonymous");
+  });
+});

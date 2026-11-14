@@ -2,12 +2,21 @@
 
     python -m vetcare.cli create-admin --email admin@ejemplo.pe --name "Nombre Apellido"
     python -m vetcare.cli export-openapi ../../packages/shared/openapi.json
+    python -m vetcare.cli seed-clinic
+    python -m vetcare.cli seed-demo
 
 ``create-admin`` solo funciona en una instalación sin usuarios: crea la invitación del primer
 administrador y envía el enlace de activación por el proveedor de correo configurado.
 
 ``export-openapi`` escribe el contrato OpenAPI sin base de datos ni secretos: no depende del
 entorno, así que el CI puede comparar el archivo versionado con el que genera el código.
+
+``seed-clinic`` carga una configuración ficticia de la sede (servicios, recursos y horario) para
+desarrollo. Solo agrega lo que falta.
+
+``seed-demo`` carga una veterinaria en marcha con datos ficticios (clientes, mascotas, citas,
+seguimientos, inventario y cobros) para probar como en un caso real. Solo en local o test; se
+niega si ya los cargó.
 """
 
 import argparse
@@ -16,7 +25,10 @@ import json
 import sys
 from pathlib import Path
 
+from vetcare.contexts.clinic.infrastructure.composition import clinic_uow_factory
+from vetcare.contexts.clinic.infrastructure.seed import seed_clinic
 from vetcare.contexts.identity.infrastructure.composition import build_identity_service
+from vetcare.demo_data import AlreadySeededError, NoAdminError, seed_demo
 from vetcare.main import create_app
 from vetcare.platform.db import create_engine, create_session_factory
 from vetcare.platform.settings import Environment, Settings
@@ -41,6 +53,46 @@ async def _create_admin(email: str, name: str) -> int:
     return 0
 
 
+async def _seed_clinic() -> int:
+    settings = Settings()
+    if settings.database_url is None:
+        print("Define VETCARE_DATABASE_URL.", file=sys.stderr)
+        return 2
+    engine = create_engine(settings.database_url.get_secret_value())
+    try:
+        result = await seed_clinic(clinic_uow_factory(create_session_factory(engine)))
+    finally:
+        await engine.dispose()
+    print(
+        f"Servicios agregados: {result.service_types}. Recursos agregados: {result.resources}. "
+        f"Horario de la sede: {'cargado' if result.opening_hours else 'ya existía'}."
+    )
+    return 0
+
+
+async def _seed_demo() -> int:
+    settings = Settings()
+    if settings.environment not in (Environment.LOCAL, Environment.TEST):
+        print("seed-demo solo corre en local o test.", file=sys.stderr)
+        return 2
+    if settings.database_url is None:
+        print("Define VETCARE_DATABASE_URL.", file=sys.stderr)
+        return 2
+    engine = create_engine(settings.database_url.get_secret_value())
+    try:
+        result = await seed_demo(create_session_factory(engine), log=print)
+    except (AlreadySeededError, NoAdminError) as error:
+        print(error, file=sys.stderr)
+        return 1
+    finally:
+        await engine.dispose()
+    print(
+        f"Listo: {result.clients} clientes, {result.pets} mascotas, {result.appointments} citas, "
+        f"{result.tracked} seguimientos, {result.products} productos y {result.charges} cobros."
+    )
+    return 0
+
+
 def _export_openapi(destination: Path) -> int:
     settings = Settings(
         environment=Environment.TEST, database_url=None, jwt_secret=None, cors_origins=[]
@@ -61,9 +113,15 @@ def main(argv: list[str] | None = None) -> int:
     create_admin.add_argument("--name", required=True)
     export_openapi = commands.add_parser("export-openapi", help="Escribir el contrato OpenAPI")
     export_openapi.add_argument("destination", type=Path)
+    commands.add_parser("seed-clinic", help="Cargar la configuración ficticia de la sede")
+    commands.add_parser("seed-demo", help="Cargar datos ficticios de una veterinaria en marcha")
     args = parser.parse_args(argv)
     if args.command == "create-admin":
         return asyncio.run(_create_admin(args.email, args.name))
+    if args.command == "seed-clinic":
+        return asyncio.run(_seed_clinic())
+    if args.command == "seed-demo":
+        return asyncio.run(_seed_demo())
     if args.command == "export-openapi":
         return _export_openapi(args.destination)
     return 2

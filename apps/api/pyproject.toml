@@ -1,6 +1,6 @@
 [project]
 name = "vetcare-api"
-version = "0.1.0"
+version = "0.2.0"
 description = "API de la plataforma de gestión veterinaria"
 requires-python = ">=3.12,<3.13"
 dependencies = [
@@ -15,13 +15,20 @@ dependencies = [
     "alembic>=1.14,<2.0",
     "pyjwt>=2.10,<3.0",
     "argon2-cffi>=23.1,<26.0",
+    # Lectura de formularios multipart (subida de fotos).
+    "python-multipart>=0.0.18",
+    # Almacenamiento de archivos en S3 (producción).
+    "boto3>=1.35,<2.0",
+    # Base de zonas horarias para zoneinfo en sistemas que no la traen (p. ej. Windows).
+    "tzdata>=2025.1",
+    # Cliente HTTP del servicio push de Expo (también lo usan las pruebas).
+    "httpx>=0.27,<1.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=9.0,<10.0",
     "pytest-asyncio>=1.0,<2.0",
-    "httpx>=0.27,<1.0",
     "coverage[toml]>=7.6,<8.0",
     "ruff>=0.17,<0.18",
     "mypy>=2.0,<3.0",
@@ -51,6 +58,10 @@ strict = true
 mypy_path = "src"
 packages = ["vetcare"]
 plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["boto3", "boto3.*", "botocore", "botocore.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

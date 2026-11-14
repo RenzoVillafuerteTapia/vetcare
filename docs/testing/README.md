@@ -15,14 +15,15 @@
 | Web | Componentes y flujos críticos | Vitest + React Testing Library | No (API simulada) |
 | Móvil | Pantallas y flujos críticos | Jest + React Native Testing Library | No (API simulada) |
 | Contratos | Cliente tipado de `packages/shared` y contrato OpenAPI de los errores | Vitest; pytest (`tests/api/test_openapi.py`) | No |
-| Extremo a extremo | Recorridos principales con la API real | Playwright | Sí |
+| Extremo a extremo | Recorridos principales con la API real (por ahora: agendar, ver y cancelar una cita) | Playwright | Sí |
 
 ## Prioridades
 
 Escenarios que siempre deben tener pruebas, positivas y negativas:
 
-1. **Citas sin conflictos**: superposición, límites exactos (fin = inicio), reservas
-   concurrentes reales contra MySQL, idempotencia.
+1. **Citas sin conflictos** (implementado en `test_scheduling_api.py`): superposición, límites
+   exactos (fin = inicio), 5 reservas simultáneas del mismo horario (gana una), horarios que se
+   cruzan, idempotencia secuencial y simultánea.
 2. **Aislamiento entre clientes**: un cliente no ve, reserva ni hace stream de mascotas ajenas;
    la respuesta es 404, no 403.
 3. **Transiciones de servicios**: transiciones no permitidas, etapas clínicas sin permiso,
@@ -46,6 +47,7 @@ no cambiaron, omite el job sin fallar, para que pueda ser un check obligatorio e
 | `commitlint.yml` | `commitlint` | Activo, obligatorio | Conventional Commits en cada PR |
 | `api.yml` | `api` | Activo, obligatorio | Ruff (lint y formato), mypy estricto, pytest con cobertura mínima de 80 % (incluye integración con MySQL 8.4 como *service container*), `alembic check` |
 | `web.yml` | `web` | Activo | ESLint, Prettier, `tsc`, Vitest + Testing Library, build de producción |
+| `e2e.yml` | `e2e` | Activo | Levanta MySQL y la API con Docker Compose, prepara los datos con `scripts/e2e-bootstrap.sh` y ejecuta los recorridos de Playwright de `apps/web/e2e` en Chromium |
 | `mobile.yml` | `mobile` | Activo | ESLint, Prettier, `tsc`, Jest + React Native Testing Library, bundle de Android con Metro |
 | `contracts.yml` | `contracts` | Activo | Exporta el OpenAPI desde el código, regenera los tipos y falla si difieren de los versionados en `packages/shared`; `tsc` y Vitest del paquete |
 

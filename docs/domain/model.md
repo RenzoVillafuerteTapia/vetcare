@@ -17,57 +17,91 @@
 
 ## Clinic Setup
 
+> Implementado (#20), salvo `StageTemplate`, que llega con Service Operations en la fase 3.
+
 | Elemento | Tipo | Notas |
 |---|---|---|
-| `ServiceType` | Agregado | código, nombre, categoría (`consultation`, `vaccination`, `grooming`, `surgery`, `hospitalization`…), duración estimada, recursos requeridos, plantilla de seguimiento opcional, visible para reserva desde la app |
-| `StageTemplate` | Agregado | etapas ordenadas, transiciones permitidas, etapas opcionales, etapas que requieren un permiso específico, etapa de entrega |
-| `Resource` | Agregado | profesional (vinculado a un `UserAccount`), mesa, quirófano; horario laboral y bloqueos |
-| `ClinicCalendar` | Agregado | horario de atención y feriados de la sede |
+| `ServiceType` | Agregado | `ServiceCode` (único, estable), nombre, categoría (`consultation`, `vaccination`, `grooming`, `surgery`, `hospitalization`, `other`), `Duration` (5 a 600 min, múltiplos de 5), recursos requeridos (al menos uno), reservable por el cliente, activo |
+| `Resource` | Agregado | tipo (`veterinarian`, `groomer`, `consultation_room`, `grooming_station`, `operating_room`), nombre, cuenta vinculada (solo profesionales), horario semanal, bloqueos (`TimeOff`, en UTC, sin superponerse), activo |
+| `ClinicCalendar` | Agregado | horario de atención semanal y feriados de la sede (una sola fila) |
+| `WeeklySchedule`, `TimeRange` | VO | franjas por día en hora local de America/Lima, en múltiplos de 5 min, sin superponerse ni cruzar la medianoche |
+| `StageTemplate` | Agregado (fase 3) | etapas ordenadas, transiciones permitidas, etapas opcionales, etapas que requieren un permiso específico, etapa de entrega |
+
+Reglas de disponibilidad que usa la agenda (contrato público `ClinicCatalog`):
+
+- La sede atiende en `[inicio, fin)` si el día local no es feriado y el intervalo cabe completo en
+  una franja del horario de atención.
+- Un recurso está disponible si está activo, el intervalo cabe en su horario semanal y no se
+  cruza con ningún bloqueo. Que no tenga otra cita lo verifica Scheduling.
 
 ## Customers & Pets
 
+> Implementado (#22), con fotos (#23).
+
 | Elemento | Tipo | Notas |
 |---|---|---|
-| `Client` | Agregado | nombres, documento (VO DNI/CE), teléfono, email, dirección, cuenta vinculada opcional |
-| `Pet` | Agregado | nombre, especie, raza, sexo, fecha de nacimiento (exacta o aproximada), foto, alergias, observaciones, estado (`active`, `deceased`, `transferred`) |
-| `WeightRecord` | Entidad de `Pet` | peso en kg (VO), fecha, quién lo registró |
-| `Guardianship` | Entidad de `Pet` | cliente, tipo (`OWNER`, `AUTHORIZED`), permisos `can_pickup`, `can_book`, `can_view_clinical`, vigencia |
+| `Client` | Agregado | nombre, `IdentityDocument` (DNI de 8 dígitos, CE o pasaporte; único), `PhoneNumber` (celular peruano o internacional, normalizado a +51…), `ContactEmail` opcional (único), dirección, notas, cuenta vinculada opcional |
+| `Pet` | Agregado | nombre, especie, sexo, raza, `BirthDate` exacta o aproximada (no futura), color, alergias, notas internas, estado (`active`, `deceased`, `transferred`), historial de pesos, foto opcional (clave del archivo en `FileStorage`, nunca una URL) |
+| `WeightRecord` | Entidad de `Pet` | kg (0.01 a 200, dos decimales), momento, quién lo registró |
+| `Guardianship` | Entidad de `Pet` | cliente, tipo (`OWNER`, `AUTHORIZED`), permisos `can_pickup`, `can_book`, `can_view_clinical`, desde, revocada en (se conserva el historial) |
 
 Invariantes de `Pet`:
 
-- Siempre tiene al menos un tutor `OWNER` activo.
+- Siempre tiene al menos un dueño activo: no se puede revocar ni degradar al último.
 - Un cliente no tiene dos tutelas activas sobre la misma mascota.
-- Solo un `OWNER` o el personal puede agregar o revocar responsables autorizados.
+- Un dueño tiene siempre todos los permisos.
+- No se reserva para una mascota que no está activa.
+
+Acceso (fuente única: contrato público `PetAccess`):
+
+| Acción | Permite |
+|---|---|
+| `view` | cualquier tutela activa |
+| `book` | `can_book` y mascota activa |
+| `pickup` | `can_pickup` |
+| `view_clinical` | `can_view_clinical` |
+
+Lo que ve un cliente de su mascota: nunca las notas internas, y las alergias solo con
+`view_clinical`. Una mascota ajena responde 404, igual que una inexistente.
+
+Con cuenta vinculada, el correo del cliente se cambia desde la cuenta, no desde la ficha.
 
 ## Scheduling
 
+> Implementado (#25). Los recordatorios llegan con el worker de notificaciones (fase 3).
+
 | Elemento | Tipo | Notas |
 |---|---|---|
-| `Appointment` | Agregado | mascota, cliente que reserva, tipo de servicio, `TimeSlot`, recursos asignados, motivo, observaciones, estado, historial de cambios |
-| `TimeSlot` | VO | inicio y fin en UTC; se presenta en `America/Lima`; fin > inicio |
-| `AvailabilityPolicy` | Servicio de dominio | calcula huecos libres según horario de la sede, horario y bloqueos de los recursos y citas existentes |
+| `Appointment` | Agregado | mascota, responsable que reserva, servicio (nombre copiado al reservar), `TimeSlot`, recursos asignados, canal (`staff` o `client`), motivo, notas internas, estado, historial |
+| `TimeSlot` | VO | `[inicio, fin)` en UTC; dos franjas que solo se tocan no se superponen |
+| `HistoryEntry` | Entidad (solo agregado) | acción, quién, cuándo y la franja vigente en ese momento |
+| `SchedulingPolicy` | VO | paso de la agenda (15 min), antelación mínima del cliente para reservar (30 min) y para cambiar o cancelar una cita confirmada (2 h) |
+| `Availability` | Servicio de dominio | por cada tipo de recurso requerido busca uno libre (horario propio, sin bloqueos, sin citas activas) con la sede abierta |
 
 Estados de la cita:
 
 ```mermaid
 stateDiagram-v2
-    [*] --> REQUESTED: solicitada (app)
-    [*] --> CONFIRMED: creada por recepción
+    [*] --> REQUESTED: solicitada por el cliente
+    [*] --> CONFIRMED: agendada por el personal
     REQUESTED --> CONFIRMED: confirmar
-    REQUESTED --> CANCELLED: rechazar o cancelar
-    CONFIRMED --> CONFIRMED: reprogramar (guarda historial)
-    CONFIRMED --> CHECKED_IN: registrar llegada
+    REQUESTED --> REQUESTED: el cliente reprograma
+    CONFIRMED --> REQUESTED: el cliente reprograma (vuelve a confirmación)
+    CONFIRMED --> CONFIRMED: el personal reprograma
+    REQUESTED --> CANCELLED: cancelar
     CONFIRMED --> CANCELLED: cancelar
-    CONFIRMED --> NO_SHOW: marcar inasistencia
+    CONFIRMED --> CHECKED_IN: registrar llegada (desde 2 h antes)
+    CONFIRMED --> NO_SHOW: inasistencia (después de la hora)
     CHECKED_IN --> COMPLETED: completar
-    COMPLETED --> [*]
-    CANCELLED --> [*]
-    NO_SHOW --> [*]
 ```
 
-Invariantes: no hay dos citas activas que se superpongan sobre el mismo recurso; un cliente solo
-reserva para mascotas donde tiene `can_book`; reprogramar y cancelar desde la app respetan la
-antelación mínima configurada.
+Invariantes:
+
+- Ningún recurso tiene dos citas activas (`requested`, `confirmed`, `checked_in`) superpuestas.
+- La cita cabe en el horario de la sede (sin feriado) y en el horario de cada recurso asignado.
+- El cliente solo reserva para mascotas donde su tutela permite `book`, servicios reservables y
+  con la antelación mínima; reprograma o cancela una cita confirmada con al menos 2 h.
+- Una cita cancelada, completada o con inasistencia ya no cambia.
 
 ## Service Operations
 

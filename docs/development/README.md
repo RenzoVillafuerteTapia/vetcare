@@ -34,6 +34,15 @@ cp apps/mobile/.env.example apps/mobile/.env.local   # ajusta EXPO_PUBLIC_API_UR
 npm run mobile:start
 ```
 
+### Configuración ficticia de la sede
+
+```bash
+docker compose exec api python -m vetcare.cli seed-clinic
+```
+
+Carga un catálogo típico (consulta, vacunación, baño, cirugías), recursos genéricos y el horario
+de atención. Solo agrega lo que falta y no contiene datos personales.
+
 ### Primer administrador
 
 Las cuentas se crean solo por invitación. En una base vacía, crea la invitación del primer
@@ -90,6 +99,10 @@ prefijo `VETCARE_`.
 | `VETCARE_DATABASE_URL` | URL de SQLAlchemy (`mysql+asyncmy://…`). En Docker Compose se arma con las variables de MySQL |
 | `VETCARE_JWT_SECRET` | Clave de firma de los access tokens, mínimo 32 caracteres. Sin ella los endpoints de autenticación no están disponibles |
 | `VETCARE_PUBLIC_WEB_URL` | Base de los enlaces de activación y recuperación de los correos |
+| `VETCARE_STORAGE_BACKEND` | `local` (archivos en disco, por defecto) o `s3` (bucket privado; obligatorio en `production`) |
+| `VETCARE_STORAGE_LOCAL_DIR` | Carpeta de los archivos con `local`. Por defecto `var/storage`; en Docker Compose es el volumen `api-files` |
+| `VETCARE_PUBLIC_API_URL` | Dirección pública de la API: base de las URLs firmadas con `local`. Por defecto `http://localhost:8000` |
+| `VETCARE_STORAGE_S3_BUCKET` · `VETCARE_STORAGE_S3_REGION` | Bucket y región con `s3`. Las credenciales salen de la cadena estándar de AWS (rol de la instancia), no de estas variables |
 | `VETCARE_TEST_DATABASE_URL` | Base para las pruebas de integración. En Docker Compose apunta a `<MYSQL_DATABASE>_test` |
 
 ## Solución de problemas

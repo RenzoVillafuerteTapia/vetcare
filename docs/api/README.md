@@ -26,6 +26,7 @@
 | `POST /api/v1/auth/invitations/accept` | Público, 10/min por IP | `token` y `password`: activa la cuenta invitada |
 | `POST /api/v1/auth/password-reset` | Público, 5 cada 5 min por IP | Envía un enlace de 30 min. Responde 202 exista o no la cuenta |
 | `POST /api/v1/auth/password-reset/confirm` | Público, 10/min por IP | `token` y `password`: cambia la contraseña y cierra todas las sesiones |
+| `POST /api/v1/auth/password` | Autenticado, 10/min por IP | `current_password`, `new_password` y `client`: cambia la contraseña, cierra todas las sesiones y devuelve una nueva como el login. Una actual errónea cuenta para el bloqueo |
 | `POST /api/v1/users` | `users:manage` | Invita a un empleado o cliente (`email`, `full_name`, `roles`). El enlace dura 7 días |
 | `POST /api/v1/users/{id}/invitation` | `users:manage` | Reenvía la invitación e invalida el enlace anterior |
 
@@ -38,6 +39,114 @@
   enlace del correo van en el fragmento (`#token=…`), que el navegador no envía al servidor.
 - Las cuentas se crean solo por invitación. El primer administrador se crea con
   `python -m vetcare.cli create-admin` (ver `docs/development`).
+
+## Configuración de la clínica
+
+| Endpoint | Acceso | Uso |
+|---|---|---|
+| `GET /api/v1/clinic/service-types` | Autenticado | Personal: catálogo completo. Cliente: solo servicios activos y reservables |
+| `POST /api/v1/clinic/service-types` | `clinic_setup:manage` | Crear un servicio (`code` único) |
+| `PUT /api/v1/clinic/service-types/{id}` | `clinic_setup:manage` | Actualizar (el código no cambia) |
+| `PATCH /api/v1/clinic/service-types/{id}/active` | `clinic_setup:manage` | Activar o desactivar |
+| `GET /api/v1/clinic/resources` | Personal | Recursos con horario semanal y bloqueos |
+| `POST /api/v1/clinic/resources` | `clinic_setup:manage` | Crear un recurso |
+| `PUT /api/v1/clinic/resources/{id}` | `clinic_setup:manage` | Nombre, horario, cuenta vinculada y estado |
+| `POST /api/v1/clinic/resources/{id}/time-off` | `clinic_setup:manage` | Bloquear (fechas con zona horaria obligatoria) |
+| `DELETE /api/v1/clinic/resources/{id}/time-off/{time_off_id}` | `clinic_setup:manage` | Quitar un bloqueo |
+| `GET /api/v1/clinic/calendar` | Autenticado | Horario de atención y feriados |
+| `PUT /api/v1/clinic/calendar/opening-hours` | `clinic_setup:manage` | Fijar el horario de atención |
+| `POST /api/v1/clinic/calendar/holidays` | `clinic_setup:manage` | Registrar un feriado |
+| `DELETE /api/v1/clinic/calendar/holidays/{día}` | `clinic_setup:manage` | Quitar un feriado |
+
+## Clientes y mascotas
+
+| Endpoint | Acceso | Uso |
+|---|---|---|
+| `GET /api/v1/clients?q=&page=&page_size=` | Personal | Buscar por nombre, documento, correo o teléfono, paginado |
+| `POST /api/v1/clients` | `clients:manage` | Registrar (documento y correo únicos) |
+| `GET /api/v1/clients/{id}` · `PUT` | Personal · `clients:manage` | Ficha y actualización |
+| `POST /api/v1/clients/{id}/invitation` | `clients:manage` | Crear la cuenta del cliente y enviarle la invitación a la app |
+| `GET /api/v1/clients/{id}/pets` | Personal | Mascotas del cliente |
+| `POST /api/v1/clients/{id}/pets` | `pets:manage` | Registrar una mascota con el cliente como dueño |
+| `GET /api/v1/pets/{id}` | Personal o tutela activa | Perfil; para el cliente sin notas internas y alergias según permiso. `photo_url` es una URL firmada que vence a los 5 minutos |
+| `PUT /api/v1/pets/{id}` · `PATCH …/status` · `POST …/weights` | `pets:manage` | Perfil, estado y peso |
+| `PUT /api/v1/pets/{id}/photo` · `DELETE …/photo` | `pets:manage` o cliente dueño | Subir (campo `file` en `multipart/form-data`; JPG, PNG o WebP de hasta 5 MB), reemplazar o quitar la foto |
+| `POST /api/v1/pets/{id}/guardians` · `PUT`/`DELETE …/guardians/{client_id}` | `guardianships:manage` | Dueños y responsables autorizados |
+| `GET /api/v1/pets?q=&species=&page=&page_size=` | `pets:read` | Todas las mascotas con sus responsables y foto; `q` busca por el nombre de la mascota o de un responsable activo |
+| `GET /api/v1/me/pets` | Cliente | Mascotas donde el cliente autenticado tiene tutela. `can_change_photo` indica si puede cambiar la foto (solo un dueño) |
+| `GET /api/v1/me/profile` · `PUT` | `own:profile:manage` | Sus datos de contacto (sin notas internas). Solo cambia teléfono y dirección; el nombre y el documento los corrige la veterinaria |
+
+## Agenda
+
+| Endpoint | Acceso | Uso |
+|---|---|---|
+| `GET /api/v1/scheduling/availability?service_type_id=&date=&professional_id=` | Personal o cliente | Horarios libres de un servicio en un día (el cliente, solo servicios reservables y desde 30 min después de ahora; el personal, desde ya). Con `professional_id`, solo los de ese profesional. Con `include_unavailable=true` devuelve el día completo con `status`: `free`, `taken` (ocupado) o `too_soon` (dentro de la antelación mínima) |
+| `GET /api/v1/scheduling/professionals?service_type_id=` | Personal o cliente | Veterinarios y groomers activos, por nombre y sin horarios; con `service_type_id`, solo los que prestan ese servicio. El cliente fija a uno con `resource_ids` al solicitar o reprogramar (no puede fijar salas ni equipos) |
+| `POST /api/v1/appointments` | `appointments:manage` o cliente con tutela `book` | Personal: cita confirmada. Cliente: solicitud. Acepta `Idempotency-Key` |
+| `GET /api/v1/appointments?from=&to=&resource_id=&status=` | Personal | Agenda de un periodo (hasta 62 días) |
+| `GET /api/v1/appointments/{id}` | Personal o tutela activa | Detalle; para el cliente sin notas internas ni historial |
+| `POST /api/v1/appointments/{id}/reschedule` · `/cancel` | Personal o cliente con tutela `book` | El cliente, con 2 h de antelación si ya está confirmada |
+| `POST /api/v1/appointments/{id}/confirm` · `/check-in` · `/complete` · `/no-show` | `appointments:manage` | Ciclo de vida |
+| `GET /api/v1/me/appointments` | Cliente | Citas de sus mascotas: próximas y de los últimos 90 días |
+
+Errores propios: `slot_unavailable` (409, el horario se ocupó o no cabe),
+`invalid_appointment_transition` (409), `client_change_too_late` (409),
+`idempotency_key_reused` (409, misma clave con otro cuerpo).
+
+Los horarios semanales usan hora local de Lima (`{"weekday": 0, "start": "09:00", "end": "13:00"}`,
+con 0 = lunes). `00:00` como fin significa medianoche (24:00): `{"start": "00:00", "end": "00:00"}`
+abre el día completo. Una franja no cruza la medianoche, y una cita tampoco. Los instantes (bloqueos y, más adelante, citas) viajan en ISO 8601 con zona y se
+devuelven en UTC.
+
+## Seguimiento de servicios
+
+| Endpoint | Acceso | Uso |
+|---|---|---|
+| `POST /api/v1/appointments/{id}/tracking` | `tracking:advance` o `appointments:manage` | Inicia el seguimiento de una cita con la llegada registrada (409 `appointment_not_checked_in` si no). Idempotente |
+| `GET /api/v1/appointments/{id}/tracking` | Personal o tutela activa | El seguimiento de esa cita, o 404 si no tiene |
+| `GET /api/v1/tracked-services` | `tracking:read` | Tablero: en curso y listos, más lo entregado en las últimas 12 h |
+| `GET /api/v1/tracked-services/{id}` | Personal o tutela activa | Etapas (`done`, `current`, `pending` con su hora) y avances; el cliente ve los textos solo con `can_view_clinical` (`updates_hidden`) |
+| `POST /api/v1/tracked-services/{id}/advance` | `tracking:advance` (+ `tracking:authorize_discharge` para el alta) | Pasa a la etapa siguiente; `from_stage` es la etapa que ve quien avanza (409 `stage_changed` si ya cambió) |
+| `POST /api/v1/tracked-services/{id}/updates` | `tracking:publish_update` | Publica un avance para el dueño (hasta 500 caracteres) |
+| `POST /api/v1/tracked-services/{id}/hand-over` | `tracking:hand_over` | Entrega la mascota lista (409 `tracking_not_ready` si no) |
+| `GET /api/v1/me/tracked-services` | `own:tracking:read` | Seguimientos de la última semana de sus mascotas |
+
+Plantillas de etapas según la categoría del servicio: baño y peluquería (Recibido, Baño, Secado,
+Corte y peinado, Listo para recoger), cirugía u hospitalización (Ingreso, Preparación, En
+cirugía, Recuperación, Alta autorizada) y el resto (En atención, Listo para recoger). Las etapas
+se copian al iniciar.
+
+## Ventas: inventario y cobros
+
+Solo se **registra** lo cobrado; la API no procesa pagos. Montos y cantidades viajan como texto
+decimal (`"35.00"`).
+
+| Endpoint | Acceso | Uso |
+|---|---|---|
+| `GET /api/v1/sales/products?q=&include_inactive=` | `inventory:read` | Productos con stock, costo, venta y `low_stock` (stock ≤ mínimo) |
+| `POST /api/v1/sales/products` · `PUT /{id}` | `inventory:manage` | Crear (con `initial_stock`) y editar o desactivar |
+| `POST /api/v1/sales/products/{id}/receive` · `/use` · `/count` | `inventory:manage` | Entrada de mercadería (con `unit_cost`, pasa a ser el costo), uso interno y ajuste por conteo |
+| `GET /api/v1/sales/products/{id}/movements` | `inventory:read` | Los últimos 50 movimientos |
+| `POST /api/v1/sales/charges` | `charges:manage` | Registra un cobro: líneas `service`, `product` (precio de venta por defecto; descuenta stock) u `other`, y `method` (`cash`, `card`, `yape`, `plin`, `transfer`). 409 `insufficient_stock` sin registrar nada |
+| `POST /api/v1/sales/charges/{id}/void` | `charges:manage` | Anula con motivo; los productos vuelven al stock |
+| `GET /api/v1/sales/charges?from=&to=` | `charges:manage` | Cobros de un periodo (días de Lima, `to` inclusive) |
+| `GET /api/v1/sales/summary?from=&to=` | `reports:read` | Ingresos, costo de productos y ganancia bruta, por medio de pago, tipo y día, y los productos más vendidos |
+
+La ganancia es bruta: ingresos menos el costo de los productos vendidos, con el costo del
+momento de cada venta. No descuenta sueldos, alquiler ni otros gastos.
+
+## Avisos push
+
+| Endpoint | Acceso | Uso |
+|---|---|---|
+| `PUT /api/v1/me/devices` | `own:notifications:manage` | Registra el teléfono (`{"token": "ExponentPushToken[…]", "platform": "android"}`). Idempotente; si el token estaba en otra cuenta, pasa a esta |
+| `POST /api/v1/me/devices/unregister` | `own:notifications:manage` | Lo da de baja al cerrar sesión. Responde 204 aunque el token no exista o sea de otra cuenta |
+
+Los avisos los envía el worker (`python -m vetcare.worker`) a partir del outbox: cita confirmada
+(también la reservada por recepción), reprogramada o cancelada por la clínica; y del
+seguimiento, el inicio, "lista para recoger" o el alta y cada avance publicado (sin su texto). No se avisa lo que
+hizo el propio cliente ni un evento de más de 12 horas. El aviso lleva `data.url`
+(`/citas/{id}`) para abrir la cita en la app.
 
 ## Errores
 

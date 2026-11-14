@@ -36,9 +36,26 @@ services:
       - ./apps/api/tests:/app/tests
       - ./apps/api/migrations:/app/migrations
       - ./apps/api/alembic.ini:/app/alembic.ini
+      - api-files:/app/var/storage
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Worker del outbox (ADR 0003): avisos push. Uno solo a la vez.
+  worker:
+    build:
+      context: apps/api
+      target: dev
+    command: ["python", "-m", "vetcare.worker"]
+    env_file: .env
+    environment:
+      VETCARE_DATABASE_URL: mysql+asyncmy://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE}
+    volumes:
+      - ./apps/api/src:/app/src
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
   db-data:
+  api-files:

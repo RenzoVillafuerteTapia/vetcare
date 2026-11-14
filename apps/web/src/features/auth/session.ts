@@ -3,6 +3,7 @@ import {
   type ApiClient,
   type CurrentUser,
   type Permission,
+  type ProblemDetails,
 } from "@vetcare/shared";
 
 import { ApiError, unwrap } from "@/lib/api-error";
@@ -18,6 +19,15 @@ type Listener = () => void;
 const REFRESH_MARGIN_MS = 60_000;
 const LOCK_NAME = "vetcare-session-refresh";
 
+const CLIENT_ACCOUNT: ProblemDetails = {
+  type: "/errors/client-account",
+  title: "Cuenta de cliente",
+  status: 403,
+  code: "client_account",
+  detail:
+    "Esta web es para el personal de la veterinaria. Los dueños de mascotas usan la app móvil.",
+};
+
 /**
  * Sesión de la web de administración.
  *
@@ -25,6 +35,8 @@ const LOCK_NAME = "vetcare-session-refresh";
  * - El refresh token viaja en una cookie HttpOnly que la API rota en cada uso. Como reutilizar un
  *   refresh token ya rotado revoca la sesión, las renovaciones se serializan: una sola a la vez en
  *   esta pestaña y, con la Web Locks API, entre pestañas.
+ * - La web es solo para el personal: una cuenta que solo tiene el rol cliente no puede iniciar
+ *   sesión aquí, y la sesión que abrió se revoca.
  */
 export class SessionManager {
   readonly api: ApiClient;
@@ -68,7 +80,7 @@ export class SessionManager {
     }
   }
 
-  /** Lanza `ApiError` si las credenciales no son válidas; la UI muestra su mensaje. */
+  /** Lanza `ApiError` si las credenciales no son válidas o la cuenta es de un cliente. */
   async login(email: string, password: string): Promise<void> {
     const tokens = await unwrap(
       this.api.POST("/api/v1/auth/login", { body: { email, password, client: "web" } }),
@@ -126,6 +138,10 @@ export class SessionManager {
   private async startSession(accessToken: string, expiresInSeconds: number): Promise<void> {
     this.accessToken = accessToken;
     const user = await unwrap(this.api.GET("/api/v1/auth/me"));
+    if (!user.roles.some((role) => role !== "client")) {
+      await this.logout();
+      throw new ApiError(CLIENT_ACCOUNT);
+    }
     this.setState({ status: "authenticated", user });
     clearTimeout(this.timer);
     const delay = Math.max(expiresInSeconds * 1000 - REFRESH_MARGIN_MS, 5_000);

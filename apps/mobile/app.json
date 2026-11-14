@@ -3,7 +3,7 @@
     "name": "VetCare",
     "slug": "vetcare",
     "scheme": "vetcare",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "backgroundColor": "#f5f3ef",
@@ -18,6 +18,12 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "color": "#00736a"
+        }
+      ],
       [
         "expo-splash-screen",
         {

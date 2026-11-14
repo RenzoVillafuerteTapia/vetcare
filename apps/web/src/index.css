@@ -34,6 +34,8 @@
   --input: oklch(0.88 0.01 95);
   --ring: oklch(0.6 0.09 185);
   --sidebar: oklch(0.965 0.006 95);
+  /* Relleno de los campos: se distingue tanto del fondo neutro como de las tarjetas blancas. */
+  --field: oklch(0.925 0.009 95);
   --surface-strong: oklch(0.27 0.035 195);
   --surface-strong-foreground: oklch(0.97 0.01 185);
 }
@@ -61,6 +63,7 @@
   --input: oklch(0.34 0.015 200);
   --ring: oklch(0.6 0.09 185);
   --sidebar: oklch(0.2 0.018 200);
+  --field: oklch(0.27 0.015 200);
   --surface-strong: oklch(0.32 0.04 190);
   --surface-strong-foreground: oklch(0.97 0.01 185);
 }
@@ -93,6 +96,7 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-sidebar: var(--sidebar);
+  --color-field: var(--field);
   --color-surface-strong: var(--surface-strong);
   --color-surface-strong-foreground: var(--surface-strong-foreground);
 }

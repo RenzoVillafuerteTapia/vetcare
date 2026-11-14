@@ -9,8 +9,9 @@ import { useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { API_URL } from "@/lib/env";
-import { createQueryClient } from "@/lib/query-client";
-import { useSession } from "@/session/context";
+import { createQueryClient, useAppFocus } from "@/lib/query-client";
+import { usePushNotifications } from "@/notifications/push";
+import { useSession, useSessionManager } from "@/session/context";
 import { SessionProvider } from "@/session/provider";
 import { SessionManager } from "@/session/session";
 import { secureTokenStore } from "@/session/token-store";
@@ -37,6 +38,8 @@ export default function RootLayout() {
 /** Las rutas privadas solo existen con sesión; el splash se mantiene hasta saberlo. */
 function RootNavigator() {
   const session = useSession();
+  useAppFocus();
+  usePushNotifications(useSessionManager(), session);
   const [fontsLoaded, fontError] = useFonts({
     Fredoka_400Regular,
     Fredoka_500Medium,

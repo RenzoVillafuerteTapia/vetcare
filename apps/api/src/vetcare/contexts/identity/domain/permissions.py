@@ -30,12 +30,20 @@ class Permission(StrEnum):
     TRACKING_AUTHORIZE_DISCHARGE = "tracking:authorize_discharge"
     TRACKING_HAND_OVER = "tracking:hand_over"
     AUDIT_READ = "audit:read"
+    INVENTORY_READ = "inventory:read"
+    INVENTORY_MANAGE = "inventory:manage"
+    # Registrar y anular cobros (no se procesan pagos).
+    CHARGES_MANAGE = "charges:manage"
+    # Ingresos, costos y ganancia.
+    REPORTS_READ = "reports:read"
     # Permisos de un cliente sobre lo propio. El contexto dueño del dato verifica además la
     # relación (tutela) con el recurso concreto.
+    OWN_PROFILE_MANAGE = "own:profile:manage"
     OWN_PETS_READ = "own:pets:read"
     OWN_GUARDIANSHIPS_MANAGE = "own:guardianships:manage"
     OWN_APPOINTMENTS_MANAGE = "own:appointments:manage"
     OWN_TRACKING_READ = "own:tracking:read"
+    OWN_NOTIFICATIONS_MANAGE = "own:notifications:manage"
 
 
 P = Permission
@@ -56,6 +64,10 @@ ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
             P.TRACKING_PUBLISH_UPDATE,
             P.TRACKING_HAND_OVER,
             P.AUDIT_READ,
+            P.INVENTORY_READ,
+            P.INVENTORY_MANAGE,
+            P.CHARGES_MANAGE,
+            P.REPORTS_READ,
         }
     ),
     Role.VETERINARIAN: frozenset(
@@ -70,6 +82,8 @@ ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
             P.TRACKING_PUBLISH_UPDATE,
             P.TRACKING_AUTHORIZE_DISCHARGE,
             P.TRACKING_HAND_OVER,
+            P.INVENTORY_READ,
+            P.CHARGES_MANAGE,
         }
     ),
     Role.ASSISTANT: frozenset(
@@ -80,6 +94,7 @@ ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
             P.TRACKING_ADVANCE,
             P.TRACKING_PUBLISH_UPDATE,
             P.TRACKING_HAND_OVER,
+            P.INVENTORY_READ,
         }
     ),
     Role.RECEPTIONIST: frozenset(
@@ -92,14 +107,18 @@ ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
             P.APPOINTMENTS_MANAGE,
             P.TRACKING_READ,
             P.TRACKING_HAND_OVER,
+            P.INVENTORY_READ,
+            P.CHARGES_MANAGE,
         }
     ),
     Role.CLIENT: frozenset(
         {
+            P.OWN_PROFILE_MANAGE,
             P.OWN_PETS_READ,
             P.OWN_GUARDIANSHIPS_MANAGE,
             P.OWN_APPOINTMENTS_MANAGE,
             P.OWN_TRACKING_READ,
+            P.OWN_NOTIFICATIONS_MANAGE,
         }
     ),
 }

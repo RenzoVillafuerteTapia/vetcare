@@ -3,22 +3,34 @@
  * oklch a hex porque React Native no interpreta oklch.
  */
 export const colors = {
-  background: "#fbfaf7",
-  foreground: "#0f1d1e",
+  // Fondo gris azulado y tinta oscura; el amarillo marca lo activo (la pestaña, lo elegido).
+  background: "#eef2f6",
+  foreground: "#1d2329",
   card: "#ffffff",
-  primary: "#00736a",
-  primaryForeground: "#f3fcfb",
-  secondary: "#e4f2f0",
-  secondaryForeground: "#033633",
-  muted: "#f1f0ec",
-  mutedForeground: "#516162",
+  primary: "#1d2329",
+  primaryForeground: "#ffffff",
+  secondary: "#dfe8f0",
+  secondaryForeground: "#1d2329",
+  muted: "#e9eef3",
+  field: "#e4eaf0",
+  input: "#d3dce4",
+  mutedForeground: "#5f6b76",
   destructive: "#cc2827",
-  success: "#187c49",
-  border: "#dfded8",
-  ring: "#319287",
-  sidebar: "#f5f3ef",
-  surfaceStrong: "#0e2c2c",
-  surfaceStrongForeground: "#eef7f6",
+  success: "#2f8a5b",
+  border: "#dbe2e9",
+  ring: "#8aa8c1",
+  sidebar: "#eef2f6",
+  surfaceStrong: "#1d2329",
+  surfaceStrongForeground: "#f2f5f8",
+  // Acentos del rediseño.
+  accent: "#f6e65f",
+  accentForeground: "#1d2329",
+  sky: "#8fadc6",
+  skyForeground: "#ffffff",
+  mint: "#bfe5cc",
+  mintForeground: "#1f4d35",
+  aqua: "#bfe4ef",
+  aquaForeground: "#1d4b5a",
 } as const;
 
 export const fonts = {
@@ -30,9 +42,9 @@ export const fonts = {
 } as const;
 
 export const radius = {
-  field: 16,
-  card: 24,
-  panel: 32,
+  field: 18,
+  card: 28,
+  panel: 34,
   pill: 999,
 } as const;
 

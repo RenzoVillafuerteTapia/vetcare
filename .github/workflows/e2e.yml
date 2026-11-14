@@ -1,0 +1,93 @@
+name: E2E
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    name: Detectar cambios en la web o la API
+    runs-on: ubuntu-latest
+    outputs:
+      e2e: ${{ steps.filter.outputs.e2e }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: filter
+        name: Comparar archivos modificados
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [ "$EVENT" = "pull_request" ]; then
+            base="origin/$BASE_REF"
+          elif [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "e2e=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          else
+            base="$BEFORE"
+          fi
+          pattern='^(apps/web/|apps/api/|packages/shared/|package(-lock)?\.json$|docker-compose\.yml$|scripts/e2e-bootstrap\.sh$|\.github/workflows/e2e\.yml$)'
+          if git diff --name-only "$base...HEAD" | grep -qE "$pattern"; then
+            echo "e2e=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "e2e=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  # Si no cambió nada relevante queda "skipped", y GitHub lo cuenta como aprobado.
+  e2e:
+    name: e2e
+    needs: changes
+    if: needs.changes.outputs.e2e == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Credenciales desechables: solo existen dentro de este job.
+      E2E_ADMIN_EMAIL: admin@example.test
+      E2E_ADMIN_PASSWORD: recorrido-e2e-del-ci-2026
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configurar el entorno local
+        run: |
+          cp .env.example .env
+          secreto=$(python3 -c "import secrets; print(secrets.token_urlsafe(48))")
+          sed -i "s|^VETCARE_JWT_SECRET=.*|VETCARE_JWT_SECRET=${secreto}|" .env
+      - name: Levantar MySQL y la API
+        run: docker compose up -d --build --wait db && docker compose up -d --build api
+      - name: Preparar los datos (migraciones, sede y administrador)
+        run: bash scripts/e2e-bootstrap.sh
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Instalar Chromium
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+      - name: Recorridos (Playwright)
+        working-directory: apps/web
+        run: npm run e2e
+      - name: Registros de la API
+        if: failure()
+        run: docker compose logs --no-color --tail 200 api
+      - name: Guardar el reporte
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+          retention-days: 7

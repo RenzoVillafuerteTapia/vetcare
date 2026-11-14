@@ -11,10 +11,18 @@ from pathlib import Path
 import pytest
 from alembic import command
 from alembic.config import Config
+from integration_support import Api, _api
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
+from vetcare.contexts.clinic.infrastructure import tables as _clinic_tables  # noqa: F401
+from vetcare.contexts.customers.infrastructure import tables as _customers_tables  # noqa: F401
 from vetcare.contexts.identity.infrastructure import tables as _identity_tables  # noqa: F401
+from vetcare.contexts.notifications.infrastructure import tables as _ntf_tables  # noqa: F401
+from vetcare.contexts.sales.infrastructure import tables as _sales_tables  # noqa: F401
+from vetcare.contexts.scheduling.infrastructure import tables as _scheduling_tables  # noqa: F401
+from vetcare.contexts.tracking.infrastructure import tables as _tracking_tables  # noqa: F401
 from vetcare.platform import outbox as _outbox  # noqa: F401
+from vetcare.platform import outbox_dispatcher as _dispatcher  # noqa: F401
 from vetcare.platform.db import create_engine, create_session_factory, metadata
 
 API_DIR = Path(__file__).resolve().parents[2]
@@ -64,3 +72,10 @@ async def engine(migrated_database: str) -> AsyncIterator[AsyncEngine]:
 @pytest.fixture
 def session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
     return create_session_factory(engine)
+
+
+@pytest.fixture
+async def api(migrated_database: str, engine: AsyncEngine) -> AsyncIterator[Api]:
+    """App real contra la base de pruebas, con un buzón en memoria para los correos."""
+    async for value in _api(migrated_database):
+        yield value

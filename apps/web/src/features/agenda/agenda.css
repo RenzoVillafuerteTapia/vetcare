@@ -1,0 +1,33 @@
+/* El calendario toma los tokens del sistema de diseño (docs/design/README.md). */
+.agenda-calendar {
+  --fc-classic-primary: var(--primary);
+  --fc-classic-primary-foreground: var(--primary-foreground);
+  --fc-classic-event: var(--secondary);
+  --fc-classic-event-contrast: var(--secondary-foreground);
+  --fc-classic-highlight: color-mix(in oklch, var(--accent) 60%, transparent);
+  --fc-classic-today: color-mix(in oklch, var(--accent) 45%, transparent);
+  --fc-classic-now: var(--destructive);
+  --fc-classic-background: var(--card);
+  --fc-classic-faint: color-mix(in oklch, var(--muted) 60%, transparent);
+  --fc-classic-muted: var(--muted);
+  --fc-classic-strong: var(--border);
+  --fc-classic-foreground: var(--foreground);
+  --fc-classic-faint-foreground: var(--muted-foreground);
+  --fc-classic-muted-foreground: var(--muted-foreground);
+  --fc-classic-border: var(--border);
+  --fc-classic-strong-border: var(--input);
+  /* Las capas internas del calendario no deben quedar por encima de los diálogos. */
+  isolation: isolate;
+}
+
+.agenda-calendar .agenda-event {
+  cursor: pointer;
+  border-width: 1px;
+  border-radius: 0.625rem;
+  font-weight: 600;
+}
+
+.agenda-calendar .agenda-event:focus-visible {
+  outline: 3px solid color-mix(in oklch, var(--ring) 50%, transparent);
+  outline-offset: 1px;
+}

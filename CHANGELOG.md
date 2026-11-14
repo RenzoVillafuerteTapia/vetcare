@@ -5,14 +5,21 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 
 ## [Sin publicar]
 
+## [0.2.0] - 2026-11-14
+
+Fase 2 completa y casi toda la fase 3: configuración de la clínica, clientes y mascotas, agenda sin conflictos, seguimiento en vivo de baños y cirugías y avisos push. Se adelantan inventario, cobros registrados y ganancias. La app móvil se rediseña. Queda pendiente el envío en tiempo real por SSE (hoy se actualiza cada 10 s).
+
 ### Corregido
 
+- Web: en Inventario, Mascotas y Clientes solo se desplaza la rejilla de tarjetas; el título, los indicadores y el buscador quedan fijos (24 tarjetas por página).
 - La web de administración rechaza las cuentas de cliente (que usan la app móvil) y revoca la sesión que abrieron.
 - La barra lateral y el encabezado de la web quedan fijos; solo se desplaza el contenido.
 - Los campos de texto de la web y la app tienen un relleno y un borde que se distinguen del fondo.
 
 ### Agregado
 
+- Comando `python -m vetcare.cli seed-demo`: carga en local una veterinaria en marcha (tres veterinarios, 40 clientes con sus mascotas, citas de un mes, seguimientos en curso, inventario y cobros) con datos ficticios; se niega a repetirse y a correr fuera de local o test.
+- Web: en el perfil de la mascota, las alergias a la vista en una tarjeta propia (se agregan o quitan con un toque, con atajos para las más comunes) y un botón para volver.
 - Clinic Setup: catálogo de servicios, recursos agendables con horario semanal y bloqueos, horario de atención y feriados de la sede (America/Lima), con permisos por rol y contrato público `ClinicCatalog` para la agenda.
 - Comando `python -m vetcare.cli seed-clinic` con una configuración ficticia de la sede.
 - Customers & Pets: clientes con documento y teléfono validados, mascotas con historial de peso, tutela con dueños y responsables autorizados (al menos un dueño siempre), acceso por tutela con aislamiento entre clientes, búsqueda paginada, invitación del cliente a la app y contrato público `PetAccess`.
@@ -75,5 +82,6 @@ mascotas, seguimiento): llegan en las fases 2 y 3.
 - App móvil de clientes (`apps/mobile`): Expo SDK 58, Expo Router, TanStack Query, React Hook Form + Zod; refresh token en SecureStore, recuperación de sesión al abrir la app, renovación serializada, solo para el rol cliente, inicio de sesión, recuperación de contraseña e inicio con el sistema de diseño; workflow `Móvil` con lint, formato, tipos, pruebas y bundle de Android.
 - Sistema de diseño (`docs/design`): tipografía Fredoka y Nunito servida desde el proyecto, esquinas amplias, botones y etiquetas tipo píldora, tarjeta destacada oscura y paleta verde azulada.
 
-[Sin publicar]: https://github.com/RenzoVillafuerteTapia/vetcare/compare/v0.1.0...develop
+[Sin publicar]: https://github.com/RenzoVillafuerteTapia/vetcare/compare/v0.2.0...develop
+[0.2.0]: https://github.com/RenzoVillafuerteTapia/vetcare/releases/tag/v0.2.0
 [0.1.0]: https://github.com/RenzoVillafuerteTapia/vetcare/releases/tag/v0.1.0

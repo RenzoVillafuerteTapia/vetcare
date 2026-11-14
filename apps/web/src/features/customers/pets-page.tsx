@@ -22,8 +22,8 @@ import {
 import { PetPhoto } from "./pet-photo";
 import { PETS } from "./queries";
 
-// Dos filas de seis tarjetas: caben en una pantalla de laptop sin desplazarse.
-const PAGE_SIZE = 12;
+// Solo la rejilla se desplaza; el título, el buscador y los filtros quedan fijos.
+const PAGE_SIZE = 24;
 
 /** Edad aproximada: "8 meses", "3 años". */
 function ageOf(birth: string | null, now: Date): string | null {
@@ -65,7 +65,7 @@ export function PetsPage() {
   const pages = pets.data ? Math.max(1, Math.ceil(pets.data.total / PAGE_SIZE)) : 1;
 
   return (
-    <>
+    <div className="flex h-full min-h-0 flex-col">
       <PageHeader
         title="Mascotas"
         description="Todas las mascotas con su foto y sus responsables. Se registran desde la ficha del cliente."
@@ -121,13 +121,15 @@ export function PetsPage() {
         </EmptyState>
       ) : (
         <>
-          <CatalogGrid label="Mascotas">
-            {pets.data.items.map((pet) => (
-              <li key={pet.id}>
-                <PetCard pet={pet} now={now} />
-              </li>
-            ))}
-          </CatalogGrid>
+          <div className="-mx-1 min-h-0 flex-1 overflow-y-auto px-1 pb-1">
+            <CatalogGrid label="Mascotas">
+              {pets.data.items.map((pet) => (
+                <li key={pet.id}>
+                  <PetCard pet={pet} now={now} />
+                </li>
+              ))}
+            </CatalogGrid>
+          </div>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
             <span role="status">
               {pets.data.total === 1 ? "1 mascota" : `${pets.data.total} mascotas`}
@@ -156,7 +158,7 @@ export function PetsPage() {
           </div>
         </>
       )}
-    </>
+    </div>
   );
 }
 
